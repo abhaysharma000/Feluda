@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feluda AI — Threat Shield</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --navy-950: #000000;
+            --navy-900: #0a192f;
+            --cyan-accent: #10b981;
+            --danger: #ff3b3b;
+            --warning: #facc15;
+            --success: #10b981;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 320px;
+            font-family: 'Inter', sans-serif;
+            background: var(--navy-950);
+            color: #f8fafc;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .container {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-950) 100%);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .logo i {
+            color: var(--cyan-accent);
+        }
+
+        .settings-btn {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Animated Risk Indicator */
+        .status-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .risk-ring {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--navy-900);
+            stroke-width: 8;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke: var(--success);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 339;
+            stroke-dashoffset: 339;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s;
+        }
+
+        .risk-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .risk-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .risk-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* Information Panels */
+        .info-panel {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+
+        .info-panel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-content {
+            margin-top: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            display: none;
+        }
+
+        .panel-content.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .toggle-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-desc {
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--cyan-accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
+
+        .tip-card {
+            background: linear-gradient(to bottom right, rgba(0, 229, 255, 0.05), rgba(0, 229, 255, 0));
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tip-card i {
+            color: var(--cyan-accent);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .tip-text {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .btn-dashboard {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--cyan-accent);
+            color: var(--navy-950);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-dashboard:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-microchip"></i>
+                <span>Feluda <span style="color:white">AI</span></span>
+            </div>
+            <button class="settings-btn" id="open-dashboard-btn">
+                <i class="fas fa-layer-group"></i>
+            </button>
+        </header>
+
+        <div class="status-center">
+            <div class="risk-ring">
+                <svg class="ring-svg" width="120" height="120">
+                    <circle class="ring-bg" cx="60" cy="60" r="54" />
+                    <circle id="risk-circle" class="ring-progress" cx="60" cy="60" r="54" />
+                </svg>
+                <div class="risk-value">
+                    <span class="risk-number" id="risk-score">0</span>
+                    <span class="risk-label">RISK_IDX</span>
+                </div>
+            </div>
+            <div id="status-badge" class="status-badge">PROTECTED</div>
+        </div>
+
+        <div id="live-scan-stats" class="hidden" style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div
+                style="flex: 1; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 10px; text-align: center;">
+                <div
+                    style="font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 800; margin-bottom: 2px;">
+                    Verified</div>
+                <div id="verified-count" style="font-size: 16px; font-weight: 800; color: #10b981;">0</div>
+            </div>
+            <div
+                style="flex: 1; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1); border-radius: 8px; padding: 10px; text-align: center;">
+                <div
+                    style="font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 800; margin-bottom: 2px;">
+                    Threats</div>
+                <div id="threat-count" style="font-size: 16px; font-weight: 800; color: #ef4444;">0</div>
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <div class="toggle-info">
+                <span class="toggle-label">Neural Link Shield</span>
+                <span class="toggle-desc" id="shield-status">Real-time scan inactive</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="link-shield-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="info-panel">
+            <div class="panel-header" id="why-toggle">
+                <span class="panel-title"><i class="fas fa-brain"></i> Neural Reasoning</span>
+                <i class="fas fa-chevron-down" style="font-size: 10px; color: #475569"></i>
+            </div>
+            <div class="panel-content" id="why-content">
+                Phishing Engine scanning active. Architecture utilizes Platt Calibration and SHAP feature attribution to
+                detect structural anomalies in real-time.
+            </div>
+        </div>
+
+        <div class="tip-card">
+            <i class="fas fa-lightbulb"></i>
+            <div class="tip-text">
+                <strong>SecOps Tip:</strong> Check for "auth" or "verify" in subdomains. These are high-weight
+                contributors to phishing scores.
+            </div>
+        </div>
+
+        <a href="dashboard/index.html" target="_blank" class="btn-dashboard">OPEN LIVE DECK</a>
+
+        <div class="footer">
+            Powered by Hybrid Neural Architecture v2.4
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

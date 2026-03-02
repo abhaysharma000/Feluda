@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feluda AI | Threat Blocked</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #0d0000;
+            color: #ff4d4d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 620px;
+            width: 90%;
+            padding: 40px;
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid #ff4d4d44;
+            border-radius: 20px;
+            box-shadow: 0 0 60px rgba(255, 77, 77, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(1);   opacity: 1; }
+            50%  { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+
+        .brand {
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #ff4d4d88;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .details {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 18px 22px;
+            border-radius: 12px;
+            text-align: left;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff4d4d;
+            line-height: 1.9;
+        }
+
+        .details b { color: #ff4d4d; }
+
+        .url {
+            font-family: monospace;
+            color: #ff9999;
+            word-break: break-all;
+            font-size: 0.88rem;
+        }
+
+        #ai-explain-panel {
+            background: rgba(255, 165, 0, 0.05);
+            border-left-color: #ffa500;
+            display: none;
+        }
+
+        #ai-explain-panel .panel-title {
+            color: #ffa500;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        #reason-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #f8fafc;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .btn-back {
+            background: #ff4d4d;
+            color: white;
+        }
+        .btn-back:hover {
+            background: #ff2222;
+            box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+        }
+
+        .btn-reason {
+            background: transparent;
+            color: #ffa500;
+            border: 1px solid #ffa500;
+        }
+        .btn-reason:hover {
+            background: rgba(255, 165, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <span class="icon">🛡️</span>
+        <div class="brand">Feluda AI — Cyber Intelligence</div>
+        <h1>Threat Blocked</h1>
+        <p class="subtitle">
+            Feluda AI has detected a high-risk phishing attempt.<br>
+            This page has been blocked to protect you.
+        </p>
+
+        <div class="details">
+            <div><b>Target URL:</b> <span class="url" id="target-url">Loading...</span></div>
+            <div><b>Risk Score:</b> <span id="risk-score">98</span> / 100</div>
+            <div id="domain-lifecycle" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.85rem; color:#94a3b8;">
+                <div><b>Domain Created:</b> <span id="creation-date" style="color:#ff9999;">N/A</span></div>
+                <div><b>Domain Age:</b> <span id="domain-age" style="font-weight:bold;">0 days</span></div>
+            </div>
+        </div>
+
+        <div id="ai-explain-panel" class="details">
+            <div class="panel-title">🚨 Why Was This Blocked? (AI Reasoning)</div>
+            <ul id="reason-list"></ul>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-reason" id="view-reason-btn">👁 View AI Reasoning</button>
+            <button class="btn btn-back" id="go-back">← Go Back to Safety</button>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        // Populate URL
+        const rawUrl = params.get('url') || 'Unknown';
+        document.getElementById('target-url').textContent = rawUrl;
+
+        // Risk score
+        document.getElementById('risk-score').textContent = params.get('score') || '95';
+
+        // Domain lifecycle
+        const ageDays = parseInt(params.get('age') || '0', 10);
+        const creationDate = params.get('created') || 'Unknown';
+        document.getElementById('creation-date').textContent = creationDate;
+        const ageEl = document.getElementById('domain-age');
+        ageEl.textContent = `${ageDays} day${ageDays !== 1 ? 's' : ''}`;
+        if (ageDays < 30) {
+            ageEl.style.color = '#ef4444';
+            ageEl.textContent += ' ⚠ CRITICAL — Very new domain';
+        } else {
+            ageEl.style.color = '#10b981';
+        }
+
+        // AI reasons
+        const reasons = params.get('reasons')
+            ? params.get('reasons').split('||')
+            : ['Feluda AI detected malicious structural patterns in this URL.'];
+        const reasonList = document.getElementById('reason-list');
+        reasonList.innerHTML = reasons
+            .map(r => `<li style="margin-bottom:6px;">${r}</li>`)
+            .join('');
+
+        // Toggle AI panel
+        document.getElementById('view-reason-btn').addEventListener('click', function () {
+            const panel = document.getElementById('ai-explain-panel');
+            const visible = panel.style.display === 'block';
+            panel.style.display = visible ? 'none' : 'block';
+            this.textContent = visible ? '👁 View AI Reasoning' : '🙈 Hide Reasoning';
+        });
+
+        // Go back
+        document.getElementById('go-back').addEventListener('click', () => {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.close();
+            }
+        });
+    </script>
+</body>
+
+</html>
