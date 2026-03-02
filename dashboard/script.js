@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Navigation Flow
     const navItems = document.querySelectorAll('.nav-item');
     const views = document.querySelectorAll('.view-container');
+    let resizeMatrix, initMatrix;
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -14,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const innerView = v.id === `${viewId}-view`;
                 if (innerView) {
                     v.classList.remove('hidden');
+                    if (viewId === 'threat-map') {
+                        // Crucial: ensure canvas is resized properly after display: block
+                        setTimeout(() => {
+                            if (typeof resizeMatrix === 'function') resizeMatrix();
+                            if (typeof initMatrix === 'function') initMatrix();
+                        }, 50);
+                    }
                     gsap.fromTo(v, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' });
                 } else {
                     v.classList.add('hidden');
@@ -155,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nodeCount = 120;
         const radius = 220;
 
-        function resizeMatrix() {
+        resizeMatrix = function () {
             matrixCanvas.width = matrixCanvas.parentElement.offsetWidth;
             matrixCanvas.height = matrixCanvas.parentElement.offsetHeight;
         }
@@ -206,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function initMatrix() {
+        initMatrix = function () {
             resizeMatrix();
             nodes = Array.from({ length: nodeCount }, (_, i) => new MatrixNode(i < 8));
             animateMatrix();
