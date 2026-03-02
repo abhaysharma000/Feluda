@@ -1,55 +1,25 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useUI } from '../context/UIContext';
 import { HeroPanel } from '../components/HeroPanel';
-import { ModelHealthPanel } from '../components/ModelHealthPanel';
+import { StatsGrid } from '../components/StatsGrid';
 import { ChartsPanel } from '../components/ChartsPanel';
-import { Eye, Ban, AlertTriangle, Mail } from 'lucide-react';
-import { clsx } from 'clsx';
+import { ThreatMap } from '../components/ThreatMap';
+import { LiveFeed } from '../components/LiveFeed';
+import { ModelHealthPanel } from '../components/ModelHealthPanel';
 
 export const Dashboard = () => {
-    const { stats } = useUI();
-
-    const statsConfig = [
-        { id: 'scanned', label: 'Assets Scanned', value: stats.scanned.toLocaleString(), change: '+12%', icon: Eye, color: 'purple' },
-        { id: 'malicious', label: 'Malicious Sites', value: stats.malicious.toLocaleString(), badge: 'Critical', icon: Ban, color: 'danger' },
-        { id: 'suspicious', label: 'Suspicious', value: stats.suspicious.toLocaleString(), badge: 'Review', icon: AlertTriangle, color: 'warning' },
-        { id: 'email', label: 'Email Vectors', value: stats.email.toLocaleString(), badge: 'Dynamic', icon: Mail, color: 'blue' },
-    ];
-
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-8 pb-12">
+            {/* Hero Section */}
             <HeroPanel />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {statsConfig.map((stat) => (
-                    <div key={stat.id} className="glass-card p-6 border-white/5 hover:border-white/10 transition-all group">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={clsx(
-                                "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                                stat.color === 'purple' && "bg-purple-500/10 text-purple-400",
-                                stat.color === 'danger' && "bg-danger/10 text-danger",
-                                stat.color === 'warning' && "bg-warning/10 text-warning",
-                                stat.color === 'blue' && "bg-blue-500/10 text-blue-400"
-                            )}>
-                                <stat.icon className="w-5 h-5" />
-                            </div>
-                            {stat.change && <span className="text-xs font-bold text-emerald-400">{stat.change}</span>}
-                            {stat.badge && (
-                                <span className={clsx(
-                                    "text-[8px] px-2 py-0.5 rounded font-black uppercase tracking-wider",
-                                    stat.color === 'danger' && "bg-danger/20 text-danger",
-                                    stat.color === 'warning' && "bg-warning/20 text-warning",
-                                    stat.color === 'blue' && "bg-blue-500/20 text-blue-400"
-                                )}>
-                                    {stat.badge}
-                                </span>
-                            )}
-                        </div>
-                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</h3>
-                        <div className="text-3xl font-bold text-white tabular-nums">{stat.value}</div>
-                    </div>
-                ))}
-            </div>
+            {/* Stats Overview */}
+            <StatsGrid />
 
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Threat Analysis & Charts */}
                 <div className="lg:col-span-2 space-y-8">
                     <div className="glass-card p-8 min-h-[400px]">
                         <div className="flex items-center justify-between mb-8">
@@ -63,9 +33,24 @@ export const Dashboard = () => {
                             <ChartsPanel type="line" />
                         </div>
                     </div>
+                    <ThreatMap />
                 </div>
+
+                {/* Live Intelligence Feed & Health */}
                 <div className="space-y-8">
                     <ModelHealthPanel />
+                    <div className="glass-card p-6 h-[400px] flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-white">Live Intelligence</h3>
+                            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-[8px] font-bold uppercase">
+                                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                                Real-time
+                            </span>
+                        </div>
+                        <div className="flex-1 min-h-0">
+                            <LiveFeed />
+                        </div>
+                    </div>
                     <div className="glass-card p-8">
                         <h3 className="text-lg font-bold mb-8">Classification Mix</h3>
                         <div className="h-[250px]">
@@ -74,6 +59,6 @@ export const Dashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };

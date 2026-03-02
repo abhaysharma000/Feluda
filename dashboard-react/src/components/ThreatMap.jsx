@@ -108,5 +108,3 @@ const MatrixWorldMap = () => {
         </div>
     );
 };
-
-export default MatrixWorldMap;

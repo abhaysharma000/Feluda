@@ -3,9 +3,6 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 const UIContext = createContext();
 
 export const UIProvider = ({ children }) => {
-    // Navigation State
-    const [activePage, setActivePage] = useState('dashboard');
-
     // Simulation / Playback State
     const [isSimulationMode, setIsSimulationMode] = useState(false);
     const [isPlaybackPaused, setIsPlaybackPaused] = useState(false);
@@ -40,29 +37,40 @@ export const UIProvider = ({ children }) => {
         scanned: 12842,
         malicious: 423,
         suspicious: 1102,
-        email: 89
+        avgRisk: 4.2
     });
 
     // Simulation Timer Ref
     const simInterval = useRef(null);
 
     const addLog = useCallback((log) => {
-        setLogs(prev => [
-            { id: Date.now(), timestamp: new Date().toISOString(), ...log },
-            ...prev.slice(0, 49) // Keep last 50
-        ]);
+        setLogs(prev => {
+            const newLogs = [
+                { id: Date.now(), timestamp: new Date().toISOString(), ...log },
+                ...prev.slice(0, 49) // Keep last 50
+            ];
+
+            // Calculate new average risk
+            const totalRisk = newLogs.reduce((acc, curr) => acc + curr.risk, 0);
+            const newAvgRisk = (totalRisk / newLogs.length).toFixed(1);
+
+            setStats(s => ({ ...s, avgRisk: parseFloat(newAvgRisk) }));
+            return newLogs;
+        });
     }, []);
 
     // Simulation logic effect
     useEffect(() => {
-        if (isSimulationMode) {
+        if (isSimulationMode && !isPlaybackPaused) {
             simInterval.current = setInterval(() => {
-                const isThreat = Math.random() > 0.85;
+                const isThreat = Math.random() > (isZeroDayMode ? 0.6 : 0.85);
                 const risk = isThreat ? (75 + Math.random() * 20).toFixed(1) : (1 + Math.random() * 5).toFixed(1);
 
                 const newLog = {
                     node: `Node_${['Alpha', 'Beta', 'Gamma', 'Delta'][Math.floor(Math.random() * 4)]}_${Math.floor(Math.random() * 100)}`,
-                    vector: isThreat ? `Threat Match [${['bank-verify.cc', 'login-secured.net', 'update-account.io'][Math.floor(Math.random() * 3)]}]` : `Heuristic Scan [google.com]`,
+                    vector: isThreat
+                        ? `${['Threat Match', 'Polymorphic Signature', 'C2 Callback'][Math.floor(Math.random() * 3)]} [${['bank-verify.cc', 'login-secured.net', 'update-account.io', 'portal-auth.sh'][Math.floor(Math.random() * 4)]}]`
+                        : `Heuristic Scan [${['google.com', 'github.com', 'slack.com'][Math.floor(Math.random() * 3)]}]`,
                     risk: parseFloat(risk),
                     verdict: isThreat ? 'Malicious' : 'Safe'
                 };
@@ -74,12 +82,12 @@ export const UIProvider = ({ children }) => {
                     malicious: isThreat ? prev.malicious + 1 : prev.malicious,
                     suspicious: !isThreat && Math.random() > 0.9 ? prev.suspicious + 1 : prev.suspicious
                 }));
-            }, 5000 / playbackSpeed);
+            }, (isZeroDayMode ? 2000 : 5000) / playbackSpeed);
         } else {
             clearInterval(simInterval.current);
         }
         return () => clearInterval(simInterval.current);
-    }, [isSimulationMode, playbackSpeed, addLog]);
+    }, [isSimulationMode, isPlaybackPaused, playbackSpeed, isZeroDayMode, addLog]);
 
     // Simulation logic helper
     const toggleSimulation = () => {
@@ -91,8 +99,6 @@ export const UIProvider = ({ children }) => {
     };
 
     const value = {
-        activePage,
-        setActivePage,
         isSimulationMode,
         toggleSimulation,
         isPlaybackPaused,

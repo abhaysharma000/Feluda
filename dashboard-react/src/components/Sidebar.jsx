@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { NavLink } from 'react-router-dom';
 import {
     Shield,
     LayoutDashboard,
@@ -9,24 +10,21 @@ import {
     Settings,
     FileShield,
     Play,
-    Pause,
-    FastForward
+    Pause
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 const navItems = [
-    { id: 'dashboard', label: 'Executive Deck', icon: LayoutDashboard },
-    { id: 'threat-map', label: 'Global Matrix', icon: Map },
-    { id: 'live-feed', label: 'Neural Stream', icon: Activity },
-    { id: 'logs', label: 'Entropy Logs', icon: Terminal },
-    { id: 'admin', label: 'Core Settings', icon: Settings },
+    { id: 'dashboard', label: 'Executive Deck', icon: LayoutDashboard, path: '/dashboard' },
+    { id: 'threat-map', label: 'Global Matrix', icon: Map, path: '/threat-map' },
+    { id: 'live-feed', label: 'Neural Stream', icon: Activity, path: '/live-feed' },
+    { id: 'logs', label: 'Entropy Logs', icon: Terminal, path: '/logs' },
+    { id: 'admin', label: 'Core Settings', icon: Settings, path: '/settings' },
 ];
 
 export const Sidebar = () => {
     const {
-        activePage,
-        setActivePage,
         isSimulationMode,
         toggleSimulation,
         playbackSpeed,
@@ -42,7 +40,7 @@ export const Sidebar = () => {
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-accent to-darkblue-900 flex items-center justify-center shadow-neon">
                         <Shield className="text-black w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight text-white">
+                    <h2 className="text-xl font-bold tracking-tight text-white uppercase letter-spacing-1">
                         Feluda
                     </h2>
                 </div>
@@ -50,28 +48,39 @@ export const Sidebar = () => {
 
             <nav className="flex-1 px-4 space-y-2">
                 {navItems.map((item) => (
-                    <button
+                    <NavLink
                         key={item.id}
-                        onClick={() => setActivePage(item.id)}
-                        className={clsx(
-                            "nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                            activePage === item.id ? "bg-green-accent/10 text-green-accent border-r-2 border-green-accent" : "hover:bg-white/5 text-slate-400 hover:text-green-accent"
+                        to={item.path}
+                        className={({ isActive }) => clsx(
+                            "nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
+                            isActive
+                                ? "bg-green-accent/10 text-green-accent shadow-[inset_0_0_12px_rgba(16,185,129,0.05)]"
+                                : "text-slate-500 hover:text-white hover:bg-white/5"
                         )}
                     >
-                        <item.icon className="w-5 h-5" />
-                        <span className="font-medium text-sm">{item.label}</span>
-                    </button>
+                        {({ isActive }) => (
+                            <>
+                                <item.icon className={clsx("w-5 h-5 transition-transform duration-300", isActive ? "scale-110" : "group-hover:scale-105")} />
+                                <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="active-pill"
+                                        className="ml-auto w-1.5 h-1.5 rounded-full bg-green-accent shadow-neon"
+                                    />
+                                )}
+                            </>
+                        )}
+                    </NavLink>
                 ))}
             </nav>
 
             <div className="p-4 mt-auto space-y-4">
-                {/* Playback Controls / Simulation Mode */}
                 <div className="p-4 glass-card bg-white/[0.02]">
                     <div className="flex items-center justify-between mb-4">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Threat Timeline</span>
                         <div className={clsx(
                             "px-2 py-0.5 rounded text-[8px] font-black uppercase",
-                            isSimulationMode ? "bg-danger/20 text-danger" : "bg-emerald-500/20 text-emerald-500"
+                            isSimulationMode ? "bg-danger/20 text-danger border border-danger/30" : "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30"
                         )}>
                             {isSimulationMode ? 'Simulating' : 'Live'}
                         </div>
@@ -80,9 +89,9 @@ export const Sidebar = () => {
                     <div className="flex items-center justify-between gap-2">
                         <button
                             onClick={() => setIsPlaybackPaused(!isPlaybackPaused)}
-                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-all"
+                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-all border border-white/5 hover:border-white/20"
                         >
-                            {isPlaybackPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                            {isPlaybackPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
                         </button>
 
                         <div className="flex gap-1">
@@ -91,8 +100,10 @@ export const Sidebar = () => {
                                     key={speed}
                                     onClick={() => setPlaybackSpeed(speed)}
                                     className={clsx(
-                                        "text-[10px] font-bold px-2 py-1 rounded",
-                                        playbackSpeed === speed ? "bg-green-accent text-black" : "bg-white/5 text-slate-500 hover:bg-white/10"
+                                        "text-[10px] font-bold px-2.5 py-1 rounded transition-all",
+                                        playbackSpeed === speed
+                                            ? "bg-green-accent text-black shadow-neon"
+                                            : "bg-white/5 text-slate-500 hover:bg-white/10"
                                     )}
                                 >
                                     {speed}x
@@ -101,21 +112,21 @@ export const Sidebar = () => {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex items-center gap-3">
+                    <div className="mt-4 flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase text-slate-500">Manual Override</span>
                         <div
                             onClick={toggleSimulation}
                             className={clsx(
-                                "relative w-11 h-6 transition-colors rounded-full cursor-pointer",
+                                "relative w-10 h-5 transition-colors rounded-full cursor-pointer",
                                 isSimulationMode ? "bg-danger" : "bg-slate-700"
                             )}
                         >
                             <motion.div
-                                animate={{ x: isSimulationMode ? 22 : 2 }}
+                                animate={{ x: isSimulationMode ? 20 : 2 }}
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md"
+                                className="absolute top-1 left-0.5 w-3 h-3 bg-white rounded-full shadow-md"
                             />
                         </div>
-                        <span className="text-[10px] font-bold uppercase text-slate-400">Manual Override</span>
                     </div>
                 </div>
 
