@@ -22,6 +22,10 @@
             "dest": "app/main.py"
         },
         {
+            "src": "/dashboard/assets/(.*)",
+            "dest": "/assets/$1"
+        },
+        {
             "src": "/dashboard/(.*)",
             "dest": "/$1"
         },
