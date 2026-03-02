@@ -38,3 +38,11 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Agent/Environment Metadata
+.agents/
+.agent/
+_agents/
+_agent/
+.gemini/
+.antigravity/

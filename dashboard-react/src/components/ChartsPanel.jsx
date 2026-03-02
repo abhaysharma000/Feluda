@@ -16,37 +16,57 @@ export const ChartsPanel = ({ type = 'line' }) => {
         const ctx = chartRef.current.getContext('2d');
 
         if (type === 'line') {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+            gradient.addColorStop(0, 'rgba(0, 229, 255, 0.4)');
+            gradient.addColorStop(1, 'rgba(0, 229, 255, 0)');
 
             chartInstance.current = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
                     datasets: [{
-                        label: 'Inbound Anomalies',
+                        label: 'Neural Anomalies',
                         data: [12, 19, 8, 15, 7, 33, 15],
-                        borderColor: '#10b981',
+                        borderColor: '#00E5FF',
                         borderWidth: 3,
                         fill: true,
                         backgroundColor: gradient,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#10b981',
-                        pointBorderColor: '#000',
-                        pointBorderWidth: 2
+                        tension: 0.5,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#00E5FF',
+                        pointBorderColor: '#0B0F19',
+                        pointBorderWidth: 3,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#FFFFFF',
+                        pointHoverBorderColor: '#00E5FF',
+                        pointHoverBorderWidth: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                            titleFont: { size: 10, weight: 'bold', family: 'Inter' },
+                            bodyFont: { size: 12, family: 'Inter' },
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            cornerRadius: 12
+                        }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 10 } } }
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { size: 10, weight: 'bold', family: 'Inter' } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                            ticks: { color: '#64748b', font: { size: 10, weight: 'bold', family: 'Inter' } }
+                        }
                     }
                 }
             });
@@ -57,19 +77,20 @@ export const ChartsPanel = ({ type = 'line' }) => {
                     labels: ['Safe', 'Malicious', 'Suspicious'],
                     datasets: [{
                         data: [82, 8, 10],
-                        backgroundColor: ['#10b981', '#FF3B3B', '#FACC15'],
-                        borderWidth: 0,
+                        backgroundColor: ['#22C55E', '#EF4444', '#1E3A8A'],
+                        borderColor: '#111827',
+                        borderWidth: 8,
                         hoverOffset: 15
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '75%',
+                    cutout: '80%',
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { color: '#94a3b8', font: { size: 11 }, usePointStyle: true, padding: 20 }
+                            labels: { color: '#64748b', font: { size: 10, weight: 'bold', family: 'Inter' }, usePointStyle: true, padding: 25 }
                         }
                     }
                 }
@@ -82,7 +103,7 @@ export const ChartsPanel = ({ type = 'line' }) => {
     }, [type]);
 
     return (
-        <div className="w-full h-full min-h-[300px]">
+        <div className="w-full h-full min-h-[350px]">
             <canvas ref={chartRef} />
         </div>
     );

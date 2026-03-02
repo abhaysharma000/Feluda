@@ -22,29 +22,28 @@ export const ThreatMap = () => {
     ], []);
 
     return (
-        <div className="relative w-full h-[500px] bg-black/40 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-            {/* Grid Background */}
-            <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none" />
+        <div className="relative w-full h-[600px] bg-soc-bg overflow-hidden border border-white/5 rounded-[2rem] group">
+            {/* Ambient background glow */}
+            <div className="absolute inset-0 bg-radial-gradient from-soc-cyan/5 to-transparent opacity-30" />
 
-            <svg className="w-full h-full p-8 overflow-visible" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+            <svg className="w-full h-full p-12 overflow-visible" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
                 {/* Connections with moving gradients */}
                 {connections.map((conn, idx) => {
                     const fromNode = nodes.find(n => n.id === conn.from);
                     const toNode = nodes.find(n => n.id === conn.to);
-                    const pathId = `path-${idx}`;
                     const pathData = `M ${fromNode.x} ${fromNode.y} L ${toNode.x} ${toNode.y}`;
 
                     return (
-                        <g key={pathId}>
+                        <g key={`conn-${idx}`}>
                             <motion.path
                                 d={pathData}
-                                stroke="rgba(16, 185, 129, 0.2)"
-                                strokeWidth="1"
+                                stroke="rgba(0, 229, 255, 0.1)"
+                                strokeWidth="0.5"
                                 fill="none"
                             />
-                            <circle r="2" fill="#10b981">
+                            <circle r="1.5" fill="#00E5FF">
                                 <animateMotion
-                                    dur={`${3 + Math.random() * 2}s`}
+                                    dur={`${4 + Math.random() * 3}s`}
                                     repeatCount="indefinite"
                                     path={pathData}
                                 />
@@ -60,26 +59,31 @@ export const ThreatMap = () => {
                         <motion.circle
                             cx={node.x}
                             cy={node.y}
-                            r="12"
-                            fill={node.status === 'threat' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}
-                            animate={{ scale: [1, 1.6, 1], opacity: [0.3, 0.7, 0.3] }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                            r="15"
+                            fill={node.status === 'threat' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.1)'}
+                            animate={{ scale: [1, 1.8, 1], opacity: [0.2, 0.5, 0.2] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                         />
                         {/* Core Point */}
                         <circle
                             cx={node.x}
                             cy={node.y}
-                            r="5"
-                            fill={node.status === 'threat' ? '#ef4444' : '#10b981'}
-                            style={{ filter: 'drop-shadow(0 0 8px currentColor)' }}
+                            r="4"
+                            className={node.status === 'threat' ? 'fill-soc-danger shadow-neon-danger' : 'fill-soc-success shadow-neon-cyan'}
+                        />
+                        <circle
+                            cx={node.x}
+                            cy={node.y}
+                            r="2"
+                            fill="white"
+                            opacity="0.8"
                         />
                         {/* Label */}
                         <text
                             x={node.x}
-                            y={node.y + 25}
+                            y={node.y + 35}
                             textAnchor="middle"
-                            className="text-[10px] font-black uppercase tracking-[0.2em] fill-slate-400 select-none pointer-events-none"
-                            style={{ fontSize: '10px' }}
+                            className="text-[9px] font-black uppercase tracking-[0.4em] fill-slate-500 select-none pointer-events-none italic"
                         >
                             {node.label}
                         </text>
@@ -88,22 +92,22 @@ export const ThreatMap = () => {
             </svg>
 
             {/* Matrix Overlay Data */}
-            <div className="absolute bottom-8 left-8 flex gap-4">
-                <div className="glass-card p-4 border-emerald-500/20 bg-black/60 shadow-neon-small">
-                    <div className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.1em] mb-1">Active Clusters</div>
-                    <div className="text-xl font-bold text-white tabular-nums">412</div>
+            <div className="absolute bottom-12 left-12 flex gap-6">
+                <div className="glass-card p-6 border-soc-success/20 bg-soc-bg/80 group-hover:bg-soc-success/5 transition-all outline outline-soc-success/10 outline-offset-4">
+                    <div className="text-[9px] font-black text-soc-success uppercase tracking-[0.3em] mb-2 italic">Active Clusters</div>
+                    <div className="text-3xl font-black text-white tabular-nums italic">412</div>
                 </div>
-                <div className="glass-card p-4 border-danger/20 bg-black/60 shadow-neon-red-small">
-                    <div className="text-[8px] font-black text-danger uppercase tracking-[0.1em] mb-1">Inbound Breaches</div>
-                    <div className="text-xl font-bold text-white tabular-nums animate-pulse">02</div>
+                <div className="glass-card p-6 border-soc-danger/20 bg-soc-bg/80 group-hover:bg-soc-danger/5 transition-all outline outline-soc-danger/10 outline-offset-4">
+                    <div className="text-[9px] font-black text-soc-danger uppercase tracking-[0.3em] mb-2 italic">Anomalous Nodes</div>
+                    <div className="text-3xl font-black text-white tabular-nums animate-pulse italic">02</div>
                 </div>
             </div>
 
             {/* Scan Line Animation */}
             <motion.div
-                className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-accent/60 to-transparent z-10"
+                className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-soc-cyan/30 to-transparent z-10"
                 animate={{ top: ['0%', '100%'] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
             />
         </div>
     );

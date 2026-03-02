@@ -1,38 +1,35 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
-    darkMode: 'class',
     theme: {
         extend: {
             colors: {
-                black: '#000000',
-                darkblue: {
-                    900: '#050a14',
-                    950: '#000000',
-                },
-                green: {
-                    accent: '#10b981',
-                    glow: '#00ff88',
-                },
-                danger: '#FF3B3B',
-                warning: '#FACC15',
-                'cyan-accent': '#00f2ff',
-                'navy-950': '#020617',
+                'soc-bg': '#0B0F19',
+                'soc-surface': '#111827',
+                'soc-primary': '#1E3A8A',
+                'soc-cyan': '#00E5FF',
+                'soc-danger': '#EF4444',
+                'soc-success': '#22C55E',
+                'green-accent': '#10B981', // Existing color alias
+                'danger': '#EF4444',       // Existing color alias
+                'warning': '#F59E0B',      // Existing color alias
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                display: ['Space Grotesk', 'sans-serif'],
+                mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                sans: ['Inter', 'system-ui', 'sans-serif'],
             },
             boxShadow: {
-                'neon': '0 0 15px rgba(16, 185, 129, 0.3)',
-                'neon-red': '0 0 15px rgba(255, 59, 59, 0.3)',
-                'neon-cyan': '0 0 15px rgba(0, 242, 255, 0.3)',
+                'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                'neon-cyan': '0 0 15px rgba(0, 229, 255, 0.3)',
+                'neon-danger': '0 0 15px rgba(239, 68, 68, 0.3)',
             },
-            animation: {
-                'spin-slow': 'spin 8s linear infinite',
+            backgroundImage: {
+                'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01))',
             }
         },
     },

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useUI } from './context/UIContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { GlobalToast } from './components/GlobalToast'
 import { Sidebar } from './components/Sidebar'
@@ -11,15 +10,15 @@ import { Logs } from './pages/Logs'
 import { ThreatMapPage } from './pages/ThreatMapPage'
 import { Settings } from './pages/Settings'
 import { ShowcaseModal } from './components/ShowcaseModal'
-import { LiveFeed } from './components/LiveFeed'
+import { NeuralBackground } from './components/NeuralBackground'
 
 const App = () => {
   const location = useLocation();
 
   return (
     <ErrorBoundary>
-      <div className="relative min-h-screen bg-black overflow-hidden selection:bg-green-accent/30 selection:text-white">
-        <div className="fixed inset-0 grid-bg pointer-events-none opacity-40"></div>
+      <div className="relative min-h-screen bg-soc-bg text-slate-300 overflow-hidden font-sans">
+        <NeuralBackground />
 
         <GlobalToast />
         <ShowcaseModal />
@@ -27,17 +26,17 @@ const App = () => {
         <div className="flex h-screen overflow-hidden relative z-10 w-full">
           <Sidebar />
 
-          <main className="flex-1 flex flex-col overflow-hidden relative">
+          <main className="flex-1 flex flex-col overflow-hidden relative lg:ml-72">
             <Topbar />
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 space-y-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-12 space-y-12">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, scale: 1.02, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
                   className="h-full"
                 >
                   <Routes location={location}>
@@ -47,11 +46,11 @@ const App = () => {
                     <Route path="/threat-map" element={<ThreatMapPage />} />
                     <Route path="/live-feed" element={<div className="space-y-8 pb-12">
                       <header>
-                        <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Neural stream</h1>
-                        <p className="text-slate-500 text-sm font-bold uppercase tracking-widest italic">Real-time inference logs from global intelligence nodes.</p>
+                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2 italic">Neural stream</h1>
+                        <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">Real-time inference logs from global intelligence nodes.</p>
                       </header>
-                      <div className="flex-1 min-h-[600px] glass-card p-1 overflow-hidden border-white/5 bg-white/[0.01]">
-                        <LiveFeed />
+                      <div className="h-[600px]">
+                        <Dashboard />
                       </div>
                     </div>} />
                     <Route path="/settings" element={<Settings />} />

@@ -4,137 +4,111 @@ import { NavLink } from 'react-router-dom';
 import {
     Shield,
     LayoutDashboard,
-    Map,
+    Globe2,
     Activity,
     Terminal,
     Settings,
     Download,
-    Play,
-    Pause
+    Cpu,
+    Zap,
+    CircleStop
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 const navItems = [
-    { id: 'dashboard', label: 'Executive Deck', icon: LayoutDashboard, path: '/dashboard' },
-    { id: 'threat-map', label: 'Global Matrix', icon: Map, path: '/threat-map' },
-    { id: 'live-feed', label: 'Neural Stream', icon: Activity, path: '/live-feed' },
-    { id: 'logs', label: 'Entropy Logs', icon: Terminal, path: '/logs' },
-    { id: 'admin', label: 'Core Settings', icon: Settings, path: '/settings' },
+    { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, path: '/dashboard' },
+    { id: 'threat-map', label: 'Threat Matrix', icon: Globe2, path: '/threat-map' },
+    { id: 'live-feed', label: 'Neural Log', icon: Activity, path: '/live-feed' },
+    { id: 'logs', label: 'System Audit', icon: Terminal, path: '/logs' },
+    { id: 'admin', label: 'Configurations', icon: Settings, path: '/settings' },
 ];
 
 export const Sidebar = () => {
-    const {
-        isSimulationMode,
-        toggleSimulation,
-        playbackSpeed,
-        setPlaybackSpeed,
-        isPlaybackPaused,
-        setIsPlaybackPaused
-    } = useUI();
+    const { isSimulationMode, toggleSimulation, isSidebarOpen, setIsSidebarOpen } = useUI();
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-[100] w-64 border-r border-white/5 bg-black flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static">
-            <div className="p-8">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-accent to-darkblue-900 flex items-center justify-center shadow-neon">
-                        <Shield className="text-black w-6 h-6" />
+        <>
+            {/* Mobile Overlay */}
+            <div
+                className={clsx(
+                    "fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-500",
+                    isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsSidebarOpen(false)}
+            />
+
+            <aside className={clsx(
+                "fixed inset-y-0 left-0 z-50 w-72 bg-soc-bg border-r border-white/5 flex flex-col transition-all duration-500 ease-in-out transform lg:translate-x-0",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                <div className="p-8 mb-4">
+                    <div className="flex items-center gap-3 group">
+                        <div className="w-12 h-12 rounded-xl bg-soc-primary/20 flex items-center justify-center border border-soc-cyan/30 shadow-neon-cyan group-hover:scale-110 transition-transform duration-500">
+                            <Shield className="text-soc-cyan w-7 h-7" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-white uppercase tracking-tighter">
+                                Feluda
+                            </h2>
+                            <span className="text-[10px] font-bold text-soc-cyan uppercase tracking-widest opacity-60">AI Defensive Mesh</span>
+                        </div>
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight text-white uppercase letter-spacing-1">
-                        Feluda
-                    </h2>
                 </div>
-            </div>
 
-            <nav className="flex-1 px-4 space-y-2">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.id}
-                        to={item.path}
-                        className={({ isActive }) => clsx(
-                            "nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
-                            isActive
-                                ? "bg-green-accent/10 text-green-accent shadow-[inset_0_0_12px_rgba(16,185,129,0.05)]"
-                                : "text-slate-500 hover:text-white hover:bg-white/5"
-                        )}
-                    >
-                        {({ isActive }) => (
-                            <>
-                                <item.icon className={clsx("w-5 h-5 transition-transform duration-300", isActive ? "scale-110" : "group-hover:scale-105")} />
-                                <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="active-pill"
-                                        className="ml-auto w-1.5 h-1.5 rounded-full bg-green-accent shadow-neon"
-                                    />
-                                )}
-                            </>
-                        )}
-                    </NavLink>
-                ))}
-            </nav>
-
-            <div className="p-4 mt-auto space-y-4">
-                <div className="p-4 glass-card bg-white/[0.02]">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Threat Timeline</span>
-                        <div className={clsx(
-                            "px-2 py-0.5 rounded text-[8px] font-black uppercase",
-                            isSimulationMode ? "bg-danger/20 text-danger border border-danger/30" : "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30"
-                        )}>
-                            {isSimulationMode ? 'Simulating' : 'Live'}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2">
-                        <button
-                            onClick={() => setIsPlaybackPaused(!isPlaybackPaused)}
-                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-all border border-white/5 hover:border-white/20"
-                        >
-                            {isPlaybackPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
-                        </button>
-
-                        <div className="flex gap-1">
-                            {[1, 2, 4].map(speed => (
-                                <button
-                                    key={speed}
-                                    onClick={() => setPlaybackSpeed(speed)}
-                                    className={clsx(
-                                        "text-[10px] font-bold px-2.5 py-1 rounded transition-all",
-                                        playbackSpeed === speed
-                                            ? "bg-green-accent text-black shadow-neon"
-                                            : "bg-white/5 text-slate-500 hover:bg-white/10"
-                                    )}
-                                >
-                                    {speed}x
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase text-slate-500">Manual Override</span>
-                        <div
-                            onClick={toggleSimulation}
-                            className={clsx(
-                                "relative w-10 h-5 transition-colors rounded-full cursor-pointer",
-                                isSimulationMode ? "bg-danger" : "bg-slate-700"
+                <nav className="flex-1 px-4 space-y-2">
+                    <div className="px-4 mb-4 text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-50">Intelligence Units</div>
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.id}
+                            to={item.path}
+                            className={({ isActive }) => clsx(
+                                "group flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300",
+                                isActive
+                                    ? "bg-soc-cyan/10 text-soc-cyan border border-soc-cyan/10 shadow-[inset_0_0_20px_rgba(0,229,255,0.05)]"
+                                    : "text-slate-500 hover:text-white hover:bg-white/[0.03]"
                             )}
                         >
-                            <motion.div
-                                animate={{ x: isSimulationMode ? 20 : 2 }}
-                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                className="absolute top-1 left-0.5 w-3 h-3 bg-white rounded-full shadow-md"
-                            />
+                            <item.icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                            <span className="font-bold text-xs uppercase tracking-widest">{item.label}</span>
+                            <div className="ml-auto w-1 h-1 rounded-full bg-soc-cyan opacity-0 group-[.active]:opacity-100 shadow-neon-cyan" />
+                        </NavLink>
+                    ))}
+                </nav>
+
+                <div className="p-6 mt-auto">
+                    <div className="glass-card p-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Active Ops</span>
+                                <div className="flex items-center gap-2">
+                                    <div className={clsx("w-1.5 h-1.5 rounded-full shadow-neon-cyan", isSimulationMode ? "bg-soc-cyan animate-pulse" : "bg-soc-success")} />
+                                    <span className="text-xs font-black text-white uppercase">{isSimulationMode ? 'Simulation' : 'Real-time'}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={toggleSimulation}
+                                className={clsx(
+                                    "p-2 rounded-lg transition-all duration-500",
+                                    isSimulationMode ? "bg-soc-danger/20 text-soc-danger shadow-neon-danger border border-soc-danger/30" : "bg-white/5 text-slate-500 hover:text-white hover:bg-white/10"
+                                )}
+                            >
+                                {isSimulationMode ? <CircleStop className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                            </button>
                         </div>
+
+                        <button className="w-full flex items-center justify-center gap-2 py-3.5 bg-soc-primary/10 border border-soc-primary/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-soc-cyan hover:bg-soc-primary/20 transition-all shadow-lg group">
+                            <Download className="w-4 h-4 group-hover:-translate-y-1 transition-transform" />
+                            <span>Intelligence Brief</span>
+                        </button>
+                    </div>
+
+                    <div className="mt-6 px-4 flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">
+                        <span>Engine v2.4</span>
+                        <span className="flex items-center gap-1"><Cpu className="w-3 h-3" /> SOC Node 1</span>
                     </div>
                 </div>
-
-                <button className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:bg-white/10 transition-all shadow-lg active:scale-95 group">
-                    <Download className="w-4 h-4 text-green-accent group-hover:scale-110 transition-transform" />
-                    <span>Export Security Brief</span>
-                </button>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };

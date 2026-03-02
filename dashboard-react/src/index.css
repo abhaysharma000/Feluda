@@ -1,1 +1,72 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
+
+@theme {
+    --color-soc-bg: #0B0F19;
+    --color-soc-surface: #111827;
+    --color-soc-primary: #1E3A8A;
+    --color-soc-cyan: #00E5FF;
+    --color-soc-danger: #EF4444;
+    --color-soc-success: #22C55E;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
+    --font-sans: "Inter", system-ui, sans-serif;
+    --shadow-glass: 0 8px 32px 0 #0000005E;
+    --shadow-neon-cyan: 0 0 15px #00E5FF4D;
+    --shadow-neon-danger: 0 0 15px #EF44444D;
+}
+
+@layer base {
+    body {
+        @apply bg-soc-bg text-slate-300 font-sans selection:bg-soc-cyan selection:text-white antialiased;
+        overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #FFFFFF1A;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #FFFFFF33;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-white border border-white rounded-2xl shadow-glass transition-all duration-300;
+        background-color: #FFFFFF05;
+        border-color: #FFFFFF0D;
+    }
+
+    .glass-card-hover {
+        @apply hover:bg-white hover:border-white hover:-translate-y-1;
+        --tw-hover-bg-opacity: 0.04;
+        --tw-hover-border-opacity: 0.1;
+    }
+
+    .status-glow-secure {
+        box-shadow: 0 0 30px #22C55E1A;
+    }
+
+    .status-glow-danger {
+        box-shadow: 0 0 30px #EF44441A;
+    }
+}
+
+.neural-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.15;
+    background-image: radial-gradient(circle, #00E5FF33 1px, transparent 1px);
+    background-size: 30px 30px;
+}

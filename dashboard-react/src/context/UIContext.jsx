@@ -26,6 +26,7 @@ export const UIProvider = ({ children }) => {
     const [scanResult, setScanResult] = useState(null);
     const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
     const [lastScanVerdict, setLastScanVerdict] = useState(null); // 'safe' | 'threat' | null
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Real-time Data State
     const [logs, setLogs] = useState([
@@ -117,6 +118,8 @@ export const UIProvider = ({ children }) => {
         setIsShowcaseOpen,
         lastScanVerdict,
         setLastScanVerdict,
+        isSidebarOpen,
+        setIsSidebarOpen,
         logs,
         addLog,
         stats,

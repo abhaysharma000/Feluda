@@ -40,7 +40,7 @@ This project is pre-configured for **GitHub → Vercel** deployment.
 3. Go to `chrome://extensions` → Enable **Developer Mode** → **Load Unpacked** → select the `extension/` folder
 
 ### 4. Dashboard — Google Login
-Open `dashboard/index.html` and replace `YOUR_GOOGLE_CLIENT_ID` with your actual Client ID from [Google Cloud Console](https://console.cloud.google.com/).
+Open `dashboard-react/src/components/LoginModal.jsx` (or whichever component handles login) and replace `YOUR_GOOGLE_CLIENT_ID` with your actual Client ID.
 
 ---
 
@@ -52,10 +52,10 @@ START_SYSTEM.bat
 ```
 This will automatically:
 - Create a Python virtual environment
-- Install all dependencies from `requirements.txt`
-- Train the base ML models if they are missing
-- Launch the FastAPI server on `http://127.0.0.1:8001`
-- Open the dashboard in your browser
+- Install all dependencies (`requirements.txt` & `npm install`)
+- Train the ML models if missing
+- Launch the FastAPI server on `http://localhost:8001`
+- Launch the React Dashboard on `http://localhost:5173`
 
 ### Manual Start
 ```bash
