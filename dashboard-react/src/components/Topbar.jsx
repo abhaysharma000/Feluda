@@ -71,8 +71,8 @@ export const Topbar = () => {
                             }}
                             className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 transition-all text-slate-400 hover:text-white"
                         >
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full shadow-neon-red"></span>
+                            <Bell className="w-5 h-5 pointer-events-none" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full shadow-neon-red pointer-events-none opacity-100"></span>
                         </button>
 
                         <AnimatePresence>
@@ -81,7 +81,7 @@ export const Topbar = () => {
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute right-0 mt-2 w-80 glass-card p-4 border-white/10 shadow-2xl"
+                                    className="absolute right-0 mt-2 w-80 glass-card p-4 border-white/10 shadow-2xl z-[100]"
                                 >
                                     <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Neural Alerts</h3>
                                     <div className="space-y-3">
@@ -118,7 +118,7 @@ export const Topbar = () => {
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute right-0 mt-2 w-48 glass-card border-white/10 overflow-hidden shadow-2xl"
+                                    className="absolute right-0 mt-2 w-48 glass-card border-white/10 overflow-hidden shadow-2xl z-[100]"
                                 >
                                     <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 text-sm transition-all text-slate-300">
                                         <User className="w-4 h-4" />
