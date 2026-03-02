@@ -1,24 +1,30 @@
+# ─── Web Framework ──────────────────────────────────────
 fastapi
-uvicorn[standard]
+uvicorn
+python-multipart
+
+# ─── ML Core ────────────────────────────────────────────
 scikit-learn
 pandas
 numpy
-openai
-python-whois
-motor
-python-multipart
-pyzbar
-opencv-python-headless
-requests
-aiohttp
-python-dotenv
 joblib
-pydantic
+
+# ─── API Integrations ───────────────────────────────────
+openai
+aiohttp
+
+# ─── Database ───────────────────────────────────────────
+motor
+
+# ─── URL / Domain Analysis ──────────────────────────────
+python-whois
 tldextract
-validators
-beautifulsoup4==4.12.2
-urllib3==2.1.0
-shap
+beautifulsoup4
+
+# ─── QR Code Scanning ───────────────────────────────────
+pyzbar
 Pillow
-imagehash
-lxml
+
+# ─── Utilities ──────────────────────────────────────────
+python-dotenv
+pydantic

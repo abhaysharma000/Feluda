@@ -1,29 +1,42 @@
-import cv2
-import numpy as np
-from pyzbar.pyzbar import decode
+"""
+QR Code Scanner — uses pyzbar + Pillow (replaces heavy OpenCV dependency).
+Pillow is ~5 MB vs opencv-python-headless which is ~200 MB.
+"""
+from pyzbar import pyzbar
+from PIL import Image
+import io
 
 
 class QRScanner:
-    """Decodes QR codes from raw image bytes using OpenCV + pyzbar."""
 
     def scan_image(self, image_bytes: bytes) -> list | dict:
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        """
+        Decode all QR codes in a raw image byte string.
+        Returns a list of dicts with 'data' and 'type',
+        or a dict with 'error' key on failure.
+        """
+        try:
+            img = Image.open(io.BytesIO(image_bytes))
+        except Exception as e:
+            return {"error": f"Failed to decode image: {str(e)}"}
 
-        if img is None:
-            return {"error": "Could not decode image. Ensure it is a valid PNG/JPG file."}
-
-        decoded_objects = decode(img)
+        try:
+            decoded_objects = pyzbar.decode(img)
+        except Exception as e:
+            return {"error": f"QR scan engine error: {str(e)}"}
 
         if not decoded_objects:
-            return {"error": "No QR code found in the provided image."}
+            return {"error": "No QR code found in the uploaded image."}
 
         results = []
         for obj in decoded_objects:
+            try:
+                data = obj.data.decode("utf-8")
+            except UnicodeDecodeError:
+                data = obj.data.decode("latin-1", errors="replace")
             results.append({
+                "data": data,
                 "type": obj.type,
-                "data": obj.data.decode('utf-8', errors='replace'),
-                "rect": obj.rect._asdict(),
             })
 
         return results
