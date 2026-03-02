@@ -12,7 +12,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (chevron) chevron.style.transform = isActive ? 'rotate(180deg)' : 'rotate(0deg)';
     });
 
-    // ── 2. Link Shield toggle ─────────────────────────────────
+    // ── 2. Dashboard buttons ─────────────────────────────────
+    const dashUrl = `${CONFIG.API_BASE_URL}/dashboard/index.html`;
+
+    // Sidebar icon button (top-right)
+    const openDashBtn = document.getElementById('open-dashboard-btn');
+    if (openDashBtn) {
+        openDashBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: dashUrl });
+        });
+    }
+
+    // "OPEN LIVE DECK" main button
+    const liveDeckBtn = document.getElementById('open-live-deck-btn');
+    if (liveDeckBtn) {
+        liveDeckBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: dashUrl });
+        });
+    }
+
+    // ── 3. Link Shield toggle ─────────────────────────────────
     const linkShieldToggle = document.getElementById('link-shield-toggle');
     chrome.storage.local.get(['linkShieldEnabled'], (result) => {
         const isEnabled = result.linkShieldEnabled || false;
@@ -38,12 +57,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateShieldUI(enabled);
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]) {
-                chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_LINK_SHIELD', enabled });
+                chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_LINK_SHIELD', enabled })
+                    .catch(() => { }); // ignore if content script not injected yet
             }
         });
     });
 
-    // ── 3. Load scan result for active tab ──────────────────
+    // ── 4. Load scan result for active tab ──────────────────
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) return;
 
@@ -52,8 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (scanData && scanData.risk_score !== undefined) {
             updateUI(scanData.risk_score, scanData.classification, scanData.explanation);
         } else {
-            // Graceful default — show safe state while waiting
-            simulateInitialScan();
+            showIdleState();
         }
     });
 
@@ -63,57 +82,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         const offset = circumference - (score / 100) * circumference;
         riskCircle.style.strokeDashoffset = offset;
 
-        const color = score >= 65
-            ? '#ef4444'
-            : score >= 35
-                ? '#facc15'
-                : '#10b981';
+        const color = score >= 65 ? '#ef4444' : score >= 35 ? '#facc15' : '#10b981';
         riskCircle.style.stroke = color;
 
         if (score >= 65) {
             statusBadge.innerText = 'MALICIOUS';
-            statusBadge.style.background = 'rgba(239, 68, 68, 0.1)';
-            statusBadge.style.color = '#ef4444';
-            statusBadge.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+            statusBadge.style.cssText += 'background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2)';
         } else if (score >= 35) {
             statusBadge.innerText = 'SUSPICIOUS';
-            statusBadge.style.background = 'rgba(250, 204, 21, 0.1)';
-            statusBadge.style.color = '#facc15';
-            statusBadge.style.borderColor = 'rgba(250, 204, 21, 0.2)';
+            statusBadge.style.cssText += 'background:rgba(250,204,21,0.1);color:#facc15;border-color:rgba(250,204,21,0.2)';
         } else {
             statusBadge.innerText = 'SAFE';
-            statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
-            statusBadge.style.color = '#10b981';
-            statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            statusBadge.style.cssText += 'background:rgba(16,185,129,0.1);color:#10b981;border-color:rgba(16,185,129,0.2)';
         }
 
-        // Animated counter
+        // Eased counter animation
         let current = 0;
         const target = Math.round(score);
         const interval = setInterval(() => {
-            if (current >= target) {
-                riskScore.innerText = target;
-                clearInterval(interval);
-            } else {
-                current += Math.max(1, Math.floor((target - current) / 10));
-                riskScore.innerText = Math.min(current, target);
-            }
+            current += Math.max(1, Math.floor((target - current) / 8));
+            riskScore.innerText = Math.min(current, target);
+            if (current >= target) clearInterval(interval);
         }, 16);
 
         if (explanation && explanation.length > 0) {
-            whyContent.innerHTML = explanation.map(e => `<p style="margin:4px 0">• ${e}</p>`).join('');
+            whyContent.innerHTML = explanation
+                .slice(0, 4)
+                .map(e => `<p style="margin:5px 0;font-size:11px;line-height:1.5;">• ${e}</p>`)
+                .join('');
         }
     }
 
-    // Gentle idle animation while no scan data available
-    function simulateInitialScan() {
+    function showIdleState() {
         riskScore.innerText = '--';
-        statusBadge.innerText = 'SCANNING...';
-        statusBadge.style.color = '#64748b';
-        statusBadge.style.borderColor = '#64748b44';
+        statusBadge.innerText = 'PROTECTED';
+        riskCircle.style.strokeDashoffset = '339';
+        riskCircle.style.stroke = '#10b981';
     }
 
-    // ── 4. Live link-scan counter ─────────────────────────────
+    // ── 5. Live link-scan counter from content script ────────
     let vCount = 0;
     let tCount = 0;
     const vEl = document.getElementById('verified-count');
@@ -128,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (tCount > 0) {
                 statusBadge.innerText = 'THREATS ON PAGE';
                 statusBadge.style.color = '#ef4444';
-                statusBadge.style.borderColor = '#ef4444';
+                statusBadge.style.borderColor = '#ef444444';
             }
         }
     });

@@ -2,12 +2,9 @@ const processedLinks = new Set();
 let isScanning = false;
 let linkShieldEnabled = false;
 
-// Initialization: Check if enabled
-chrome.storage.local.get(['linkShieldEnabled'], (result) => {
-    linkShieldEnabled = result.linkShieldEnabled || false;
-    if (linkShieldEnabled) {
-        setTimeout(scanPageLinks, 1000);
-    }
+// Sync enabled state from storage immediately
+chrome.storage.local.get(['linkShieldEnabled'], (r) => {
+    linkShieldEnabled = r.linkShieldEnabled || false;
 });
 
 // Listen for toggle updates
@@ -232,7 +229,7 @@ function createPremiumTooltip(data, color, icon, statusText) {
 
     const urlText = document.createElement('div');
     urlText.style.cssText = `font-size: 10px; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;`;
-    urlText.innerText = new URL(data.url).hostname;
+    try { urlText.innerText = new URL(data.url).hostname; } catch { urlText.innerText = data.url; }
 
     titleArea.appendChild(titleText);
     titleArea.appendChild(urlText);
@@ -293,5 +290,10 @@ const observer = new MutationObserver((mutations) => {
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
-setTimeout(scanPageLinks, 1000); // Initial scan
+
+// Only run initial scan if Link Shield is actually enabled
+chrome.storage.local.get(['linkShieldEnabled'], (result) => {
+    if (result.linkShieldEnabled) setTimeout(scanPageLinks, 1500);
+});
+
 console.log("Feluda AI Link Scanner Active");
