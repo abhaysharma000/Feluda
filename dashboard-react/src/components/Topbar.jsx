@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 
 export const Topbar = () => {
-    const { isZeroDayMode, setIsZeroDayMode, isScanning } = useUI();
+    const { isZeroDayMode, setIsZeroDayMode, isScanning, logs, setActivePage } = useUI();
     const { triggerScan } = useScan();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotifyOpen, setIsNotifyOpen] = useState(false);
@@ -72,7 +72,9 @@ export const Topbar = () => {
                             className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 transition-all text-slate-400 hover:text-white"
                         >
                             <Bell className="w-5 h-5 pointer-events-none" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full shadow-neon-red pointer-events-none opacity-100"></span>
+                            {logs.some(l => l.verdict === 'Malicious') && (
+                                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full shadow-neon-red pointer-events-none opacity-100 animate-pulse"></span>
+                            )}
                         </button>
 
                         <AnimatePresence>
@@ -81,15 +83,46 @@ export const Topbar = () => {
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute right-0 mt-2 w-80 glass-card p-4 border-white/10 shadow-2xl z-[100]"
+                                    className="absolute right-0 mt-3 w-80 glass-card bg-navy-950/90 border-white/10 overflow-hidden z-[100] shadow-neon"
                                 >
-                                    <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Neural Alerts</h3>
-                                    <div className="space-y-3">
-                                        <div className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-green-accent/20 transition-all cursor-default">
-                                            <p className="text-xs text-white font-medium">Inbound pattern match detected</p>
-                                            <p className="text-[10px] text-slate-500 mt-1">2 minutes ago</p>
-                                        </div>
+                                    <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-white">System Alerts</h3>
+                                        <span className="text-[8px] font-bold text-slate-500">{logs.length} Total</span>
                                     </div>
+                                    <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                                        {logs.length > 0 ? (
+                                            logs.slice(0, 5).map((log) => (
+                                                <div
+                                                    key={log.id}
+                                                    className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group"
+                                                    onClick={() => {
+                                                        setActivePage('logs');
+                                                        setIsNotifyOpen(false);
+                                                    }}
+                                                >
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className={clsx(
+                                                            "text-[9px] font-bold uppercase",
+                                                            log.verdict === 'Malicious' ? "text-danger" : "text-emerald-400"
+                                                        )}>{log.verdict} DETECTED</span>
+                                                        <span className="text-[8px] text-slate-600 italic">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-300 line-clamp-1 opacity-80 group-hover:opacity-100">{log.vector}</p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-8 text-center text-xs text-slate-600 italic">No alerts recorded.</div>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setActivePage('logs');
+                                            setIsNotifyOpen(false);
+                                        }}
+                                        className="w-full p-3 text-[9px] font-black uppercase tracking-widest text-cyan-accent hover:bg-cyan-accent/10 transition-colors border-t border-white/5"
+                                    >
+                                        View Full Audit Log
+                                    </button>
                                 </motion.div>
                             )}
                         </AnimatePresence>

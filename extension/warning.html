@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feluda | Security Warning</title>
+    <style>
+        :root {
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-dark: #020617;
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 50% -20%, rgba(239, 68, 68, 0.15), transparent),
+                radial-gradient(circle at 0% 100%, rgba(15, 118, 110, 0.05), transparent);
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            padding: 40px;
+            background: var(--card-bg);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 80px rgba(239, 68, 68, 0.1);
+            text-align: center;
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .alert-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 12px 24px;
+            border-radius: 100px;
+            color: var(--danger);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.75rem;
+            margin-bottom: 24px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .risk-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .risk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .risk-label {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .risk-score {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--danger);
+        }
+
+        .explanation {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            line-height: 1.7;
+            padding-left: 12px;
+            border-left: 3px solid var(--danger);
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-safety {
+            background: var(--danger);
+            color: white;
+            border: none;
+            box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+            flex: 1.5;
+        }
+
+        .btn-safety:hover {
+            transform: translateY(-2px);
+            background: #dc2626;
+            box-shadow: 0 15px 25px -5px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-proceed {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 1;
+        }
+
+        .btn-proceed:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .url-box {
+            font-family: 'Courier New', Courier, monospace;
+            background: rgba(239, 68, 68, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #fca5a5;
+            word-break: break-all;
+            margin-bottom: 16px;
+        }
+
+        /* Confirmation Dialog Overlay */
+        #confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-box {
+            background: #1e293b;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 32px;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .confirm-title {
+            font-weight: 800;
+            color: var(--danger);
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="alert-banner">
+            <span class="alert-icon">⚠️</span>
+            Deceptive Site Detected
+        </div>
+        <h1>Dangerous Site Ahead</h1>
+        <p class="subtitle">
+            Our Neural Engine has identified this link as part of a phishing campaign or malicious infrastructure
+            developed to steal your identity.
+        </p>
+
+        <div class="risk-card">
+            <div class="risk-header">
+                <span class="risk-label">Threat Severity Score</span>
+                <span class="risk-score" id="score-val">--</span>
+            </div>
+            <div class="url-box" id="url-val">https://unknown-domain.io</div>
+            <div class="explanation" id="explanation-val">
+                Scanning engine detected visual similarity triggers and high-entropy domain patterns.
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-safety" id="btn-back">GEt ME OUT OF HERE</button>
+            <button class="btn btn-proceed" id="btn-proceed-request">Proceed Anyway</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-overlay">
+        <div class="confirm-box">
+            <h2 class="confirm-title">Are you sure?</h2>
+            <p class="subtitle" style="font-size: 0.85rem;">
+                By proceeding, you bypass all Feluda security shields. This may expose your device to credential theft
+                or data exfiltration.
+            </p>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-proceed" id="confirm-cancel" style="flex:1">Cancel</button>
+                <button class="btn btn-safety" id="confirm-yes" style="flex:1">I understand</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get('url') || 'Unknown';
+        const score = params.get('score') || '--';
+        const reasons = params.get('reasons') ? params.get('reasons').split('||') : ['High-risk neural match detected.'];
+
+        document.getElementById('url-val').textContent = url;
+        document.getElementById('score-val').textContent = score;
+        document.getElementById('explanation-val').textContent = reasons[0];
+
+        // Action Handlers
+        document.getElementById('btn-back').addEventListener('click', () => {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.close();
+            }
+        });
+
+        const overlay = document.getElementById('confirm-overlay');
+        document.getElementById('btn-proceed-request').addEventListener('click', () => {
+            overlay.style.display = 'flex';
+        });
+
+        document.getElementById('confirm-cancel').addEventListener('click', () => {
+            overlay.style.display = 'none';
+        });
+
+        document.getElementById('confirm-yes').addEventListener('click', () => {
+            // Signal the background script to allow this URL and redirect
+            chrome.runtime.sendMessage({
+                type: 'BYPASS_URL',
+                url: url
+            }, () => {
+                window.location.href = url;
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feluda AI | Threat Blocked</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             background-color: #0d0000;
@@ -39,9 +43,20 @@
         }
 
         @keyframes pulse {
-            0%   { transform: scale(1);   opacity: 1; }
-            50%  { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1);   opacity: 1; }
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .brand {
@@ -76,7 +91,9 @@
             line-height: 1.9;
         }
 
-        .details b { color: #ff4d4d; }
+        .details b {
+            color: #ff4d4d;
+        }
 
         .url {
             font-family: monospace;
@@ -128,6 +145,7 @@
             background: #ff4d4d;
             color: white;
         }
+
         .btn-back:hover {
             background: #ff2222;
             box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
@@ -138,6 +156,7 @@
             color: #ffa500;
             border: 1px solid #ffa500;
         }
+
         .btn-reason:hover {
             background: rgba(255, 165, 0, 0.1);
             box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
@@ -148,7 +167,7 @@
 <body>
     <div class="container">
         <span class="icon">🛡️</span>
-        <div class="brand">Feluda AI — Cyber Intelligence</div>
+        <div class="brand">Feluda — Cyber Intelligence</div>
         <h1>Threat Blocked</h1>
         <p class="subtitle">
             Feluda AI has detected a high-risk phishing attempt.<br>
@@ -158,7 +177,8 @@
         <div class="details">
             <div><b>Target URL:</b> <span class="url" id="target-url">Loading...</span></div>
             <div><b>Risk Score:</b> <span id="risk-score">98</span> / 100</div>
-            <div id="domain-lifecycle" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.85rem; color:#94a3b8;">
+            <div id="domain-lifecycle"
+                style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.85rem; color:#94a3b8;">
                 <div><b>Domain Created:</b> <span id="creation-date" style="color:#ff9999;">N/A</span></div>
                 <div><b>Domain Age:</b> <span id="domain-age" style="font-weight:bold;">0 days</span></div>
             </div>

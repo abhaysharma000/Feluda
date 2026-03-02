@@ -4,20 +4,22 @@ import { ChartsPanel } from '../components/ChartsPanel';
 import { Eye, Ban, AlertTriangle, Mail } from 'lucide-react';
 import { clsx } from 'clsx';
 
-const stats = [
-    { id: 'scanned', label: 'Assets Scanned', value: '12,842', change: '+12%', icon: Eye, color: 'purple' },
-    { id: 'malicious', label: 'Malicious Sites', value: '423', badge: 'Critical', icon: Ban, color: 'danger' },
-    { id: 'suspicious', label: 'Suspicious', value: '1,102', badge: 'Review', icon: AlertTriangle, color: 'warning' },
-    { id: 'email', label: 'Email Vectors', value: '89', badge: 'Dynamic', icon: Mail, color: 'blue' },
-];
-
 export const Dashboard = () => {
+    const { stats } = useUI();
+
+    const statsConfig = [
+        { id: 'scanned', label: 'Assets Scanned', value: stats.scanned.toLocaleString(), change: '+12%', icon: Eye, color: 'purple' },
+        { id: 'malicious', label: 'Malicious Sites', value: stats.malicious.toLocaleString(), badge: 'Critical', icon: Ban, color: 'danger' },
+        { id: 'suspicious', label: 'Suspicious', value: stats.suspicious.toLocaleString(), badge: 'Review', icon: AlertTriangle, color: 'warning' },
+        { id: 'email', label: 'Email Vectors', value: stats.email.toLocaleString(), badge: 'Dynamic', icon: Mail, color: 'blue' },
+    ];
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <HeroPanel />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat) => (
+                {statsConfig.map((stat) => (
                     <div key={stat.id} className="glass-card p-6 border-white/5 hover:border-white/10 transition-all group">
                         <div className="flex justify-between items-start mb-4">
                             <div className={clsx(

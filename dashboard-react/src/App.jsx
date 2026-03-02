@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { UIProvider, useUI } from './context/UIContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { GlobalToast } from './components/GlobalToast'
@@ -56,7 +57,18 @@ const AppContent = () => {
           <Topbar />
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 space-y-8">
-            {renderPage()}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePage}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="h-full"
+              >
+                {renderPage()}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>

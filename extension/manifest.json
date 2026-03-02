@@ -1,11 +1,13 @@
 {
     "manifest_version": 3,
-    "name": "Feluda AI",
+    "name": "Feluda",
     "version": "2.0.0",
-    "description": "Real-time AI-powered phishing detection and cyber threat protection by Feluda.",
+    "description": "Real-time phishing detection and cyber threat protection by Feluda.",
     "permissions": [
         "storage",
         "webNavigation",
+        "webRequest",
+        "webRequestBlocking",
         "activeTab",
         "tabs",
         "scripting",
@@ -48,6 +50,7 @@
         {
             "resources": [
                 "block.html",
+                "warning.html",
                 "reports.html",
                 "assets/*"
             ],

@@ -2,9 +2,10 @@ importScripts('config.js');
 const CONFIG = self.CONFIG;
 const API_URL = `${CONFIG.API_BASE_URL}/api/scan/url`;
 
-// ── Scan result cache (per session) ──────────────────────────
+// ── State Management ──────────────────────────────────────────
 const scanCache = new Map();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const bypassCache = new Set();
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 function getCached(url) {
     const entry = scanCache.get(url);
@@ -20,11 +21,21 @@ function setCache(url, result) {
     scanCache.set(url, { result, ts: Date.now() });
 }
 
-// ── Navigation interceptor ────────────────────────────────────
+// ── Message Listener (Bypass Logic) ───────────────────────────
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'BYPASS_URL') {
+        bypassCache.add(message.url);
+        sendResponse({ success: true });
+    }
+});
+
+// ── Navigation Interceptor ────────────────────────────────────
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
     if (details.frameId !== 0) return; // Main frame only
 
     const url = details.url;
+
+    // Skip system/extension URLs
     if (
         url.startsWith('chrome://') ||
         url.startsWith('chrome-extension://') ||
@@ -32,41 +43,46 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
         url.startsWith('data:')
     ) return;
 
-    // Check cache first
+    // Check if user already chose to bypass this specific URL in this session
+    if (bypassCache.has(url)) return;
+
+    // Check cache first for immediate decision (<10ms)
     const cached = getCached(url);
     if (cached) {
         handleScanResult(details.tabId, cached);
         return;
     }
 
+    // Real-time async check
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s timeout for stability
+
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
-        if (!response.ok) {
-            console.warn(`Feluda backend returned ${response.status} for ${url}`);
-            return;
-        }
+        if (!response.ok) return;
 
         const result = await response.json();
         setCache(url, result);
         handleScanResult(details.tabId, result);
 
     } catch (err) {
-        console.warn('Feluda: Backend unreachable — skipping real-time scan.');
+        console.warn('Feluda: Scan timeout or error — defaulting to safe for performance.');
     }
 });
 
-// ── Result handler ────────────────────────────────────────────
+// ── Result Handler ────────────────────────────────────────────
 function handleScanResult(tabId, result) {
     chrome.storage.local.get(['urlsScanned', 'threatsBlocked'], (data) => {
         const newScanned = (data.urlsScanned || 0) + 1;
         chrome.storage.local.set({ urlsScanned: newScanned });
 
-        // Save last scan result for the popup
         chrome.storage.local.set({
             [`scanResult_${tabId}`]: {
                 ...result,
@@ -74,8 +90,9 @@ function handleScanResult(tabId, result) {
             }
         });
 
-        const isMalicious = result.classification === 'Malicious' || result.risk_score >= 65;
-        const isSuspicious = result.classification === 'Suspicious' || result.risk_score >= 35;
+        const riskScore = result.risk_score || 0;
+        const isMalicious = result.classification === 'Malicious' || riskScore >= 60;
+        const isSuspicious = result.classification === 'Suspicious' || (riskScore >= 35 && riskScore < 60);
 
         if (isMalicious) {
             const newBlocked = (data.threatsBlocked || 0) + 1;
@@ -83,22 +100,16 @@ function handleScanResult(tabId, result) {
 
             const reasons = (result.explanation && result.explanation.length > 0)
                 ? encodeURIComponent(result.explanation.join('||'))
-                : encodeURIComponent('Feluda AI detected malicious structural patterns.');
+                : encodeURIComponent('Neural engine detected high-risk deceptive patterns.');
 
-            const created = encodeURIComponent(
-                (result.raw_features && result.raw_features.domain_creation_date) || 'Unknown'
-            );
-            const age = (result.raw_features && result.raw_features.domain_age_days) || 0;
-
-            const blockUrl =
-                chrome.runtime.getURL('block.html') +
+            // Use warning.html for real-time interception
+            const warningUrl =
+                chrome.runtime.getURL('warning.html') +
                 `?url=${encodeURIComponent(result.url)}` +
-                `&score=${result.risk_score}` +
-                `&reasons=${reasons}` +
-                `&created=${created}` +
-                `&age=${age}`;
+                `&score=${riskScore}` +
+                `&reasons=${reasons}`;
 
-            chrome.tabs.update(tabId, { url: blockUrl });
+            chrome.tabs.update(tabId, { url: warningUrl });
 
         } else if (isSuspicious) {
             const hostname = (() => {
@@ -109,15 +120,15 @@ function handleScanResult(tabId, result) {
             chrome.notifications.create({
                 type: 'basic',
                 iconUrl: 'icons/icon128.png',
-                title: 'Feluda AI: Suspicious Site Detected',
-                message: `Caution: AI found anomalies on ${hostname}.\nRisk Score: ${result.risk_score}/100`,
+                title: 'Feluda: Suspicious Origin',
+                message: `Caution: Neural anomalies found on ${hostname}.\nRisk Score: ${riskScore}/100`,
                 priority: 2,
             });
         }
     });
 }
 
-// ── One-time storage initialization ──────────────────────────
+// ── Initialization ────────────────────────────────────────────
 chrome.storage.local.get(['threatsBlocked', 'urlsScanned'], (data) => {
     if (data.threatsBlocked === undefined) chrome.storage.local.set({ threatsBlocked: 0 });
     if (data.urlsScanned === undefined) chrome.storage.local.set({ urlsScanned: 0 });

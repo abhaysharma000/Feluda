@@ -5,8 +5,17 @@ import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 export const HeroPanel = () => {
-    const { isSimulationMode } = useUI();
+    const { isSimulationMode, isScanning, lastScanVerdict, stats, logs } = useUI();
     const canvasRef = useRef(null);
+
+    // Dynamic state derivation
+    const isThreatState = isSimulationMode || lastScanVerdict === 'threat';
+    const activeColor = isScanning ? 'cyan' : (isThreatState ? 'danger' : 'emerald');
+
+    // Calculate avg risk from last 10 logs
+    const avgRisk = logs.length > 0
+        ? (logs.slice(0, 10).reduce((acc, log) => acc + log.risk, 0) / Math.min(logs.length, 10)).toFixed(1)
+        : '0.0';
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -38,7 +47,7 @@ export const HeroPanel = () => {
                 if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
             }
             draw() {
-                ctx.fillStyle = isSimulationMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+                ctx.fillStyle = activeColor === 'danger' ? 'rgba(239, 68, 68, 0.2)' : (activeColor === 'cyan' ? 'rgba(0, 255, 255, 0.2)' : 'rgba(16, 185, 129, 0.2)');
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -60,9 +69,9 @@ export const HeroPanel = () => {
                     const dy = p.y - particles[j].y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 100) {
-                        ctx.strokeStyle = isSimulationMode
+                        ctx.strokeStyle = activeColor === 'danger'
                             ? `rgba(239, 68, 68, ${0.1 * (1 - dist / 100)})`
-                            : `rgba(16, 185, 129, ${0.1 * (1 - dist / 100)})`;
+                            : (activeColor === 'cyan' ? `rgba(0, 255, 255, ${0.1 * (1 - dist / 100)})` : `rgba(16, 185, 129, ${0.1 * (1 - dist / 100)})`);
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -81,14 +90,21 @@ export const HeroPanel = () => {
             window.removeEventListener('resize', resize);
             cancelAnimationFrame(animationFrameId);
         };
-    }, [isSimulationMode]);
+    }, [activeColor]);
+
+    const getStatusText = () => {
+        if (isScanning) return "ANALYZING...";
+        if (isSimulationMode) return "SIMULATION ACTIVE";
+        if (lastScanVerdict === 'threat') return "THREAT IDENTIFIED";
+        return "PROTECTED";
+    };
 
     return (
         <section className={clsx(
             "relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-1000",
-            isSimulationMode
-                ? "border-danger/20 bg-danger/5 shadow-[0_0_50px_rgba(255,59,59,0.2)]"
-                : "border-emerald-500/20 bg-emerald-500/5 status-glow-secure"
+            activeColor === 'danger' && "border-danger/20 bg-danger/5 shadow-[0_0_50px_rgba(255,59,59,0.2)]",
+            activeColor === 'cyan' && "border-cyan-accent/20 bg-cyan-accent/5 shadow-[0_0_50px_rgba(0,255,255,0.2)]",
+            activeColor === 'emerald' && "border-emerald-500/20 bg-emerald-500/5 status-glow-secure"
         )}>
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" />
 
@@ -100,7 +116,7 @@ export const HeroPanel = () => {
                             transition={{ repeat: Infinity, duration: 2 }}
                             className={clsx(
                                 "absolute inset-0 rounded-full border-4",
-                                isSimulationMode ? "border-danger/20" : "border-emerald-500/20"
+                                activeColor === 'danger' ? "border-danger/20" : (activeColor === 'cyan' ? "border-cyan-accent/20" : "border-emerald-500/20")
                             )}
                         />
                         <motion.div
@@ -108,17 +124,17 @@ export const HeroPanel = () => {
                             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                             className={clsx(
                                 "absolute inset-0 rounded-full border-b-4",
-                                isSimulationMode ? "border-danger" : "border-emerald-500"
+                                activeColor === 'danger' ? "border-danger" : (activeColor === 'cyan' ? "border-cyan-accent" : "border-emerald-500")
                             )}
                         />
                         <div className={clsx(
                             "absolute inset-2 rounded-full flex items-center justify-center",
-                            isSimulationMode ? "bg-danger/20" : "bg-emerald-500/20"
+                            activeColor === 'danger' ? "bg-danger/20" : (activeColor === 'cyan' ? "bg-cyan-accent/20" : "bg-emerald-500/20")
                         )}>
-                            {isSimulationMode ? (
+                            {activeColor === 'danger' ? (
                                 <Radiation className="w-10 h-10 text-danger animate-pulse" />
                             ) : (
-                                <ShieldCheck className="w-10 h-10 text-emerald-400" />
+                                <ShieldCheck className={clsx("w-10 h-10", activeColor === 'cyan' ? "text-cyan-accent animate-pulse" : "text-emerald-400")} />
                             )}
                         </div>
                     </div>
@@ -126,21 +142,23 @@ export const HeroPanel = () => {
                     <div>
                         <span className={clsx(
                             "text-[10px] font-bold tracking-[0.3em] uppercase",
-                            isSimulationMode ? "text-danger/70" : "text-emerald-500/70"
-                        )}>Intelligence Verdict</span>
+                            activeColor === 'danger' ? "text-danger/70" : (activeColor === 'cyan' ? "text-cyan-accent/70" : "text-emerald-500/70")
+                        )}>Neural Intelligence Stream</span>
                         <h1 className="text-4xl font-bold mt-1 text-white">
-                            NEURAL STATUS: <span className={isSimulationMode ? "text-danger" : "text-emerald-400"}>
-                                {isSimulationMode ? "BREACH ATTEMPTED" : "PROTECTED"}
+                            STATUS: <span className={clsx(
+                                activeColor === 'danger' ? "text-danger" : (activeColor === 'cyan' ? "text-cyan-accent" : "text-emerald-400")
+                            )}>
+                                {getStatusText()}
                             </span>
                         </h1>
                         <div className="text-slate-400 font-medium mt-2 flex items-center gap-6">
                             <span className="flex items-center gap-2">
                                 <Cpu className="w-4 h-4 text-green-accent opacity-50" />
-                                Neural Latency: 114ms
+                                Neural Latency: {isScanning ? '...' : (isSimulationMode ? '24ms' : '114ms')}
                             </span>
                             <span className="flex items-center gap-2">
                                 <Database className="w-4 h-4 text-green-accent opacity-50" />
-                                12.8M Signatures Active
+                                {stats.scanned.toLocaleString()} Assets Inspected
                             </span>
                         </div>
                     </div>
@@ -149,11 +167,14 @@ export const HeroPanel = () => {
                 <div className="flex gap-4">
                     <div className="p-6 glass-card bg-black/20 text-center min-w-[140px]">
                         <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mb-1">Threats Blocked</div>
-                        <div className="text-3xl font-bold text-white tabular-nums">423</div>
+                        <div className="text-3xl font-bold text-white tabular-nums">{stats.malicious.toLocaleString()}</div>
                     </div>
                     <div className="p-6 glass-card bg-black/20 text-center min-w-[140px]">
                         <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mb-1">Risk Score Avg</div>
-                        <div className="text-3xl font-bold text-green-accent tabular-nums">1.4%</div>
+                        <div className={clsx(
+                            "text-3xl font-bold tabular-nums",
+                            parseFloat(avgRisk) > 50 ? "text-danger" : "text-green-accent"
+                        )}>{avgRisk}%</div>
                     </div>
                 </div>
             </div>

@@ -9,21 +9,18 @@ const MOCK_LOGS = [
     { id: '3', timestamp: '2026-03-02 17:08:45', node: 'Node_Beta_4', vector: 'GPT-4o Scan [invoice-update.zip]', risk: '65.2%', classification: 'Suspicious' },
 ];
 
+import { useUI } from '../context/UIContext';
+
 export const LogsTable = () => {
-    const [logs, setLogs] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { logs } = useUI();
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchLogs = async () => {
         setIsLoading(true);
-        // Simulate API fetch
+        // Simulate API fetch refresh
         await new Promise(resolve => setTimeout(resolve, 800));
-        setLogs(MOCK_LOGS);
         setIsLoading(false);
     };
-
-    useEffect(() => {
-        fetchLogs();
-    }, []);
 
     return (
         <div className="glass-card overflow-hidden">
@@ -57,6 +54,7 @@ export const LogsTable = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
+                                    key="loading"
                                 >
                                     <td colSpan={5} className="px-8 py-16 text-center text-cyan-accent/50 italic animate-pulse">
                                         Synchronizing Neural Audit Logs...
@@ -68,11 +66,12 @@ export const LogsTable = () => {
                                         key={log.id}
                                         initial={{ opacity: 0, y: 5 }}
                                         animate={{ opacity: 1, y: 0 }}
+                                        layout
                                         className="hover:bg-white/[0.02] transition-colors group"
                                     >
-                                        <td className="px-8 py-4 text-slate-500 font-mono text-xs flex items-center gap-2">
+                                        <td className="px-8 py-4 text-slate-500 font-mono text-xs flex items-center gap-2 whitespace-nowrap">
                                             <Clock className="w-3 h-3 opacity-50" />
-                                            {log.timestamp}
+                                            {new Date(log.timestamp).toLocaleTimeString()}
                                         </td>
                                         <td className="px-8 py-4 font-bold text-white uppercase tracking-tighter">
                                             {log.node}
@@ -83,17 +82,17 @@ export const LogsTable = () => {
                                         <td className="px-8 py-4">
                                             <span className={clsx(
                                                 "font-bold",
-                                                parseFloat(log.risk) > 70 ? "text-danger" : (parseFloat(log.risk) > 40 ? "text-warning" : "text-emerald-400")
+                                                log.risk > 70 ? "text-danger" : (log.risk > 40 ? "text-warning" : "text-emerald-400")
                                             )}>
-                                                {log.risk}
+                                                {log.risk}%
                                             </span>
                                         </td>
                                         <td className="px-8 py-4">
                                             <span className={clsx(
                                                 "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                log.classification === 'Malicious' ? "bg-danger/10 text-danger" : (log.classification === 'Suspicious' ? "bg-warning/10 text-warning" : "bg-emerald-500/10 text-emerald-500")
+                                                log.verdict === 'Malicious' ? "bg-danger/10 text-danger" : (log.verdict === 'Suspicious' ? "bg-warning/10 text-warning" : "bg-emerald-500/10 text-emerald-500")
                                             )}>
-                                                {log.classification}
+                                                {log.verdict}
                                             </span>
                                         </td>
                                     </motion.tr>
