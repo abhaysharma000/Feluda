@@ -8,7 +8,7 @@ import {
     Activity,
     Terminal,
     Settings,
-    FileShield,
+    Download,
     Play,
     Pause
 } from 'lucide-react';
@@ -131,7 +131,7 @@ export const Sidebar = () => {
                 </div>
 
                 <button className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:bg-white/10 transition-all shadow-lg active:scale-95 group">
-                    <FileShield className="w-4 h-4 text-green-accent group-hover:scale-110 transition-transform" />
+                    <Download className="w-4 h-4 text-green-accent group-hover:scale-110 transition-transform" />
                     <span>Export Security Brief</span>
                 </button>
             </div>

@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCcw, ShieldAlert, ShieldCheck, Clock } from 'lucide-react';
+import { RefreshCcw, Clock } from 'lucide-react';
 import { clsx } from 'clsx';
-
-const MOCK_LOGS = [
-    { id: '1', timestamp: '2026-03-02 17:15:30', node: 'Node_Alpha_7', vector: 'URL_SCAN [hianimez.is]', risk: '1.4%', classification: 'Safe' },
-    { id: '2', timestamp: '2026-03-02 17:10:12', node: 'Node_Gamma_2', vector: 'Visual Search [paypaal-login.com]', risk: '92.1%', classification: 'Malicious' },
-    { id: '3', timestamp: '2026-03-02 17:08:45', node: 'Node_Beta_4', vector: 'GPT-4o Scan [invoice-update.zip]', risk: '65.2%', classification: 'Suspicious' },
-];
-
 import { useUI } from '../context/UIContext';
 
 export const LogsTable = () => {

@@ -9,6 +9,7 @@ import { Topbar } from './components/Topbar'
 import { Dashboard } from './pages/Dashboard'
 import { Logs } from './pages/Logs'
 import { ThreatMapPage } from './pages/ThreatMapPage'
+import { Settings } from './pages/Settings'
 import { ShowcaseModal } from './components/ShowcaseModal'
 import { LiveFeed } from './components/LiveFeed'
 
@@ -44,21 +45,16 @@ const App = () => {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/logs" element={<Logs />} />
                     <Route path="/threat-map" element={<ThreatMapPage />} />
-                    <Route path="/live-feed" element={<div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                      <div className="flex flex-col gap-2">
-                        <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Neural Information Stream</h2>
-                        <p className="text-slate-500 text-sm italic">Real-time inference logs from global intelligence nodes.</p>
-                      </div>
-                      <div className="flex-1">
+                    <Route path="/live-feed" element={<div className="space-y-8 pb-12">
+                      <header>
+                        <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Neural stream</h1>
+                        <p className="text-slate-500 text-sm font-bold uppercase tracking-widest italic">Real-time inference logs from global intelligence nodes.</p>
+                      </header>
+                      <div className="flex-1 min-h-[600px] glass-card p-1 overflow-hidden border-white/5 bg-white/[0.01]">
                         <LiveFeed />
                       </div>
                     </div>} />
-                    <Route path="/settings" element={
-                      <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-                        <h1 className="text-2xl font-display font-bold mb-2 uppercase tracking-widest">Core Settings</h1>
-                        <p className="text-sm opacity-50 italic">Neural interface for this sector is still synchronizing...</p>
-                      </div>
-                    } />
+                    <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </motion.div>
               </AnimatePresence>

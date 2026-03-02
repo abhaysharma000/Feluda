@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-const MatrixWorldMap = () => {
+export const ThreatMap = () => {
     // Absolute nodes mapping to 800x400 viewBox
     const nodes = useMemo(() => [
         { id: 1, x: 150, y: 120, label: 'North America', status: 'secure' },

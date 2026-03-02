@@ -1,6 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useUI } from '../context/UIContext';
 import { HeroPanel } from '../components/HeroPanel';
 import { StatsGrid } from '../components/StatsGrid';
 import { ChartsPanel } from '../components/ChartsPanel';

@@ -1,0 +1,125 @@
+
+> dashboard-react@0.0.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 2176 modules transformed.
+node.exe : 
+[31mΓ£ù[39m Build 
+failed in 2.07s
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31mΓ£ù[39m   
+  Build failed in 2    
+.07s:String) [], R    
+emoteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[31merror during 
+build:
+[31msrc/components/Sid
+ebar.jsx (11:4): 
+"FileShield" is not 
+exported by "node_modul
+es/lucide-react/dist/es
+m/lucide-react.js", 
+imported by "src/compon
+ents/Sidebar.jsx".[31m
+file: [36mC:/Users/abh
+ay/OneDrive/Desktop/Fel
+uda/dashboard-react/src
+/components/Sidebar.jsx
+:11:4[31m
+[33m
+ 9:     Terminal,
+10:     Settings,
+11:     FileShield,
+        ^
+12:     Play,
+13:     Pause
+[31m
+    at getRollupError (
+file:///C:/Users/abhay/
+OneDrive/Desktop/Feluda
+/dashboard-react/node_m
+odules/rollup/dist/es/s
+hared/parseAst.js:402:4
+1)
+    at error (file:///C
+:/Users/abhay/OneDrive/
+Desktop/Feluda/dashboar
+d-react/node_modules/ro
+llup/dist/es/shared/par
+seAst.js:398:42)
+    at Module.error (fi
+le:///C:/Users/abhay/On
+eDrive/Desktop/Feluda/d
+ashboard-react/node_mod
+ules/rollup/dist/es/sha
+red/node-entry.js:17040
+:16)
+    at 
+Module.traceVariable (f
+ile:///C:/Users/abhay/O
+neDrive/Desktop/Feluda/
+dashboard-react/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:1745
+2:29)
+    at ModuleScope.find
+Variable (file:///C:/Us
+ers/abhay/OneDrive/Desk
+top/Feluda/dashboard-re
+act/node_modules/rollup
+/dist/es/shared/node-en
+try.js:15070:39)
+    at ReturnValueScope
+.findVariable (file:///
+C:/Users/abhay/OneDrive
+/Desktop/Feluda/dashboa
+rd-react/node_modules/r
+ollup/dist/es/shared/no
+de-entry.js:5673:38)
+    at FunctionBodyScop
+e.findVariable (file://
+/C:/Users/abhay/OneDriv
+e/Desktop/Feluda/dashbo
+ard-react/node_modules/
+rollup/dist/es/shared/n
+ode-entry.js:5673:38)
+    at Identifier.bind 
+(file:///C:/Users/abhay
+/OneDrive/Desktop/Felud
+a/dashboard-react/node_
+modules/rollup/dist/es/
+shared/node-entry.js:54
+47:40)
+    at 
+CallExpression.bind (fi
+le:///C:/Users/abhay/On
+eDrive/Desktop/Feluda/d
+ashboard-react/node_mod
+ules/rollup/dist/es/sha
+red/node-entry.js:2825:
+28)
+    at 
+CallExpression.bind (fi
+le:///C:/Users/abhay/On
+eDrive/Desktop/Feluda/d
+ashboard-react/node_mod
+ules/rollup/dist/es/sha
+red/node-entry.js:12179
+:15)[39m

@@ -1,7 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { LogsTable } from '../components/LogsTable';
-import { Terminal, Shield } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 
 export const Logs = () => {
     return (

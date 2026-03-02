@@ -4,18 +4,43 @@ import { ShieldCheck, Radiation, Cpu, Database } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
+// Particle factory function (avoids class-in-closure Rollup issue)
+function createParticle(canvas) {
+    const p = {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2,
+    };
+    p.reset = () => {
+        p.x = Math.random() * canvas.width;
+        p.y = Math.random() * canvas.height;
+        p.vx = (Math.random() - 0.5) * 0.5;
+        p.vy = (Math.random() - 0.5) * 0.5;
+        p.size = Math.random() * 2;
+    };
+    p.update = () => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) p.reset();
+    };
+    p.draw = (ctx, color) => {
+        ctx.fillStyle = color === 'danger' ? 'rgba(239, 68, 68, 0.2)' : (color === 'cyan' ? 'rgba(0, 255, 255, 0.2)' : 'rgba(16, 185, 129, 0.2)');
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    };
+    return p;
+}
+
 export const HeroPanel = () => {
-    const { isSimulationMode, isScanning, lastScanVerdict, stats, logs } = useUI();
+    const { isSimulationMode, isScanning, lastScanVerdict, stats } = useUI();
     const canvasRef = useRef(null);
 
-    // Dynamic state derivation
     const isThreatState = isSimulationMode || lastScanVerdict === 'threat';
     const activeColor = isScanning ? 'cyan' : (isThreatState ? 'danger' : 'emerald');
-
-    // Calculate avg risk from last 10 logs
-    const avgRisk = logs.length > 0
-        ? (logs.slice(0, 10).reduce((acc, log) => acc + log.risk, 0) / Math.min(logs.length, 10)).toFixed(1)
-        : '0.0';
+    const avgRisk = stats.avgRisk.toFixed(1);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -30,40 +55,16 @@ export const HeroPanel = () => {
             canvas.height = canvas.offsetHeight;
         };
 
-        class Particle {
-            constructor() {
-                this.reset();
-            }
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
-            }
-            draw() {
-                ctx.fillStyle = activeColor === 'danger' ? 'rgba(239, 68, 68, 0.2)' : (activeColor === 'cyan' ? 'rgba(0, 255, 255, 0.2)' : 'rgba(16, 185, 129, 0.2)');
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
         const init = () => {
             resize();
-            particles = Array.from({ length: particleCount }, () => new Particle());
+            particles = Array.from({ length: particleCount }, () => createParticle(canvas));
         };
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach((p, i) => {
                 p.update();
-                p.draw();
+                p.draw(ctx, activeColor);
                 for (let j = i + 1; j < particles.length; j++) {
                     const dx = p.x - particles[j].x;
                     const dy = p.y - particles[j].y;
