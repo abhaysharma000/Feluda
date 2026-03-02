@@ -1,16 +1,37 @@
-# React + Vite
+# Feluda | Cyber Intelligence Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Feluda is a premium, modular, and production-grade phishing intelligence dashboard built with React, Vite, Tailwind CSS, and Framer Motion.
 
-Currently, two official plugins are available:
+## Core Features
+- **High-Fidelity Neural Stream**: Real-time inference logs.
+- **Global Matrix Map**: High-fidelity SVG world map with animated threat telemetry.
+- **Deep Scan Flow**: Unified analysis pipeline with SHAP explainability.
+- **Threat Playback**: Timeline simulation with speed controls.
+- **Zero-Day Protection**: Advanced heuristic filters for emerging threats.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- **Frontend**: React (Vite)
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Charts**: Chart.js (react-chartjs-2)
+- **Icons**: Lucide React
 
-## React Compiler
+## Getting Started
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Expanding the ESLint configuration
+2. **Start Dev Server**:
+   ```bash
+   npm run dev
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+## License
+License pending. Developed for advanced cyber intelligence research.

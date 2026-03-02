@@ -129,7 +129,7 @@ export const HeroPanel = () => {
                             isSimulationMode ? "text-danger/70" : "text-emerald-500/70"
                         )}>Intelligence Verdict</span>
                         <h1 className="text-4xl font-bold mt-1 text-white">
-                            AI STATUS: <span className={isSimulationMode ? "text-danger" : "text-emerald-400"}>
+                            NEURAL STATUS: <span className={isSimulationMode ? "text-danger" : "text-emerald-400"}>
                                 {isSimulationMode ? "BREACH ATTEMPTED" : "PROTECTED"}
                             </span>
                         </h1>
