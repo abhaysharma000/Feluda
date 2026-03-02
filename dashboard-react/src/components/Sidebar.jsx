@@ -43,7 +43,7 @@ export const Sidebar = () => {
                         <Shield className="text-black w-6 h-6" />
                     </div>
                     <h2 className="text-xl font-bold tracking-tight text-white">
-                        Feluda<span className="text-green-accent">AI</span>
+                        Feluda
                     </h2>
                 </div>
             </div>
