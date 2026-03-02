@@ -2,6 +2,13 @@
     "version": 2,
     "builds": [
         {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dashboard-react/dist"
+            }
+        },
+        {
             "src": "app/main.py",
             "use": "@vercel/python",
             "config": {
@@ -10,6 +17,14 @@
         }
     ],
     "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "app/main.py"
+        },
+        {
+            "src": "/dashboard/(.*)",
+            "dest": "/$1"
+        },
         {
             "src": "/(.*)",
             "dest": "app/main.py"

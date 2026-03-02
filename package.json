@@ -1,0 +1,9 @@
+{
+    "name": "feluda-root",
+    "version": "2.0.0",
+    "private": true,
+    "scripts": {
+        "build": "cd dashboard-react && npm install && npm run build",
+        "install-all": "pip install -r requirements.txt && cd dashboard-react && npm install"
+    }
+}
