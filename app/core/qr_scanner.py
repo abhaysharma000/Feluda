@@ -1,10 +1,15 @@
 """
-QR Code Scanner — uses pyzbar + Pillow (replaces heavy OpenCV dependency).
-Pillow is ~5 MB vs opencv-python-headless which is ~200 MB.
+QR Code Scanner — graceful import of pyzbar + Pillow.
+pyzbar requires libzbar (C library). On Vercel Lambda this is unavailable,
+so we degrade gracefully instead of crashing the entire app.
 """
-from pyzbar import pyzbar
-from PIL import Image
-import io
+try:
+    from pyzbar import pyzbar as _pyzbar
+    from PIL import Image
+    import io
+    PYZBAR_AVAILABLE = True
+except (ImportError, Exception):
+    PYZBAR_AVAILABLE = False
 
 
 class QRScanner:
@@ -13,15 +18,22 @@ class QRScanner:
         """
         Decode all QR codes in a raw image byte string.
         Returns a list of dicts with 'data' and 'type',
-        or a dict with 'error' key on failure.
+        or a dict with 'error' key on failure or unavailability.
         """
+        if not PYZBAR_AVAILABLE:
+            return {
+                "error": "QR scanning is unavailable in this environment "
+                         "(libzbar system library not installed). "
+                         "Use the local desktop version to scan QR codes."
+            }
+
         try:
             img = Image.open(io.BytesIO(image_bytes))
         except Exception as e:
             return {"error": f"Failed to decode image: {str(e)}"}
 
         try:
-            decoded_objects = pyzbar.decode(img)
+            decoded_objects = _pyzbar.decode(img)
         except Exception as e:
             return {"error": f"QR scan engine error: {str(e)}"}
 

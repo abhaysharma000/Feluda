@@ -55,13 +55,13 @@ if errorlevel 1 (
 )
 echo  [OK] Core dependencies installed.
 
-:: ── Step 4: Local-only extra: SHAP (not on Vercel) ──────────────
-echo  [*] Installing SHAP for local explainability...
-"%VENV_PYTHON%" -m pip install shap --quiet --no-warn-script-location
+:: ── Step 4: Local-only extras (not on Vercel) ────────────────
+echo  [*] Installing local-only extras (SHAP, QR scanner)...
+"%VENV_PYTHON%" -m pip install shap pyzbar Pillow --quiet --no-warn-script-location
 if errorlevel 1 (
-    echo  [WARN] SHAP not installed - feature attribution disabled locally.
+    echo  [WARN] Some local extras failed - SHAP/QR may be limited. Continuing...
 ) else (
-    echo  [OK] SHAP installed.
+    echo  [OK] Local extras installed (SHAP + pyzbar + Pillow).
 )
 
 :: ── Step 5: ML Model check ───────────────────────────────────────

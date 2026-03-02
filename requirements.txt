@@ -21,10 +21,6 @@ python-whois
 tldextract
 beautifulsoup4
 
-# ─── QR Code Scanning ───────────────────────────────────
-pyzbar
-Pillow
-
 # ─── Utilities ──────────────────────────────────────────
 python-dotenv
 pydantic
