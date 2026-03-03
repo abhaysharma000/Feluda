@@ -5,6 +5,7 @@ import { ChartsPanel } from '../components/ChartsPanel';
 import { ThreatMap } from '../components/ThreatMap';
 import { LiveFeed } from '../components/LiveFeed';
 import { ModelHealthPanel } from '../components/ModelHealthPanel';
+import { NLPIntelligenceHub } from '../components/NLPIntelligenceHub';
 import { Activity, TrendingUp, PieChart as PieChartIcon, Shield, Box } from 'lucide-react';
 
 export const Dashboard = () => {
@@ -13,6 +14,9 @@ export const Dashboard = () => {
             {/* Hero & Vital Stats */}
             <HeroPanel />
             <StatsGrid />
+
+            {/* Neural Intel Hub - NEW */}
+            <NLPIntelligenceHub />
 
             {/* Tactical Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">

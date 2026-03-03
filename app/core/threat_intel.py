@@ -27,7 +27,7 @@ class ThreatIntel:
                     "https://www.virustotal.com/api/v3/urls",
                     headers=headers,
                     data={"url": url},
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=1)
                 ) as submit_resp:
                     if submit_resp.status not in (200, 201):
                         return {"status": "error", "message": f"VT submission failed ({submit_resp.status})"}
@@ -36,7 +36,7 @@ class ThreatIntel:
                 async with session.get(
                     f"https://www.virustotal.com/api/v3/urls/{url_id}",
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=1)
                 ) as result_resp:
                     if result_resp.status == 200:
                         data = await result_resp.json()
@@ -86,7 +86,7 @@ class ThreatIntel:
                 async with session.post(
                     endpoint,
                     json=payload,
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=1.5)
                 ) as resp:
                     if resp.status == 200:
                         return await resp.json()

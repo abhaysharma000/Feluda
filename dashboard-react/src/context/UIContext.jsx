@@ -28,21 +28,42 @@ export const UIProvider = ({ children }) => {
     const [lastScanVerdict, setLastScanVerdict] = useState(null); // 'safe' | 'threat' | null
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    // NLP Scan State
+    const [isNLPScanning, setIsNLPScanning] = useState(false);
+    const [nlpResult, setNlpResult] = useState(null);
+
+    const analyzeEmail = async (content) => {
+        setIsNLPScanning(true);
+        setNlpResult(null);
+        try {
+            const response = await fetch('http://localhost:8001/api/scan/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setNlpResult(data);
+                addToast("Neural Text Analysis Complete", "success");
+            } else {
+                addToast("NLP Analysis Failed", "danger");
+            }
+        } catch (err) {
+            console.error("NLP scan failed:", err);
+            addToast("Network Error", "danger");
+        } finally {
+            setIsNLPScanning(false);
+        }
+    };
+
     // Real-time Data State
-    const [logs, setLogs] = useState([
-        { id: 1, timestamp: new Date().toISOString(), node: 'Node_Alpha_7', vector: 'URL_SCAN [hianimez.is]', risk: 1.4, verdict: 'Safe' },
-        { id: 2, timestamp: new Date(Date.now() - 3600000).toISOString(), node: 'Node_Gamma_2', vector: 'Visual Match [paypal-login.co]', risk: 94.2, verdict: 'Malicious' },
-    ]);
-
+    const [logs, setLogs] = useState([]);
     const [stats, setStats] = useState({
-        scanned: 12842,
-        malicious: 423,
-        suspicious: 1102,
-        avgRisk: 4.2
+        scanned: 0,
+        malicious: 0,
+        suspicious: 0,
+        avgRisk: 0
     });
-
-    // Simulation Timer Ref
-    const simInterval = useRef(null);
 
     const addLog = useCallback((log) => {
         setLogs(prev => {
@@ -51,19 +72,54 @@ export const UIProvider = ({ children }) => {
                 ...prev.slice(0, 49) // Keep last 50
             ];
 
-            // Calculate new average risk
-            const totalRisk = newLogs.reduce((acc, curr) => acc + curr.risk, 0);
-            const newAvgRisk = (totalRisk / newLogs.length).toFixed(1);
+            // Calculate new average risk for visual consistency
+            const totalRisk = newLogs.reduce((acc, curr) => acc + (curr.risk || 0), 0);
+            const newAvgRisk = newLogs.length > 0 ? (totalRisk / newLogs.length).toFixed(1) : 0;
 
             setStats(s => ({ ...s, avgRisk: parseFloat(newAvgRisk) }));
             return newLogs;
         });
     }, []);
 
+    // Initial Telemetry Load
+    useEffect(() => {
+        const fetchInitialStats = async () => {
+            try {
+                const response = await fetch('http://localhost:8001/api/analytics/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    setStats(prev => ({
+                        ...prev,
+                        scanned: data.total_scanned,
+                        malicious: data.malicious_blocked,
+                        suspicious: data.suspicious
+                    }));
+                }
+
+                const logsRes = await fetch('http://localhost:8001/api/analytics/logs');
+                if (logsRes.ok) {
+                    const logsData = await logsRes.json();
+                    const mappedLogs = logsData.map(l => ({
+                        id: l._id,
+                        timestamp: l.timestamp,
+                        node: l.type === 'URL' ? 'Neural_Node_7' : 'NLP_Node_2',
+                        vector: `${l.type} [${l.input}]`,
+                        risk: l.result.risk_score,
+                        verdict: l.result.classification
+                    }));
+                    setLogs(mappedLogs);
+                }
+            } catch (err) {
+                console.error("Telemetry fetch failed:", err);
+            }
+        };
+        fetchInitialStats();
+    }, []);
+
     // Simulation logic effect
     useEffect(() => {
         if (isSimulationMode && !isPlaybackPaused) {
-            simInterval.current = setInterval(() => {
+            const simInterval = setInterval(() => {
                 const isThreat = Math.random() > (isZeroDayMode ? 0.6 : 0.85);
                 const risk = isThreat ? (75 + Math.random() * 20).toFixed(1) : (1 + Math.random() * 5).toFixed(1);
 
@@ -84,10 +140,11 @@ export const UIProvider = ({ children }) => {
                     suspicious: !isThreat && Math.random() > 0.9 ? prev.suspicious + 1 : prev.suspicious
                 }));
             }, (isZeroDayMode ? 2000 : 5000) / playbackSpeed);
+            return () => clearInterval(simInterval);
         } else {
-            clearInterval(simInterval.current);
+            // clearInterval(simInterval.current); // This line is removed as simInterval is now local
         }
-        return () => clearInterval(simInterval.current);
+        // return () => clearInterval(simInterval.current); // This line is removed as cleanup is handled inside the if block
     }, [isSimulationMode, isPlaybackPaused, playbackSpeed, isZeroDayMode, addLog]);
 
     // Simulation logic helper
@@ -120,6 +177,9 @@ export const UIProvider = ({ children }) => {
         setLastScanVerdict,
         isSidebarOpen,
         setIsSidebarOpen,
+        isNLPScanning,
+        nlpResult,
+        analyzeEmail,
         logs,
         addLog,
         stats,

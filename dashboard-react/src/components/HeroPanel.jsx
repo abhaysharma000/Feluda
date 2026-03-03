@@ -20,8 +20,8 @@ const Counter = ({ value, prefix = "", suffix = "" }) => {
 };
 
 export const HeroPanel = () => {
-    const { isSimulationMode, isScanning, lastScanVerdict, stats } = useUI();
-    const isThreatState = isSimulationMode || lastScanVerdict === 'threat';
+    const { isSimulationMode, isScanning, lastScanVerdict, stats, scanResult } = useUI();
+    const isThreatState = isSimulationMode || lastScanVerdict === 'threat' || (scanResult && scanResult.risk_score >= 65);
     const activeColor = isScanning ? 'accent' : (isThreatState ? 'danger' : 'success');
 
     const statusMap = {
@@ -103,11 +103,13 @@ export const HeroPanel = () => {
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-3 pt-4 text-slate-500">
                                 <div className="flex items-center gap-2">
                                     <Cpu className="w-4 h-4 text-soc-accent/40" />
-                                    <span className="text-[11px] font-bold uppercase tracking-wider">Latency: 0.08ms</span>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">
+                                        Latency: {scanResult?.latency_ms ? `${scanResult.latency_ms}ms` : "257.4ms"}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Database className="w-4 h-4 text-soc-accent/40" />
-                                    <span className="text-[11px] font-bold uppercase tracking-wider">Cluster: Node_Alpha</span>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Cluster: Secure_Cluster_Alpha</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Zap className="w-4 h-4 text-soc-accent/40" />

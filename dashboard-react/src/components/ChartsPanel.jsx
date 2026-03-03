@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 Chart.register(...registerables);
 
 export const ChartsPanel = ({ type = 'line' }) => {
+    const { stats } = useUI();
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
@@ -26,7 +27,7 @@ export const ChartsPanel = ({ type = 'line' }) => {
                     labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
                     datasets: [{
                         label: 'Threat Intensity',
-                        data: [12, 19, 8, 15, 7, 33, 15],
+                        data: [12, 19, 8, 15, 7, 33, 15], // Hourly buckets would require backend persistence
                         borderColor: '#00E5FF',
                         borderWidth: 2,
                         fill: true,
@@ -81,13 +82,15 @@ export const ChartsPanel = ({ type = 'line' }) => {
                 }
             });
         } else {
+            const safeCount = Math.max(0, stats.scanned - stats.malicious - stats.suspicious);
+
             chartInstance.current = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Safe_Zone', 'Anomalous', 'Suspected'],
                     datasets: [{
-                        data: [82, 8, 10],
-                        backgroundColor: ['#22C55E', '#EF4444', '#1E3A8A'],
+                        data: [safeCount || 100, stats.malicious, stats.suspicious],
+                        backgroundColor: ['#22C55E', '#EF4444', '#FACC15'],
                         borderColor: '#111827',
                         borderWidth: 4,
                         hoverOffset: 10
@@ -122,7 +125,7 @@ export const ChartsPanel = ({ type = 'line' }) => {
         return () => {
             if (chartInstance.current) chartInstance.current.destroy();
         };
-    }, [type]);
+    }, [type, stats]);
 
     return (
         <div className="w-full h-full min-h-[300px]">

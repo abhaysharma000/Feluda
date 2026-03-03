@@ -28,7 +28,9 @@ export const LiveFeed = () => {
                                 "flex flex-col gap-2.5 p-4 rounded-xl border transition-all duration-300 relative overflow-hidden group",
                                 log.verdict === 'Malicious'
                                     ? "bg-soc-danger/[0.03] border-soc-danger/20"
-                                    : "bg-white/[0.01] border-white/[0.03] hover:bg-white/[0.02] hover:border-white/[0.08]"
+                                    : log.verdict === 'Suspicious'
+                                        ? "bg-soc-warning/[0.03] border-soc-warning/20"
+                                        : "bg-white/[0.01] border-white/[0.03] hover:bg-white/[0.02] hover:border-white/[0.08]"
                             )}
                         >
                             <div className="flex items-center justify-between relative z-10">
@@ -37,13 +39,17 @@ export const LiveFeed = () => {
                                         [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
                                     </span>
                                     <div className="flex items-center gap-1.5 translate-y-[0.5px]">
-                                        <Shield className={clsx("w-2.5 h-2.5", log.verdict === 'Malicious' ? 'text-soc-danger' : 'text-soc-accent/50')} />
+                                        <Shield className={clsx("w-2.5 h-2.5",
+                                            log.verdict === 'Malicious' ? 'text-soc-danger' :
+                                                log.verdict === 'Suspicious' ? 'text-soc-warning' : 'text-soc-accent/50'
+                                        )} />
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{log.node}</span>
                                     </div>
                                 </div>
                                 <span className={clsx(
                                     "px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest",
-                                    log.verdict === 'Malicious' ? "bg-soc-danger text-white" : "bg-white/5 text-slate-500 border border-white/5"
+                                    log.verdict === 'Malicious' ? "bg-soc-danger text-white" :
+                                        log.verdict === 'Suspicious' ? "bg-soc-warning text-black" : "bg-white/5 text-slate-500 border border-white/5"
                                 )}>
                                     {log.verdict}
                                 </span>
@@ -63,12 +69,14 @@ export const LiveFeed = () => {
                                 <div className="flex items-center gap-2">
                                     <div className="w-1 h-1 rounded-full bg-slate-700" />
                                     <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Risk Index:</span>
-                                    <span className={clsx("text-[9px] font-bold tabular-nums", log.verdict === 'Malicious' ? 'text-soc-danger' : 'text-soc-accent')}>{log.risk}%</span>
+                                    <span className={clsx("text-[9px] font-bold tabular-nums",
+                                        log.risk >= 65 ? 'text-soc-danger' : (log.risk >= 35 ? 'text-soc-warning' : 'text-soc-success')
+                                    )}>{log.risk}%</span>
                                 </div>
                                 <div className="hidden md:flex items-center gap-2">
                                     <div className="w-1 h-1 rounded-full bg-slate-700" />
                                     <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Inference:</span>
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tabular-nums">v4.2.0-secure</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tabular-nums">Neural v2.1.0</span>
                                 </div>
                             </div>
                         </motion.div>

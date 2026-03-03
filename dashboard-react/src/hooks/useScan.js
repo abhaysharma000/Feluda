@@ -17,58 +17,42 @@ export const useScan = () => {
         if (!url) return;
 
         setIsScanning(true);
-        addToast(`Initializing Deep Scan for: ${url}`, 'info', 2000);
+        addToast(`Neural Sweep Initialized: ${url}`, 'info', 2000);
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2200));
+            // Standardize URL scheme for API
+            const targetUrl = url.startsWith('http') ? url : `https://${url}`;
 
-            const isThreat = isZeroDayMode || Math.random() > 0.4;
-            const risk_score = isThreat ? (85 + Math.random() * 10).toFixed(1) : (5 + Math.random() * 15).toFixed(1);
+            const response = await fetch('http://localhost:8001/api/scan/url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: targetUrl })
+            });
 
-            const mockResult = {
-                url,
-                risk_score: parseFloat(risk_score),
-                classification: isThreat ? "Malicious" : "Safe",
-                top_contributors: isThreat ? [
-                    "Domain Age Anomaly",
-                    "Excessive Subdomain Depth",
-                    "Malicious Pattern Match",
-                    "Visual Similarity (91%)"
-                ] : ["Known Clean Domain", "High SSL Reputation", "Standard URL Structure"],
-                explanation: isThreat ? [
-                    "Neural Engine detected high entropy in URL structure",
-                    "External threat intel flagged domain as high priority",
-                    "Recent creation date (2 days ago) is highly suspicious",
-                    "AI visual engine detected 91% similarity to authentic PayPal login"
-                ] : ["Verified legitimate infrastructure", "No heuristic triggers active", "Compliant domain metadata"],
-                raw_features: {
-                    domain_age_days: isThreat ? 2 : 1420,
-                    visual_similarity: isThreat ? 91.2 : 0.4,
-                    entropy_score: isThreat ? 4.82 : 1.2,
-                    subdomain_count: isThreat ? 5 : 0,
-                    tld_reputation: isThreat ? -0.42 : 0.98
-                }
-            };
+            if (!response.ok) throw new Error('Neural handshake failed');
 
-            setScanResult(mockResult);
+            const result = await response.json();
+            const isThreat = result.classification === 'Malicious' || result.classification === 'Suspicious';
+
+            setScanResult(result);
             setIsScanning(false);
             setIsShowcaseOpen(true);
             setLastScanVerdict(isThreat ? 'threat' : 'safe');
 
-            // Add to Global logs
+            // Add to Global logs with real telemetry
             addLog({
                 node: 'User_Manual_Scan',
-                vector: `DEEP_SCAN [${url}]`,
-                risk: parseFloat(risk_score),
-                verdict: isThreat ? 'Malicious' : 'Safe'
+                vector: `NEURAL_SWEEP [${url}]`,
+                risk: result.risk_score,
+                verdict: result.classification
             });
 
             // Update stats
             setStats(prev => ({
                 ...prev,
                 scanned: prev.scanned + 1,
-                malicious: isThreat ? prev.malicious + 1 : prev.malicious,
-                suspicious: !isThreat && Math.random() > 0.8 ? prev.suspicious + 1 : prev.suspicious
+                malicious: result.classification === 'Malicious' ? prev.malicious + 1 : prev.malicious,
+                suspicious: result.classification === 'Suspicious' ? prev.suspicious + 1 : prev.suspicious
             }));
 
             addToast(
@@ -77,13 +61,14 @@ export const useScan = () => {
                 4000
             );
 
-            return mockResult;
+            return result;
         } catch (error) {
+            console.error('Scan Error:', error);
             setIsScanning(false);
-            addToast("Failed to complete neural scan.", "danger");
+            addToast("Failed to complete neural scan. Ensure Backend (8001) is active.", "danger");
             throw error;
         }
-    }, [setIsScanning, setScanResult, setIsShowcaseOpen, addToast, isZeroDayMode, addLog, setStats, setLastScanVerdict]);
+    }, [setIsScanning, setScanResult, setIsShowcaseOpen, addToast, addLog, setStats, setLastScanVerdict]);
 
     return { triggerScan };
 };

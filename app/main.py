@@ -10,8 +10,8 @@ from datetime import datetime
 
 from app.core.engine import intelligence_engine
 from app.core.email_analyzer import email_analyzer
+from app.core.nlp_engine import nlp_engine
 from app.core.qr_scanner import qr_scanner
-from app.ml_legacy.prediction import predict_url_risk, predict_text_risk
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -175,18 +175,30 @@ async def scan_url(request: URLRequest):
 
 @app.post("/api/scan/email", tags=["Scan"])
 async def scan_email(request: EmailRequest):
-    """Analyze email content for phishing signals using NLP + GPT-4o-mini."""
+    """Analyze email content using the unified NLP engine (ML) + heuristic semantic analysis."""
+    # 1. High-speed ML Prediction (TF-IDF + Logistic Regression)
+    nlp_result = nlp_engine.predict(request.content)
+    
+    # 2. Heuristic/LLM Analysis (Keywords + Urgency + GPT-4 fallback)
     analysis = email_analyzer.analyze_text(request.content)
 
-    risk_score = analysis['keyword_score']
+    # Hybrid risk calculation
+    risk_score = max(nlp_result['risk_score'], analysis['keyword_score'])
     if analysis['urgency_detected']:
-        risk_score = min(100, risk_score + 20)
+        risk_score = min(100, risk_score + 15)
+
+    classification = "Malicious" if risk_score >= 65 else ("Suspicious" if risk_score >= 35 else "Safe")
 
     log_entry = {
         "timestamp": datetime.utcnow(),
         "type": "EMAIL",
         "input": request.content[:200] + ("..." if len(request.content) > 200 else ""),
-        "result": {"risk_score": risk_score, "analysis": analysis},
+        "result": {
+            "risk_score": risk_score, 
+            "classification": classification,
+            "nlp_ml_analysis": nlp_result,
+            "semantic_analysis": analysis
+        },
     }
     try:
         if logs is not None:
@@ -196,7 +208,12 @@ async def scan_email(request: EmailRequest):
     except Exception:
         mock_logs.append(log_entry)
 
-    return {"risk_score": risk_score, "analysis": analysis}
+    return {
+        "risk_score": risk_score,
+        "classification": classification,
+        "nlp_analysis": nlp_result,
+        "semantic_details": analysis
+    }
 
 
 @app.post("/api/scan/qr", tags=["Scan"])

@@ -27,7 +27,7 @@ call venv\Scripts\activate
 pip install -r requirements.txt
 
 :: 4. Train Models if missing
-if not exist "app/models/model.pkl" (
+if not exist "app/models/phishing_model.pkl" (
     echo [INFO] Training ML models...
     python train_model.py
 )

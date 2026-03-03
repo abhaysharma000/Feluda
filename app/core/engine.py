@@ -78,11 +78,45 @@ class IntelligenceEngine:
             self.explainer = None
 
     # ──────────────────────────────────────────────────────────────
+    # ──────────────────────────────────────────────────────────────
     async def analyze_url(self, url: str) -> dict:
-        # ── Step 1: Feature Extraction ────────────────────────────
-        features = extractor.extract_features(url)
+        import asyncio
+        start_ts = time.time()
+        
+        # ── Step 1: Structural Feature Extraction (Synchronous, fast) ──
+        # We skip WHOIS here to maintain <300ms guarantee
+        features = extractor.extract_features(url, skip_whois=True)
+        domain = urlparse(url).netloc or url.split("//")[-1].split("/")[0]
 
-        # ── Step 2: ML Prediction ────────────────────────────────
+        # ── Step 2-5: Parallel Async Intelligence Retrieval ───────────
+        # Target: Execute within 250ms or skip slow signals
+        gsb_task = asyncio.create_task(threat_intel.check_google_safe_browsing(url))
+        vt_task = asyncio.create_task(threat_intel.check_virustotal(url))
+        
+        # We wrap WHOIS in a thread-pool because the library is blocking
+        loop = asyncio.get_event_loop()
+        whois_task = loop.run_in_executor(None, extractor._get_domain_age, domain)
+
+        try:
+            # Strict deadline for intelligence signals: 250ms
+            # This ensures we have 50ms left for ML prediction & scoring
+            results = await asyncio.gather(
+                asyncio.wait_for(gsb_task, timeout=0.25),
+                asyncio.wait_for(vt_task, timeout=0.25),
+                asyncio.wait_for(whois_task, timeout=0.25),
+                return_exceptions=True
+            )
+            gsb_result = results[0] if not isinstance(results[0], (Exception, asyncio.TimeoutError)) else None
+            vt_result = results[1] if not isinstance(results[1], (Exception, asyncio.TimeoutError)) else None
+            age_info = results[2] if not isinstance(results[2], (Exception, asyncio.TimeoutError)) else (365, "Unknown")
+        except:
+            gsb_result, vt_result, age_info = None, None, (365, "Unknown")
+
+        # Update features with late-bound WHOIS info
+        features['domain_age_days'] = age_info[0]
+        features['domain_creation_date'] = age_info[1]
+
+        # ── Step 6: ML Prediction (Optimized Local Inference) ──────────
         classification = "Unknown"
         confidence = 0.0
         shap_contributors = []
@@ -97,7 +131,7 @@ class IntelligenceEngine:
             classification = "Malicious" if prediction == 1 else "Safe"
             confidence = float(probabilities[prediction]) * 100
 
-            # ── Step 2a: SHAP Explainability ──────────────────────
+            # ── Step 6a: SHAP Explainability ────────────────────────
             if self.explainer and SHAP_AVAILABLE and prediction == 1:
                 try:
                     shap_values = self.explainer.shap_values(feat_df)
@@ -119,36 +153,27 @@ class IntelligenceEngine:
                 except Exception as e:
                     print(f"SHAP calculation error: {e}")
 
-        # ── Step 3: Threat Intel (async) ─────────────────────────
-        gsb_result, vt_result = await asyncio_gather(
-            threat_intel.check_google_safe_browsing(url),
-            threat_intel.check_virustotal(url),
-        )
+        # ── Step 7: Visual & Behavioral Analysis (Simplified for Speed) ──
+        # In a real-time EXTENSION block, we don't always wait for full DOM fetch
+        # unless it's a dedicated scan. We mark as "Pending" or skip for now.
+        visual_result = None # visual_engine.analyze_similarity(url)
+        behavior_result = {"findings": [], "behavior_risk_score": 0} 
 
-        # ── Step 4: Visual Brand Similarity ──────────────────────
-        visual_result = visual_engine.analyze_similarity(url)
-
-        # ── Step 5: Behavioral DOM Analysis (live fetch) ─────────
-        html_content = await behavioral_engine.fetch_html(url)
-        behavior_result = behavioral_engine.analyze_behavior(html_content, url)
-
-        # ── Step 6: Hybrid Risk Scoring ──────────────────────────
+        # ── Step 8: Hybrid Risk Scoring & Reasoning ────────────────────
         risk_score = self._calculate_risk_score(
             features, classification, confidence, gsb_result, vt_result, visual_result, behavior_result
         )
 
-        # ── Step 7: Explainable Reasoning ────────────────────────
         explanation = self._generate_explanation(
             features, classification, risk_score,
             gsb_result, vt_result, visual_result, behavior_result, url
         )
 
-        if risk_score >= 65:
-            final_classification = "Malicious"
-        elif risk_score >= 35:
-            final_classification = "Suspicious"
-        else:
-            final_classification = "Safe"
+        final_classification = (
+            "Malicious" if risk_score >= 65 else ("Suspicious" if risk_score >= 35 else "Safe")
+        )
+
+        latency = (time.time() - start_ts) * 1000
 
         return {
             "url": url,
@@ -156,13 +181,13 @@ class IntelligenceEngine:
             "confidence_score": f"{confidence:.2f}%",
             "risk_score": round(risk_score, 1),
             "explanation": explanation,
+            "latency_ms": round(latency, 2),
             "raw_features": features,
             "top_contributors": shap_contributors,
-            "brand_analysis": visual_result or {"status": "No impersonation detected"},
-            "behavioral_analysis": behavior_result,
+            "brand_analysis": visual_result or {"status": "Visual check skipped for latency"},
             "threat_intel_reports": {
-                "google_safe_browsing": gsb_result,
-                "virustotal": vt_result,
+                "google_safe_browsing": gsb_result or {"status": "skipped_or_timeout"},
+                "virustotal": vt_result or {"status": "skipped_or_timeout"},
             },
         }
 
@@ -170,107 +195,98 @@ class IntelligenceEngine:
     def _calculate_risk_score(
         self, features, ml_class, confidence, gsb, vt, visual, behavior
     ) -> float:
-        score = 0.0
+        """
+        Unified Weighted Risk Scoring Engine (v2.0):
+        - ML Score (Classifier Probability): 60%
+        - Structural Risk (URL patterns): 20%
+        - Domain Age (WHOIS legacy): 10%
+        - Threat Intel (GSB/VT): 10%
+        """
+        ml_weight = 0.0
+        structural_weight = 0.0
+        age_weight = 0.0
+        intel_weight = 0.0
 
-        # ML confidence weight (up to 25 pts)
+        # 1. ML Score (Max 60 pts)
         if ml_class == "Malicious":
-            score += confidence * 0.25
+            # Direct projection of confidence percentage to 60pt scale
+            ml_weight = (confidence / 100.0) * 60.0
+        elif ml_class == "Safe" and confidence < 70:
+            # High-uncertainty safe predictions contribute minor risk
+            ml_weight = (1.0 - (confidence / 100.0)) * 10.0
 
-        # Feature anomaly signals (up to 55 pts)
-        if features.get('is_ip_address'):    score += 15
-        if features.get('has_homoglyph'):    score += 15
-        if features.get('url_length', 0) > 100:    score += 5
-        if features.get('subdomain_count', 0) > 3: score += 5
-        if not features.get('has_https'):    score += 10
-        if 0 < features.get('domain_age_days', 365) < 30: score += 10
+        # 2. Structural Risk (Max 20 pts)
+        s_score = 0
+        if features.get('is_ip_address'): s_score += 8
+        if features.get('has_homoglyph'): s_score += 8
+        if features.get('entropy', 0) > 4.5: s_score += 4
+        if features.get('dot_count', 0) > 3: s_score += 2
+        if features.get('suspicious_keywords', 0) > 0: s_score += 4
+        if not features.get('has_https'): s_score += 4
+        structural_weight = min(20.0, float(s_score))
 
-        # Brand impersonation (+20 pts)
-        if visual:
-            score += 20
+        # 3. Domain Age (Max 10 pts)
+        age = features.get('domain_age_days', 0)
+        if 0 < age < 7:
+            age_weight = 10.0
+        elif 0 < age < 30:
+            age_weight = 7.0
+        elif 0 < age < 90:
+            age_weight = 4.0
+        elif age == 0: # Unknown/Error often indicates freshly minted or hidden
+            age_weight = 5.0
 
-        # Behavioral DOM risk (up to 15 pts)
-        score += behavior.get('behavior_risk_score', 0) * 0.15
+        # 4. Threat Intel (Max 10 pts)
+        if (gsb and 'matches' in gsb) or (vt and isinstance(vt, dict) and vt.get('flagged')):
+            intel_weight = 10.0
 
-        # Google Safe Browsing match (+15 pts)
-        if gsb and 'matches' in gsb:
-            score += 15
+        total_score = ml_weight + structural_weight + age_weight + intel_weight
+        
+        # Override: Direct Brand Impersonation or Behavioral Critical Findings
+        if visual or behavior.get('behavior_risk_score', 0) > 50:
+            total_score = max(total_score, 85.0)
 
-        # VirusTotal flagged (+15 pts)
-        if vt and isinstance(vt, dict) and vt.get('flagged'):
-            score += 15
-
-        return min(100.0, score)
+        return min(100.0, total_score)
 
     # ──────────────────────────────────────────────────────────────
     def _generate_explanation(
         self, features, ml_class, risk_score, gsb, vt, visual, behavior, url
     ) -> list:
         reasons = []
-        url_lower = url.lower()
-
-        # Behavioral DOM findings (highest priority)
-        for finding in behavior.get('findings', []):
-            reasons.append(f"BEHAVIORAL ALERT: {finding}")
-
-        # Brand impersonation
-        if visual:
-            reasons.append(
-                f"BRAND IMPERSONATION: Visual similarity to "
-                f"{visual['impersonated_brand']} is {visual['similarity_score']}%"
-            )
-
-        # Domain age
-        age = features.get('domain_age_days', 0)
-        if 0 < age < 7:
-            reasons.append(
-                f"Zero-day domain detected ({age} days old). "
-                "Phishing links use short-lived domain lifecycle tactics."
-            )
-        elif 0 < age < 30:
-            reasons.append(f"Recently registered domain ({age} days old) — high-risk window.")
-
-        # Suspicious keywords in URL
-        suspicious_keywords = [
-            "auth", "verify", "login", "secure", "update",
-            "account", "banking", "signin", "credential", "password"
-        ]
-        found = [k for k in suspicious_keywords if k in url_lower]
-        if found:
-            reasons.append(
-                f"Suspicious keywords in URL: {', '.join(f'\"{k}\"' for k in found)}"
-            )
-
-        # Structural anomalies
-        if features.get('subdomain_count', 0) > 3:
-            reasons.append(
-                f"Subdomain abuse detected ({features['subdomain_count']} levels deep)"
-            )
-        if features.get('is_ip_address'):
-            reasons.append("URL uses a raw IP address instead of a registered domain name")
-        if features.get('has_homoglyph'):
-            reasons.append(
-                "Visual Homoglyph spoofing detected — characters mimicking real brand names"
-            )
-
-        # ML verdict
+        
+        # ML Engine Verdict
         if ml_class == "Malicious":
-            reasons.append(
-                "AI Prediction: High risk via Calibrated Neural Confidence (Platt Scaling)"
-            )
-
-        # External threat intel
+            reasons.append(f"ML Core: High-confidence neural match for phishing patterns ({risk_score:.1f}% weighted risk)")
+        
+        # Structural 
+        if features.get('is_ip_address'):
+            reasons.append("Structural: Usage of raw IP address signals identity masking")
+        if features.get('has_homoglyph'):
+            reasons.append("Structural: Visual homoglyph characters detected (Brand Spoofing)")
+        if features.get('entropy', 0) > 4.8:
+            reasons.append(f"Structural: High URL entropy ({features['entropy']:.2f}) indicates obfuscation")
+            
+        # Age
+        age = features.get('domain_age_days', 0)
+        if 0 < age < 30:
+            reasons.append(f"Identity: Domain is only {age} days old (High-risk registration window)")
+            
+        # Intel
         if gsb and 'matches' in gsb:
-            reasons.append("Flagged by Google Safe Browsing Threat Intelligence")
+            reasons.append("Intel: URL actively flagged by Google Safe Browsing")
         if vt and isinstance(vt, dict) and vt.get('flagged'):
-            engines = vt.get('malicious_engines', 0) + vt.get('suspicious_engines', 0)
-            reasons.append(f"VirusTotal: Flagged by {engines} security engine(s)")
+            reasons.append("Intel: Multiple security engines flagged this URL in VirusTotal")
+            
+        # Behavioral/Visual Override
+        if visual:
+            reasons.append(f"Visual: High similarity to {visual['impersonated_brand']} detected")
+        if behavior.get('findings'):
+            reasons.append(f"Behavior: {behavior['findings'][0]}")
 
         if not reasons:
-            reasons.append(
-                "General structural anomalies detected by neural pattern matching"
-            )
+            reasons.append("Heuristic: Combined structural anomalies exceed safety thresholds")
 
-        return reasons[:6]
+        return reasons[:5]
 
 
 # ── Helper: run two coroutines concurrently ───────────────────────
