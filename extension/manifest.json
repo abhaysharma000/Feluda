@@ -7,7 +7,6 @@
         "storage",
         "webNavigation",
         "webRequest",
-        "webRequestBlocking",
         "declarativeNetRequest",
         "activeTab",
         "tabs",
