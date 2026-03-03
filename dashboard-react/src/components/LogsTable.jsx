@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCcw, Clock } from 'lucide-react';
+import { RefreshCcw, Clock, Terminal, Shield, ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useUI } from '../context/UIContext';
 
@@ -10,37 +10,50 @@ export const LogsTable = () => {
 
     const fetchLogs = async () => {
         setIsLoading(true);
-        // Simulate API fetch refresh
         await new Promise(resolve => setTimeout(resolve, 800));
         setIsLoading(false);
     };
 
     return (
-        <div className="glass-card overflow-hidden">
-            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                <h3 className="text-lg font-bold">System Audit Logs</h3>
+        <div className="flex flex-col h-full glass-panel border-white/[0.03] overflow-hidden">
+            {/* Terminal Header */}
+            <div className="px-6 py-4 border-b border-white/[0.05] flex items-center justify-between bg-black/20">
+                <div className="flex items-center gap-3">
+                    <div className="flex gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-soc-danger/40" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-soc-warning/40" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-soc-success/40" />
+                    </div>
+                    <div className="h-4 w-px bg-white/10 mx-2" />
+                    <div className="flex items-center gap-2">
+                        <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                        <h3 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest px-1">Neural_Inference_Stream</h3>
+                    </div>
+                </div>
                 <button
                     onClick={fetchLogs}
                     disabled={isLoading}
-                    className="flex items-center gap-2 text-xs font-bold text-cyan-accent hover:text-white transition-colors disabled:opacity-50"
+                    className="soc-button soc-button-secondary py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider"
                 >
-                    <RefreshCcw className={clsx("w-3.5 h-3.5", isLoading && "animate-spin")} />
-                    Sync Logs
+                    <RefreshCcw className={clsx("w-3 h-3", isLoading && "animate-spin")} />
+                    Refresh
                 </button>
             </div>
 
-            <div className="overflow-x-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse">
-                    <thead className="bg-white/[0.02] text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                        <tr>
-                            <th className="px-8 py-5">Timestamp</th>
-                            <th className="px-8 py-5">Inference Node</th>
-                            <th className="px-8 py-5">Vector</th>
-                            <th className="px-8 py-5">Risk</th>
-                            <th className="px-8 py-5">Verdict</th>
+            {/* Table Container */}
+            <div className="flex-1 overflow-auto terminal-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[800px]">
+                    <thead className="sticky top-0 z-10 bg-soc-surface border-b border-white/[0.05]">
+                        <tr className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                            <th className="px-6 py-4">Timestamp</th>
+                            <th className="px-6 py-4">Node_Identifier</th>
+                            <th className="px-6 py-4">Vector_Source</th>
+                            <th className="px-6 py-4">Risk_Idx</th>
+                            <th className="px-6 py-4">System_Verdict</th>
+                            <th className="px-6 py-4"></th>
                         </tr>
                     </thead>
-                    <tbody className="text-sm font-medium divide-y divide-white/5">
+                    <tbody className="text-[11px] font-mono divide-y divide-white/[0.02]">
                         <AnimatePresence mode="popLayout">
                             {isLoading ? (
                                 <motion.tr
@@ -49,44 +62,69 @@ export const LogsTable = () => {
                                     exit={{ opacity: 0 }}
                                     key="loading"
                                 >
-                                    <td colSpan={5} className="px-8 py-16 text-center text-cyan-accent/50 italic animate-pulse">
-                                        Synchronizing Neural Audit Logs...
+                                    <td colSpan={6} className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-12 h-0.5 bg-soc-accent/20 overflow-hidden relative">
+                                                <motion.div
+                                                    animate={{ left: ['-100%', '100%'] }}
+                                                    transition={{ repeat: Infinity, duration: 1 }}
+                                                    className="absolute top-0 bottom-0 w-1/2 bg-soc-accent"
+                                                />
+                                            </div>
+                                            <span className="text-soc-accent/50 uppercase tracking-[0.3em] font-sans font-bold">Resyncing_Matrix...</span>
+                                        </div>
                                     </td>
                                 </motion.tr>
                             ) : (
-                                logs.map((log) => (
+                                logs.map((log, idx) => (
                                     <motion.tr
                                         key={log.id}
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        layout
-                                        className="hover:bg-white/[0.02] transition-colors group"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        className="hover:bg-white/[0.02] transition-colors group cursor-default"
                                     >
-                                        <td className="px-8 py-4 text-slate-500 font-mono text-xs flex items-center gap-2 whitespace-nowrap">
-                                            <Clock className="w-3 h-3 opacity-50" />
-                                            {new Date(log.timestamp).toLocaleTimeString()}
+                                        <td className="px-6 py-3.5 text-slate-500 tabular-nums">
+                                            [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
                                         </td>
-                                        <td className="px-8 py-4 font-bold text-white uppercase tracking-tighter">
-                                            {log.node}
-                                        </td>
-                                        <td className="px-8 py-4 text-slate-400 group-hover:text-slate-200 transition-colors">
-                                            {log.vector}
-                                        </td>
-                                        <td className="px-8 py-4">
-                                            <span className={clsx(
-                                                "font-bold",
-                                                log.risk > 70 ? "text-danger" : (log.risk > 40 ? "text-warning" : "text-emerald-400")
-                                            )}>
-                                                {log.risk}%
+                                        <td className="px-6 py-3.5">
+                                            <span className="flex items-center gap-1.5 text-slate-300">
+                                                <Shield className="w-3 h-3 text-soc-accent/40" />
+                                                {log.node}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-4">
+                                        <td className="px-6 py-3.5 text-slate-400">
+                                            <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
+                                                {log.vector}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-3.5">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 h-1 bg-white/5 w-12 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={clsx("h-full", log.risk > 70 ? "bg-soc-danger" : (log.risk > 40 ? "bg-soc-warning" : "bg-soc-success"))}
+                                                        style={{ width: `${log.risk}%` }}
+                                                    />
+                                                </div>
+                                                <span className={clsx(
+                                                    "font-bold min-w-[3ch] text-right",
+                                                    log.risk > 70 ? "text-soc-danger" : (log.risk > 40 ? "text-soc-warning" : "text-soc-success")
+                                                )}>
+                                                    {log.risk}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-3.5">
                                             <span className={clsx(
-                                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                log.verdict === 'Malicious' ? "bg-danger/10 text-danger" : (log.verdict === 'Suspicious' ? "bg-warning/10 text-warning" : "bg-emerald-500/10 text-emerald-500")
+                                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
+                                                log.verdict === 'Malicious' ? "text-soc-danger bg-soc-danger/10 border border-soc-danger/20" :
+                                                    (log.verdict === 'Suspicious' ? "text-soc-warning bg-soc-warning/10 border border-soc-warning/20" : "text-soc-success bg-soc-success/10 border border-soc-success/20")
                                             )}>
                                                 {log.verdict}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-3.5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <ArrowRight className="w-3.5 h-3.5 text-soc-accent inline" />
                                         </td>
                                     </motion.tr>
                                 ))
@@ -94,6 +132,15 @@ export const LogsTable = () => {
                         </AnimatePresence>
                     </tbody>
                 </table>
+            </div>
+
+            {/* Terminal Footer */}
+            <div className="px-6 py-2 border-t border-white/[0.05] bg-black/10 flex items-center justify-between text-[8px] font-bold text-slate-600 uppercase tracking-widest">
+                <span>Buffer Index: 0x82f4...a32</span>
+                <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-soc-success animate-pulse" />
+                    Link Established
+                </span>
             </div>
         </div>
     );

@@ -1,173 +1,149 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ShieldCheck, Radiation, Cpu, Database, Zap, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, useSpring, useTransform, animate } from 'framer-motion';
+import { ShieldCheck, Cpu, Database, Zap, AlertTriangle, Fingerprint, Activity } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
-// Particle factory function for internal canvas
-function createParticle(canvas) {
-    const p = {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        size: Math.random() * 2,
-    };
-    p.reset = () => {
-        p.x = Math.random() * canvas.width;
-        p.y = Math.random() * canvas.height;
-        p.vx = (Math.random() - 0.5) * 0.8;
-        p.vy = (Math.random() - 0.5) * 0.8;
-        p.size = Math.random() * 2;
-    };
-    p.update = () => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) p.reset();
-    };
-    p.draw = (ctx, color) => {
-        ctx.fillStyle = color === 'danger' ? 'rgba(239, 68, 68, 0.4)' : (color === 'cyan' ? 'rgba(0, 229, 255, 0.4)' : 'rgba(34, 197, 94, 0.4)');
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-    };
-    return p;
-}
+const Counter = ({ value, prefix = "", suffix = "" }) => {
+    const [display, setDisplay] = useState(0);
+
+    useEffect(() => {
+        const controls = animate(0, value, {
+            duration: 1.5,
+            ease: "easeOut",
+            onUpdate: (latest) => setDisplay(Math.floor(latest))
+        });
+        return () => controls.stop();
+    }, [value]);
+
+    return <span>{prefix}{display.toLocaleString()}{suffix}</span>;
+};
 
 export const HeroPanel = () => {
     const { isSimulationMode, isScanning, lastScanVerdict, stats } = useUI();
-    const canvasRef = useRef(null);
-
     const isThreatState = isSimulationMode || lastScanVerdict === 'threat';
-    const activeColor = isScanning ? 'cyan' : (isThreatState ? 'danger' : 'emerald');
-    const avgRisk = stats.avgRisk.toFixed(1);
+    const activeColor = isScanning ? 'accent' : (isThreatState ? 'danger' : 'success');
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
-        let particles = [];
-        const particleCount = 20;
-
-        const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        };
-
-        const init = () => {
-            resize();
-            particles = Array.from({ length: particleCount }, () => createParticle(canvas));
-        };
-
-        const animate = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.update();
-                p.draw(ctx, activeColor);
-            });
-            animationFrameId = requestAnimationFrame(animate);
-        };
-
-        window.addEventListener('resize', resize);
-        init();
-        animate();
-
-        return () => {
-            window.removeEventListener('resize', resize);
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, [activeColor]);
-
-    const getStatusText = () => {
-        if (isScanning) return "NEURAL SCAN IN PROGRESS";
-        if (isSimulationMode) return "SIMULATION ACTIVE";
-        if (lastScanVerdict === 'threat') return "SECURITY BREACH DETECTED";
-        return "SYSTEM FORTIFIED";
+    const statusMap = {
+        accent: { text: "NEURAL SCAN ACTIVE", icon: Activity, color: "text-soc-accent", bg: "bg-soc-accent/5", border: "border-soc-accent/20" },
+        danger: { text: "THREAT ANOMALY DETECTED", icon: AlertTriangle, color: "text-soc-danger", bg: "bg-soc-danger/5", border: "border-soc-danger/20" },
+        success: { text: "INTELLIGENCE GRID SECURE", icon: ShieldCheck, color: "text-soc-success", bg: "bg-soc-success/5", border: "border-soc-success/20" }
     };
 
+    const currentStatus = statusMap[activeColor];
+
     return (
-        <section className={clsx(
-            "relative overflow-hidden p-6 lg:p-12 rounded-[1.5rem] lg:rounded-[2.5rem] border transition-all duration-1000",
-            activeColor === 'danger' && "border-soc-danger/30 bg-soc-danger/5",
-            activeColor === 'cyan' && "border-soc-cyan/30 bg-soc-cyan/5 shadow-neon-cyan",
-            activeColor === 'emerald' && "border-soc-success/30 bg-soc-success/5 status-glow-secure"
-        )}>
-            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-30" />
+        <section className="relative group">
+            {/* Background Layered Depth */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-soc-accent/5 via-transparent to-soc-danger/5 opacity-50 blur-3xl rounded-[3rem] pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col xl:flex-row items-center justify-between gap-8 lg:gap-12 text-center lg:text-left">
-                <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12 w-full">
-                    <div className="relative w-24 h-24 lg:w-32 lg:h-32 flex-shrink-0">
-                        <motion.div
-                            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
-                            transition={{ repeat: Infinity, duration: 3 }}
-                            className={clsx(
-                                "absolute inset-0 rounded-full border-[6px]",
-                                activeColor === 'danger' ? "border-soc-danger/20" : (activeColor === 'cyan' ? "border-soc-cyan/20" : "border-soc-success/20")
-                            )}
-                        />
-                        <div className={clsx(
-                            "absolute inset-0 rounded-full border-b-[6px] animate-[spin_4s_linear_infinite]",
-                            activeColor === 'danger' ? "border-soc-danger shadow-neon-danger" : (activeColor === 'cyan' ? "border-soc-cyan shadow-neon-cyan" : "border-soc-success")
-                        )} />
+            <div className={clsx(
+                "relative z-10 glass-panel border-white/[0.03] p-8 lg:p-12 overflow-hidden transition-all duration-700",
+                currentStatus.bg
+            )}>
+                {/* Visual Accent */}
+                <div className={clsx("absolute top-0 left-0 w-1 h-full",
+                    activeColor === 'accent' ? "bg-soc-accent" : (activeColor === 'danger' ? "bg-soc-danger" : "bg-soc-success")
+                )} />
 
-                        <div className={clsx(
-                            "absolute inset-3 rounded-full flex items-center justify-center",
-                            activeColor === 'danger' ? "bg-soc-danger/10" : (activeColor === 'cyan' ? "bg-soc-cyan/10" : "bg-soc-success/10")
-                        )}>
-                            {activeColor === 'danger' ? (
-                                <AlertTriangle className="w-12 h-12 text-soc-danger" />
-                            ) : (
-                                <ShieldCheck className={clsx("w-12 h-12", activeColor === 'cyan' ? "text-soc-cyan" : "text-soc-success")} />
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+                    <div className="flex flex-col lg:flex-row items-center gap-10 flex-1">
+                        {/* Status Hexagon/Circle Container */}
+                        <div className="relative">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                                className="w-32 h-32 rounded-full border border-dashed border-white/10 flex items-center justify-center"
+                            />
+                            <div className="absolute inset-2 rounded-full border border-white/5 flex items-center justify-center backdrop-blur-sm">
+                                <motion.div
+                                    animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+                                    transition={{ repeat: Infinity, duration: 4 }}
+                                    className={clsx("absolute inset-4 rounded-full blur-xl opacity-20",
+                                        activeColor === 'accent' ? "bg-soc-accent" : (activeColor === 'danger' ? "bg-soc-danger" : "bg-soc-success")
+                                    )}
+                                />
+                                <currentStatus.icon className={clsx("w-12 h-12 relative z-10", currentStatus.color)} />
+                            </div>
+
+                            {/* Scanning Ring */}
+                            {isScanning && (
+                                <svg className="absolute inset-0 w-full h-full -rotate-90">
+                                    <motion.circle
+                                        cx="64" cy="64" r="62"
+                                        fill="transparent"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        className="text-soc-accent/30"
+                                        strokeDasharray="390"
+                                        animate={{ strokeDashoffset: [390, 0] }}
+                                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                    />
+                                </svg>
                             )}
+                        </div>
+
+                        <div className="space-y-4 text-center lg:text-left">
+                            <div className="flex items-center justify-center lg:justify-start gap-3">
+                                <span className={clsx("text-[10px] font-bold uppercase tracking-[0.3em]", currentStatus.color)}>
+                                    {currentStatus.text}
+                                </span>
+                                <div className="h-px w-12 bg-white/5" />
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-500 uppercase">
+                                    <Fingerprint className="w-3 h-3 text-soc-accent" />
+                                    Auth Verified
+                                </div>
+                            </div>
+
+                            <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1]">
+                                <span className="text-gradient">Security Operations</span>
+                                <br /> Command Console
+                            </h1>
+
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-3 pt-4 text-slate-500">
+                                <div className="flex items-center gap-2">
+                                    <Cpu className="w-4 h-4 text-soc-accent/40" />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Latency: 0.08ms</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Database className="w-4 h-4 text-soc-accent/40" />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Cluster: Node_Alpha</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-4 h-4 text-soc-accent/40" />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Honeypots: Active</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <span className={clsx(
-                                "text-[10px] font-black uppercase tracking-[0.4em]",
-                                activeColor === 'danger' ? "text-soc-danger" : (activeColor === 'cyan' ? "text-soc-cyan" : "text-soc-success")
+                    {/* Stats Summary Cards */}
+                    <div className="grid grid-cols-2 gap-4 w-full lg:w-96">
+                        <div className="glass-panel bg-white/[0.01] p-6 hover:bg-white/[0.03] transition-colors border-white/[0.03] group">
+                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Inspections</div>
+                            <div className="text-3xl font-bold text-white mb-2 tabular-nums group-hover:text-soc-accent transition-colors">
+                                <Counter value={stats.scanned} />
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-soc-success">
+                                <Activity className="w-3 h-3" />
+                                <span>+12.5% LIVE</span>
+                            </div>
+                        </div>
+                        <div className="glass-panel bg-white/[0.01] p-6 hover:bg-white/[0.03] transition-colors border-white/[0.03] group">
+                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Threat Index</div>
+                            <div className={clsx("text-3xl font-bold mb-2 tabular-nums transition-colors",
+                                stats.avgRisk > 50 ? "text-soc-danger" : "text-soc-accent group-hover:text-white"
                             )}>
-                                Master Control Node
-                            </span>
-                            <div className="h-px w-24 bg-white/5" />
-                        </div>
-
-                        <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tighter uppercase italic leading-tight">
-                            {getStatusText()}
-                        </h1>
-
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-8 pt-2">
-                            <div className="flex items-center gap-2.5">
-                                <Cpu className="w-4 h-4 text-soc-cyan/60" />
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Latency: {isScanning ? '∞' : '14ms'}</span>
+                                <Counter value={stats.avgRisk} suffix="%" />
                             </div>
-                            <div className="flex items-center gap-2.5">
-                                <Database className="w-4 h-4 text-soc-cyan/60" />
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{stats.scanned.toLocaleString()} Inspections</span>
-                            </div>
-                            <div className="flex items-center gap-2.5">
-                                <Zap className="w-4 h-4 text-soc-cyan/60" />
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Active Link Shield</span>
+                            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${stats.avgRisk}%` }}
+                                    className={clsx("h-full", stats.avgRisk > 50 ? "bg-soc-danger" : "bg-soc-accent")}
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div className="flex gap-6 w-full xl:w-auto h-full">
-                    <div className="flex-1 xl:w-48 p-7 glass-card bg-white/[0.01] flex flex-col items-center justify-center gap-2 group">
-                        <div className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">Neutralized</div>
-                        <div className="text-4xl font-black text-white group-hover:text-soc-danger transition-colors duration-500 tabular-nums">{stats.malicious.toLocaleString()}</div>
-                        <div className="w-8 h-1 bg-soc-danger/30 rounded-full" />
-                    </div>
-                    <div className="flex-1 xl:w-48 p-7 glass-card bg-white/[0.01] flex flex-col items-center justify-center gap-2 group">
-                        <div className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">Global Risk</div>
-                        <div className={clsx(
-                            "text-4xl font-black tabular-nums transition-colors duration-500",
-                            parseFloat(avgRisk) > 50 ? "text-soc-danger" : "text-soc-cyan group-hover:text-white"
-                        )}>{avgRisk}%</div>
-                        <div className={clsx("w-8 h-1 rounded-full", parseFloat(avgRisk) > 50 ? "bg-soc-danger/30" : "bg-soc-cyan/30")} />
                     </div>
                 </div>
             </div>

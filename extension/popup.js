@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ── UI updater ────────────────────────────────────────────
     function updateUI(score, classification, explanation) {
-        const circumference = 339;
+        const circumference = 283;
         const offset = circumference - (score / 100) * circumference;
         riskCircle.style.strokeDashoffset = offset;
 
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function showIdleState() {
         riskScore.innerText = '--';
         statusBadge.innerText = 'PROTECTED';
-        riskCircle.style.strokeDashoffset = '339';
+        riskCircle.style.strokeDashoffset = '283';
         riskCircle.style.stroke = '#10b981';
     }
 
