@@ -53,7 +53,7 @@
     }
 
     .glass-card {
-        @apply glass-panel hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300;
+        @apply bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-2xl shadow-glass hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300;
     }
 
     .soc-button {
