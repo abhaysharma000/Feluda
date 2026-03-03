@@ -22,12 +22,13 @@
             "dest": "app/main.py"
         },
         {
-            "src": "/dashboard/assets/(.*)",
-            "dest": "/assets/$1"
+            "src": "/dashboard/(.*)",
+            "dest": "/$1",
+            "check": true
         },
         {
             "src": "/dashboard/(.*)",
-            "dest": "/$1"
+            "dest": "/index.html"
         },
         {
             "src": "/(.*)",
