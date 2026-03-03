@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Cpu, Microchip, ArrowRight, ShieldAlert } from 'lucide-react';
+import { X, Cpu, Microchip, ArrowRight, ShieldAlert, Activity } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { useOutsideClick } from '../hooks/useOutsideClick';
 import { clsx } from 'clsx';
