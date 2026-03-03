@@ -349,11 +349,12 @@
         });
 
         document.getElementById('confirm-yes').addEventListener('click', () => {
+            const finalUrl = params.get('url');
             chrome.runtime.sendMessage({
                 type: 'BYPASS_URL',
-                url: url
+                url: finalUrl
             }, () => {
-                window.location.href = url;
+                window.location.replace(finalUrl);
             });
         });
     </script>

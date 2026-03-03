@@ -1,11 +1,17 @@
 importScripts('config.js');
 const CONFIG = self.CONFIG;
-const API_URL = `${CONFIG.API_BASE_URL}/api/scan/url`;
 
-// ── State Management ──────────────────────────────────────────
-const scanCache = new Map();
-const bypassCache = new Set();
-const CACHE_TTL_MS = 5 * 60 * 1000;
+/**
+ * PRODUCTION-GRADE REAL-TIME PHISHING PREVENTION
+ * --------------------------------------------
+ * This service worker implements an 'Interceptor Partition' pattern.
+ * It prevents target pages from loading while an asynchronous neural scan is performed.
+ */
+
+// ── State & Caching ──────────────────────────────────────────
+const scanCache = new Map(); // Global cache for high-speed lookup
+const sessionBypass = new Set(); // URLs user chose to proceed anyway (cleared on reload)
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min TTL
 
 function getCached(url) {
     const entry = scanCache.get(url);
@@ -21,114 +27,60 @@ function setCache(url, result) {
     scanCache.set(url, { result, ts: Date.now() });
 }
 
-// ── Message Listener (Bypass Logic) ───────────────────────────
+// ── Message Handlers ─────────────────────────────────────────
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'BYPASS_URL') {
-        bypassCache.add(message.url);
+        sessionBypass.add(message.url);
+        sendResponse({ success: true });
+    } else if (message.type === 'CACHE_SAFE_URL') {
+        setCache(message.url, message.result);
         sendResponse({ success: true });
     }
+    return true; // Keep channel open for async
 });
 
-// ── Navigation Interceptor ────────────────────────────────────
-chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
-    if (details.frameId !== 0) return; // Main frame only
+// ── REAL-TIME INTERCEPTION ───────────────────────────────────
+/**
+ * We use webNavigation.onBeforeNavigate as the primary trigger point.
+ * This is the most reliable event to intercept before the request starts.
+ */
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    // 1. Only intercept the main frame of any tab
+    if (details.frameId !== 0) return;
 
     const url = details.url;
 
-    // Skip system/extension URLs
+    // 2. Performance: Skip internal and whitelisted origins
     if (
         url.startsWith('chrome://') ||
         url.startsWith('chrome-extension://') ||
         url.startsWith('about:') ||
-        url.startsWith('data:')
+        url.startsWith('data:') ||
+        url.includes('feluda-sigma.vercel.app')
     ) return;
 
-    // Check if user already chose to bypass this specific URL in this session
-    if (bypassCache.has(url)) return;
+    // 3. Performance: Skip if user already bypassed this session
+    if (sessionBypass.has(url)) return;
 
-    // Check cache first for immediate decision (<10ms)
+    // 4. Caching: Instant allow if already scanned as safe
     const cached = getCached(url);
     if (cached) {
-        handleScanResult(details.tabId, cached);
-        return;
+        const riskScore = cached.risk_score || 0;
+        const isMalicious = cached.classification === 'Malicious' || riskScore >= 60;
+        if (!isMalicious) return; // Proceed normally to destination
     }
 
-    // Real-time async check
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s timeout for stability
+    // 5. BLOCKING PHASE & INITIAL SCAN
+    // Calculate interceptor URL
+    const interceptorUrl = chrome.runtime.getURL('interceptor.html') +
+        `?url=${encodeURIComponent(url)}`;
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) return;
-
-        const result = await response.json();
-        setCache(url, result);
-        handleScanResult(details.tabId, result);
-
-    } catch (err) {
-        console.warn('Feluda: Scan timeout or error — defaulting to safe for performance.');
-    }
+    // Redirect current tab to the internal interceptor
+    // This stops the initial network request to the potentially malicious site.
+    chrome.tabs.update(details.tabId, { url: interceptorUrl });
 });
 
-// ── Result Handler ────────────────────────────────────────────
-function handleScanResult(tabId, result) {
-    chrome.storage.local.get(['urlsScanned', 'threatsBlocked'], (data) => {
-        const newScanned = (data.urlsScanned || 0) + 1;
-        chrome.storage.local.set({ urlsScanned: newScanned });
-
-        chrome.storage.local.set({
-            [`scanResult_${tabId}`]: {
-                ...result,
-                scannedAt: Date.now(),
-            }
-        });
-
-        const riskScore = result.risk_score || 0;
-        const isMalicious = result.classification === 'Malicious' || riskScore >= 60;
-        const isSuspicious = result.classification === 'Suspicious' || (riskScore >= 35 && riskScore < 60);
-
-        if (isMalicious) {
-            const newBlocked = (data.threatsBlocked || 0) + 1;
-            chrome.storage.local.set({ threatsBlocked: newBlocked });
-
-            const reasons = (result.explanation && result.explanation.length > 0)
-                ? encodeURIComponent(result.explanation.join('||'))
-                : encodeURIComponent('Neural engine detected high-risk deceptive patterns.');
-
-            // Use warning.html for real-time interception
-            const warningUrl =
-                chrome.runtime.getURL('warning.html') +
-                `?url=${encodeURIComponent(result.url)}` +
-                `&score=${riskScore}` +
-                `&reasons=${reasons}`;
-
-            chrome.tabs.update(tabId, { url: warningUrl });
-
-        } else if (isSuspicious) {
-            const hostname = (() => {
-                try { return new URL(result.url).hostname; }
-                catch { return result.url; }
-            })();
-
-            chrome.notifications.create({
-                type: 'basic',
-                iconUrl: 'icons/icon128.png',
-                title: 'Feluda: Suspicious Origin',
-                message: `Caution: Neural anomalies found on ${hostname}.\nRisk Score: ${riskScore}/100`,
-                priority: 2,
-            });
-        }
-    });
-}
-
-// ── Initialization ────────────────────────────────────────────
+// ── Statistics Management ─────────────────────────────────────
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.get(['threatsBlocked', 'urlsScanned'], (data) => {
         if (data.threatsBlocked === undefined) chrome.storage.local.set({ threatsBlocked: 0 });

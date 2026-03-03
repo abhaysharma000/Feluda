@@ -7,6 +7,8 @@
         "storage",
         "webNavigation",
         "webRequest",
+        "webRequestBlocking",
+        "declarativeNetRequest",
         "activeTab",
         "tabs",
         "scripting",
@@ -50,6 +52,9 @@
             "resources": [
                 "block.html",
                 "warning.html",
+                "interceptor.html",
+                "interceptor.js",
+                "config.js",
                 "reports.html",
                 "assets/*"
             ],
