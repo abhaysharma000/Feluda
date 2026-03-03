@@ -129,7 +129,9 @@ function handleScanResult(tabId, result) {
 }
 
 // ── Initialization ────────────────────────────────────────────
-chrome.storage.local.get(['threatsBlocked', 'urlsScanned'], (data) => {
-    if (data.threatsBlocked === undefined) chrome.storage.local.set({ threatsBlocked: 0 });
-    if (data.urlsScanned === undefined) chrome.storage.local.set({ urlsScanned: 0 });
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.get(['threatsBlocked', 'urlsScanned'], (data) => {
+        if (data.threatsBlocked === undefined) chrome.storage.local.set({ threatsBlocked: 0 });
+        if (data.urlsScanned === undefined) chrome.storage.local.set({ urlsScanned: 0 });
+    });
 });

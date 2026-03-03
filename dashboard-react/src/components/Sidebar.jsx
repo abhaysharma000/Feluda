@@ -17,7 +17,7 @@ import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 const navItems = [
-    { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, path: '/dashboard' },
+    { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, path: '/' },
     { id: 'threat-map', label: 'Threat Matrix', icon: Globe2, path: '/threat-map' },
     { id: 'live-feed', label: 'Neural Log', icon: Activity, path: '/live-feed' },
     { id: 'logs', label: 'System Audit', icon: Terminal, path: '/logs' },

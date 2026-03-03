@@ -1,7 +1,7 @@
 const CONFIG = {
     // 🌍 DEPLOYMENT: Replace with your Vercel URL after deployment
     // e.g. 'https://your-feluda-app.vercel.app'
-    API_BASE_URL: 'http://localhost:8001'
+    API_BASE_URL: 'https://feluda-sigma.vercel.app'
 };
 
 // Expose CONFIG in both content script and service worker scopes

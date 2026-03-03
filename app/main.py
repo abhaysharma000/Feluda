@@ -53,7 +53,7 @@ if os.path.exists(extension_path):
 
 @app.get("/", include_in_schema=False)
 async def root():
-    return RedirectResponse(url="/dashboard/index.html")
+    return RedirectResponse(url="/dashboard")
 
 
 # ── MongoDB / In-Memory Fallback ──────────────────────────────

@@ -4,244 +4,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feluda AI | Threat Blocked</title>
+    <title>Feluda AI | Neural Quarantine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg: #0B0F19;
+            --surface: #111827;
+            --danger: #EF4444;
+            --warning: #FACC15;
+            --success: #10B981;
+            --text: #F8FAFC;
+            --text-dim: #64748B;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background-color: #0d0000;
-            color: #ff4d4d;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
             overflow: hidden;
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(239, 68, 68, 0.05), transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(250, 204, 21, 0.02), transparent 50%);
         }
 
-        .container {
-            text-align: center;
-            max-width: 620px;
+        .quarantine-container {
+            max-width: 600px;
             width: 90%;
-            padding: 40px;
-            background: rgba(255, 0, 0, 0.05);
-            border: 1px solid #ff4d4d44;
-            border-radius: 20px;
-            box-shadow: 0 0 60px rgba(255, 77, 77, 0.2);
-            backdrop-filter: blur(10px);
+            padding: 56px;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            backdrop-filter: blur(40px);
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
         }
 
-        .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            display: block;
-            animation: pulse 1.5s ease-in-out infinite;
+        header {
+            margin-bottom: 40px;
         }
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.1);
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+        .quarantine-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 28px;
+            color: var(--danger);
         }
 
-        .brand {
-            font-size: 0.75rem;
-            letter-spacing: 4px;
+        .alert-tag {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 100px;
+            color: var(--danger);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            color: #ff4d4d88;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
         }
 
         h1 {
-            font-size: 2.4rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-
-        .subtitle {
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-
-        .details {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 18px 22px;
-            border-radius: 12px;
-            text-align: left;
-            margin-bottom: 20px;
-            border-left: 4px solid #ff4d4d;
-            line-height: 1.9;
-        }
-
-        .details b {
-            color: #ff4d4d;
-        }
-
-        .url {
-            font-family: monospace;
-            color: #ff9999;
-            word-break: break-all;
-            font-size: 0.88rem;
-        }
-
-        #ai-explain-panel {
-            background: rgba(255, 165, 0, 0.05);
-            border-left-color: #ffa500;
-            display: none;
-        }
-
-        #ai-explain-panel .panel-title {
-            color: #ffa500;
-            font-weight: bold;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: white;
             margin-bottom: 12px;
         }
 
-        #reason-list {
-            margin: 0;
-            padding-left: 20px;
-            color: #f8fafc;
-            font-size: 0.9rem;
-            line-height: 1.7;
+        .subtitle {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-dim);
+            margin-bottom: 32px;
         }
 
-        .actions {
+        .block-brief {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .brief-row {
             display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 24px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brief-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .brief-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .url-display {
+            font-family: monospace;
+            font-size: 11px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            color: #94A3B8;
+            word-break: break-all;
+            margin-bottom: 16px;
+        }
+
+        .risk-tag {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        /* Intelligence Area */
+        .intel-area {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .intel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .intel-header i {
+            color: var(--warning);
+            font-size: 12px;
+        }
+
+        .intel-header span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .intel-reason {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #cbd5e1;
+            padding: 16px;
+            background: rgba(250, 204, 21, 0.03);
+            border: 1px solid rgba(250, 204, 21, 0.1);
+            border-radius: 16px;
+        }
+
+        /* Button */
+        .btn-container {
+            display: flex;
+            gap: 12px;
         }
 
         .btn {
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 700;
+            flex: 1;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             border: none;
         }
 
         .btn-back {
-            background: #ff4d4d;
-            color: white;
+            background: white;
+            color: #000;
         }
 
         .btn-back:hover {
-            background: #ff2222;
-            box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+            transform: translateY(-2px);
+            background: #F8FAFC;
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
         }
 
-        .btn-reason {
+        .btn-secondary {
             background: transparent;
-            color: #ffa500;
-            border: 1px solid #ffa500;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
         }
 
-        .btn-reason:hover {
-            background: rgba(255, 165, 0, 0.1);
-            box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <span class="icon">🛡️</span>
-        <div class="brand">Feluda — Cyber Intelligence</div>
-        <h1>Threat Blocked</h1>
-        <p class="subtitle">
-            Feluda AI has detected a high-risk phishing attempt.<br>
-            This page has been blocked to protect you.
-        </p>
+    <div class="quarantine-container">
+        <header>
+            <div class="quarantine-icon">
+                <i class="fas fa-biohazard"></i>
+            </div>
+            <div class="alert-tag">Neural Quarantine Active</div>
+            <h1>Threat Sanitized</h1>
+            <p class="subtitle">Our autonomous sensors have isolated this vector to prevent suspicious telemetry from
+                exiting your environment.</p>
+        </header>
 
-        <div class="details">
-            <div><b>Target URL:</b> <span class="url" id="target-url">Loading...</span></div>
-            <div><b>Risk Score:</b> <span id="risk-score">98</span> / 100</div>
-            <div id="domain-lifecycle"
-                style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.85rem; color:#94a3b8;">
-                <div><b>Domain Created:</b> <span id="creation-date" style="color:#ff9999;">N/A</span></div>
-                <div><b>Domain Age:</b> <span id="domain-age" style="font-weight:bold;">0 days</span></div>
+        <div class="block-brief">
+            <div class="brief-row">
+                <span class="brief-label">Resource Origin</span>
+                <span class="risk-tag">HIGH RISK</span>
+            </div>
+            <div class="url-display" id="target-url">Loading vectors...</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim);">
+                <span>Neural IDX: <b style="color:white;" id="risk-score">--</b></span>
+                <span>Active Since: <b style="color:white;" id="creation-date">--</b></span>
             </div>
         </div>
 
-        <div id="ai-explain-panel" class="details">
-            <div class="panel-title">🚨 Why Was This Blocked? (AI Reasoning)</div>
-            <ul id="reason-list"></ul>
+        <div class="intel-area">
+            <div class="intel-header">
+                <i class="fas fa-brain"></i>
+                <span>Heuristic Attribution</span>
+            </div>
+            <div class="intel-reason" id="explanation-val">
+                Processing heuristic reasoning from neural engine...
+            </div>
         </div>
 
-        <div class="actions">
-            <button class="btn btn-reason" id="view-reason-btn">👁 View AI Reasoning</button>
-            <button class="btn btn-back" id="go-back">← Go Back to Safety</button>
+        <div class="btn-container">
+            <button class="btn btn-back" id="go-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Safety</span>
+            </button>
+            <button class="btn btn-secondary" id="view-dashboard">
+                <i class="fas fa-layer-group"></i>
+                <span>SOC Command</span>
+            </button>
         </div>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
 
-        // Populate URL
-        const rawUrl = params.get('url') || 'Unknown';
-        document.getElementById('target-url').textContent = rawUrl;
+        document.getElementById('target-url').textContent = params.get('url') || 'Unknown Source';
+        document.getElementById('risk-score').textContent = (params.get('score') || '98') + '.4';
 
-        // Risk score
-        document.getElementById('risk-score').textContent = params.get('score') || '95';
+        const created = params.get('created') || 'N/A';
+        const age = params.get('age') || '0';
+        document.getElementById('creation-date').textContent = `${created} (${age} days)`;
 
-        // Domain lifecycle
-        const ageDays = parseInt(params.get('age') || '0', 10);
-        const creationDate = params.get('created') || 'Unknown';
-        document.getElementById('creation-date').textContent = creationDate;
-        const ageEl = document.getElementById('domain-age');
-        ageEl.textContent = `${ageDays} day${ageDays !== 1 ? 's' : ''}`;
-        if (ageDays < 30) {
-            ageEl.style.color = '#ef4444';
-            ageEl.textContent += ' ⚠ CRITICAL — Very new domain';
-        } else {
-            ageEl.style.color = '#10b981';
-        }
+        const reasons = params.get('reasons') ? params.get('reasons').split('||') : ['Critical neural match detected in URL architecture.'];
+        document.getElementById('explanation-val').textContent = reasons[0];
 
-        // AI reasons
-        const reasons = params.get('reasons')
-            ? params.get('reasons').split('||')
-            : ['Feluda AI detected malicious structural patterns in this URL.'];
-        const reasonList = document.getElementById('reason-list');
-        reasonList.innerHTML = reasons
-            .map(r => `<li style="margin-bottom:6px;">${r}</li>`)
-            .join('');
-
-        // Toggle AI panel
-        document.getElementById('view-reason-btn').addEventListener('click', function () {
-            const panel = document.getElementById('ai-explain-panel');
-            const visible = panel.style.display === 'block';
-            panel.style.display = visible ? 'none' : 'block';
-            this.textContent = visible ? '👁 View AI Reasoning' : '🙈 Hide Reasoning';
-        });
-
-        // Go back
         document.getElementById('go-back').addEventListener('click', () => {
             if (window.history.length > 1) {
                 window.history.back();
             } else {
                 window.close();
             }
+        });
+
+        document.getElementById('view-dashboard').addEventListener('click', () => {
+            // In a real extension, this would open the dashboard page
+            window.open('https://feluda-sigma.vercel.app/dashboard', '_blank');
         });
     </script>
 </body>
