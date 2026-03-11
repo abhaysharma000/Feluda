@@ -36,18 +36,16 @@ app.add_middleware(
 # ── Static file serving ────────────────────────────────────────
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Preferred: React build folder
-react_dist = os.path.join(base_dir, "dashboard-react", "dist")
-# Fallback: Original dashboard folder (if any)
-dashboard_path = os.path.join(base_dir, "dashboard")
+# Preferred: Committed static folder (ensures Vercel availability)
+react_dist = os.path.join(base_dir, "app", "static", "dashboard")
+# Fallback: Local dev folder
+dev_dist = os.path.join(base_dir, "dashboard-react", "dist")
 extension_path = os.path.join(base_dir, "extension")
 
 if os.path.exists(react_dist):
     app.mount("/dashboard", StaticFiles(directory=react_dist, html=True), name="react_dist")
-    print(f"Mounted React Build: {react_dist} -> /dashboard")
-elif os.path.exists(dashboard_path):
-    app.mount("/dashboard", StaticFiles(directory=dashboard_path, html=True), name="dashboard")
-    print(f"Mounted Legacy Dashboard: {dashboard_path} -> /dashboard")
+elif os.path.exists(dev_dist):
+    app.mount("/dashboard", StaticFiles(directory=dev_dist, html=True), name="dev_dist")
 
 if os.path.exists(extension_path):
     app.mount("/extension", StaticFiles(directory=extension_path, html=True), name="extension")
