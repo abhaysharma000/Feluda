@@ -111,17 +111,6 @@ export const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Threat Intelligence Table - Placeholder for Module 4 */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 px-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-soc-accent" />
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Threat Intelligence Archive</h3>
-                            <div className="h-px flex-1 bg-white/[0.03]" />
-                        </div>
-                        <div id="threat-intelligence-table" className="glass-panel p-0 bg-black/20 border-white/[0.02] min-h-[400px]">
-                            <LogsTable />
-                        </div>
-                    </div>
                 </div>
 
                 {/* Secondary Column: Live Stream & Health */}

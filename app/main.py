@@ -415,7 +415,8 @@ async def get_soc_logs(limit: int = 50):
             "domain": entry.get("input", "").split("//")[-1].split("/")[0] if "//" in entry.get("input", "") else "Unknown",
             "risk_score": result.get("risk_score", 0),
             "classification": result.get("classification", "Unknown"),
-            "source": entry.get("source", "System")
+            "source": entry.get("source", "System"),
+            "explanation": result.get("explanation", [])
         })
     return soc_logs
 

@@ -15,7 +15,7 @@ import { clsx } from 'clsx';
 
 const navItems = [
     { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, path: '/' },
-    { id: 'logs', label: 'Forensic Audit', icon: Terminal, path: '/logs' },
+    { id: 'intercepts', label: 'Intercept History', icon: Activity, path: '/intercepts' },
     { id: 'settings', label: 'SOC Configurations', icon: Settings, path: '/settings' },
 ];
 

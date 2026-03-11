@@ -4,7 +4,7 @@ import { RefreshCcw, Clock, Terminal, Shield, ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useUI } from '../context/UIContext';
 
-export const LogsTable = () => {
+export const LogsTable = ({ filterSource = null }) => {
     const { logs, refreshTelemetry } = useUI();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -13,6 +13,8 @@ export const LogsTable = () => {
         await refreshTelemetry();
         setIsLoading(false);
     };
+
+    const filteredLogs = logs.filter(log => !filterSource || log.source === filterSource);
 
     return (
         <div className="flex flex-col h-full glass-panel border-white/[0.03] overflow-hidden">
@@ -27,7 +29,9 @@ export const LogsTable = () => {
                     <div className="h-4 w-px bg-white/10 mx-2" />
                     <div className="flex items-center gap-2">
                         <Terminal className="w-3.5 h-3.5 text-slate-500" />
-                        <h3 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest px-1">Neural_Inference_Stream</h3>
+                        <h3 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest px-1">
+                            {filterSource === 'extension' ? 'Extension_Intercept_Stream' : 'Neural_Inference_Stream'}
+                        </h3>
                     </div>
                 </div>
                 <button
@@ -42,14 +46,14 @@ export const LogsTable = () => {
 
             {/* Table Container */}
             <div className="flex-1 overflow-auto terminal-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+                <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead className="sticky top-0 z-10 bg-soc-surface border-b border-white/[0.05]">
                         <tr className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
                             <th className="px-6 py-4">Timestamp</th>
                             <th className="px-6 py-4">Target Domain</th>
-                            <th className="px-6 py-4 text-center">Risk Score</th>
+                            <th className="px-6 py-4 text-center">Score</th>
                             <th className="px-6 py-4">Classification</th>
-                            <th className="px-6 py-4">Vector</th>
+                            <th className="px-6 py-4">Forensic Reasoning</th>
                             <th className="px-6 py-4 text-right">Source</th>
                         </tr>
                     </thead>
@@ -76,63 +80,74 @@ export const LogsTable = () => {
                                     </td>
                                 </motion.tr>
                             ) : (
-                                [...logs]
+                                filteredLogs
                                     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                                     .map((log, idx) => (
                                         <motion.tr
                                             key={log.id || idx}
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.02 }}
-                                        className="hover:bg-white/[0.02] transition-colors group cursor-crosshair"
-                                    >
-                                        <td className="px-6 py-4 text-slate-500 tabular-nums">
-                                            [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}]
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="flex items-center gap-2 text-white font-bold tracking-tight">
-                                                <Globe className="w-3 h-3 text-soc-accent/40" />
-                                                {log.domain}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-center gap-3">
-                                                <div className="hidden lg:block flex-1 h-1 bg-white/5 w-16 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={clsx("h-full", log.risk_score > 70 ? "bg-soc-danger" : (log.risk_score > 40 ? "bg-soc-warning" : "bg-soc-success"))}
-                                                        style={{ width: `${log.risk_score}%` }}
-                                                    />
+                                            initial={{ opacity: 0, y: 5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: idx * 0.02 }}
+                                            className="hover:bg-white/[0.02] transition-colors group cursor-crosshair"
+                                        >
+                                            <td className="px-6 py-4 text-slate-500 tabular-nums">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white/60">
+                                                        {new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: '2-digit' })}
+                                                    </span>
+                                                    <span className="text-[9px]">
+                                                        {new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                    </span>
                                                 </div>
-                                                <span className={clsx(
-                                                    "font-black tabular-nums min-w-[3ch] text-right",
-                                                    log.risk_score > 70 ? "text-soc-danger" : (log.risk_score > 40 ? "text-soc-warning" : "text-soc-success")
-                                                )}>
-                                                    {log.risk_score}%
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="flex items-center gap-2 text-white font-bold tracking-tight">
+                                                    <Globe className="w-3 h-3 text-soc-accent/40" />
+                                                    {log.domain}
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={clsx(
-                                                "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                                log.classification === 'Malicious' ? "text-soc-danger bg-soc-danger/10 border border-soc-danger/20" :
-                                                    (log.classification === 'Suspicious' ? "text-soc-warning bg-soc-warning/10 border border-soc-warning/20" : "text-soc-success bg-soc-success/10 border border-soc-success/20")
-                                            )}>
-                                                {log.classification}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 opacity-40 uppercase text-[9px] font-bold">
-                                            Web_Forensics
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={clsx(
-                                                "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.1em]",
-                                                log.source === 'extension' ? "text-soc-accent border border-soc-accent/20 bg-soc-accent/5" : "text-slate-500 border border-white/5 bg-white/5"
-                                            )}>
-                                                {log.source || 'SYSTEM'}
-                                            </span>
-                                        </td>
-                                    </motion.tr>
-                                ))
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <span className={clsx(
+                                                        "font-black tabular-nums",
+                                                        log.risk_score > 70 ? "text-soc-danger" : (log.risk_score > 40 ? "text-soc-warning" : "text-soc-success")
+                                                    )}>
+                                                        {log.risk_score}%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={clsx(
+                                                    "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                                                    log.classification === 'Malicious' ? "text-soc-danger bg-soc-danger/10 border border-soc-danger/20" :
+                                                        (log.classification === 'Suspicious' ? "text-soc-warning bg-soc-warning/10 border border-soc-warning/20" : "text-soc-success bg-soc-success/10 border border-soc-success/20")
+                                                )}>
+                                                    {log.classification}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-wrap gap-1 max-w-[300px]">
+                                                    {log.explanation && log.explanation.length > 0 ? (
+                                                        log.explanation.map((reason, ridx) => (
+                                                            <span key={ridx} className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[8px] text-slate-400">
+                                                                {reason}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-slate-600 italic text-[9px]">Generic pattern match</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className={clsx(
+                                                    "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.1em]",
+                                                    log.source === 'extension' ? "text-soc-accent border border-soc-accent/20 bg-soc-accent/5" : "text-slate-500 border border-white/5 bg-white/5"
+                                                )}>
+                                                    {log.source || 'SYSTEM'}
+                                                </span>
+                                            </td>
+                                        </motion.tr>
+                                    ))
                             )}
                         </AnimatePresence>
                     </tbody>

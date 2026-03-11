@@ -6,7 +6,7 @@ import { GlobalToast } from './components/GlobalToast'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
 import { Dashboard } from './pages/Dashboard'
-import { Logs } from './pages/Logs'
+import { InterceptorLogs } from './pages/InterceptorLogs'
 import { Settings } from './pages/Settings'
 const App = () => {
   const location = useLocation();
@@ -35,7 +35,7 @@ const App = () => {
                   <Routes location={location}>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/logs" element={<Logs />} />
+                    <Route path="/intercepts" element={<InterceptorLogs />} />
                     <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </motion.div>
