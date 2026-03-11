@@ -58,7 +58,8 @@ export const UIProvider = ({ children }) => {
         scanned_today: 0,
         blocked: 0,
         suspicious: 0,
-        latency_ms: 0
+        latency_ms: 0,
+        system_health: { cpu: "0%", memory: "0MB", uptime: "---", tld_breakdown: {} }
     });
 
     const refreshTelemetry = useCallback(async () => {

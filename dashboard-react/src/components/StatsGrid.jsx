@@ -18,36 +18,36 @@ export const StatsGrid = () => {
 
     const statsConfig = [
         {
-            label: 'URLs Scanned Today',
+            label: 'Unit Ingestion Level',
             value: stats.scanned_today.toLocaleString(),
             icon: ShieldCheck,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            desc: 'Real-time daily volume'
+            desc: 'Aggregate daily ingestion volume'
         },
         {
-            label: 'Threats Blocked',
+            label: 'Neutralized Vectors',
             value: stats.blocked.toLocaleString(),
             icon: ShieldAlert,
             color: 'text-soc-danger',
             accent: 'bg-soc-danger/5',
-            desc: 'Neutralized malicious vectors'
+            desc: 'Confirmed malicious intercepts'
         },
         {
-            label: 'Suspicious Activities',
+            label: 'Heuristic Flags',
             value: stats.suspicious.toLocaleString(),
             icon: Globe2,
             color: 'text-soc-warning',
             accent: 'bg-soc-warning/5',
-            desc: 'Awaiting deeper heuristic scan'
+            desc: 'Deeper forensic analysis required'
         },
         {
-            label: 'Backend Latency',
+            label: 'Inference Latency',
             value: `${stats.latency_ms}ms`,
             icon: Zap,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            desc: 'API Intelligence response'
+            desc: 'Neural handshake response time'
         }
     ];
 
@@ -59,17 +59,13 @@ export const StatsGrid = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
-                    className="glass-panel p-6 hover:bg-white/[0.04] transition-all duration-300 group relative border-white/[0.03] overflow-hidden"
+                    className="glass-panel p-6 hover:bg-white/[0.04] transition-all duration-300 group relative border-white/[0.03] overflow-hidden bg-black/20"
                 >
-                    {/* Background Subtle Wave */}
-                    <div className="absolute bottom-0 right-0 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-                        <Waves className="w-32 h-32 rotate-12 translate-x-10 translate-y-10" />
-                    </div>
-
                     <div className="flex items-center justify-between mb-8 relative z-10">
                         <div className={clsx("p-2.5 rounded-xl border border-white/[0.05] shadow-inner", stat.accent)}>
                             <stat.icon className={clsx("w-5 h-5", stat.color)} />
                         </div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/5 animate-pulse" />
                     </div>
 
                     <div className="space-y-1 relative z-10">

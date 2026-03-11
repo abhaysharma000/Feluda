@@ -350,11 +350,31 @@ async def get_soc_stats():
 
     avg_lat = int(sum(latencies) / len(latencies)) if latencies else 14
     
+    # Mocked system health for SOC realism
+    import random
+    cpu_usage = random.randint(12, 45)
+    mem_usage = random.randint(400, 1200)
+    uptime = "24d 14h 22m"
+    
+    # Simple TLD breakdown from mock_logs for tactical overview
+    tld_counts = {}
+    for l in mock_logs:
+        domain = l['input'].split("//")[-1].split("/")[0] if "//" in l['input'] else ""
+        if "." in domain:
+            tld = domain.split(".")[-1]
+            tld_counts[tld] = tld_counts.get(tld, 0) + 1
+    
     return {
         "scanned_today": scanned_today,
         "blocked": blocked,
         "suspicious": suspicious,
-        "latency_ms": avg_lat
+        "latency_ms": avg_lat,
+        "system_health": {
+            "cpu": f"{cpu_usage}%",
+            "memory": f"{mem_usage}MB",
+            "uptime": uptime,
+            "tld_breakdown": dict(sorted(tld_counts.items(), key=lambda x: x[1], reverse=True)[:3])
+        }
     }
 
 
