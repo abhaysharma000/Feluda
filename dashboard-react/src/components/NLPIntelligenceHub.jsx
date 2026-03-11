@@ -26,9 +26,9 @@ export const NLPIntelligenceHub = () => {
                         <Sparkles className="w-6 h-6 text-soc-accent" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-white tracking-tight">Email & Text Intel Hub</h3>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">
-                            Neural Scam Pattern Recognition Engine
+                        <h3 className="text-xl font-black text-white tracking-tighter uppercase">NLP_Intelligence_Hub</h3>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">
+                            Semantic_Pattern_Recognition_Engine
                         </p>
                     </div>
                 </div>
@@ -114,16 +114,16 @@ export const NLPIntelligenceHub = () => {
 
                                     {/* Findings */}
                                     <div className="flex-1 space-y-4">
-                                        <h4 className="text-[10px] font-black text-soc-accent uppercase tracking-widest">Heuristic Findings</h4>
-                                        <div className="space-y-3">
+                                        <h4 className="text-[9px] font-black text-soc-accent uppercase tracking-[0.3em]">Forensic_Signatures_Detected</h4>
+                                        <div className="space-y-3 font-sans">
                                             {nlpResult.explanation && nlpResult.explanation.map((e, i) => (
                                                 <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.03]">
                                                     <ChevronRight className="w-3 h-3 mt-1 text-soc-accent flex-shrink-0" />
-                                                    <span className="text-[11px] text-slate-400 leading-relaxed font-medium">{e}</span>
+                                                    <span className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">{e}</span>
                                                 </div>
                                             ))}
                                             {(!nlpResult.explanation || nlpResult.explanation.length === 0) && (
-                                                <div className="text-xs text-slate-600 italic">No significant scam identifiers found.</div>
+                                                <div className="text-[10px] text-slate-600 italic px-2 font-bold uppercase tracking-widest">No semantic anomalies detected.</div>
                                             )}
                                         </div>
                                     </div>

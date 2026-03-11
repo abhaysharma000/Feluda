@@ -48,15 +48,15 @@ export const Topbar = () => {
                             />
                             System Optimal
                         </div>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter opacity-50">Node v2.4 Latency: 12ms</span>
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] opacity-50">Cluster_Core_Optimal</span>
                     </div>
 
                     <div className="flex flex-col items-end gap-0.5">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-soc-accent uppercase tracking-widest leading-none">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-soc-accent uppercase tracking-[0.2em] leading-none">
                             <Terminal className="w-3 h-3" />
-                            Scanning Live
+                            Live_Injection
                         </div>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter opacity-50">Inference Rate: 420/m</span>
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] opacity-50">Inference_Ready</span>
                     </div>
                 </div>
 

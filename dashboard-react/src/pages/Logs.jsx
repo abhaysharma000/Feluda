@@ -10,6 +10,8 @@ const ActivityIcon = ({ className }) => (
 );
 
 export const Logs = () => {
+    const { stats } = useUI();
+    
     return (
         <div className="space-y-8 pb-12">
             <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
@@ -19,32 +21,32 @@ export const Logs = () => {
                             <Terminal className="w-5 h-5 text-soc-accent" />
                         </div>
                         <div className="h-px w-12 bg-white/5" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">Forensic_Audit_Stack</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Forensic_Audit_Stack</span>
                     </div>
-                    <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-none">
+                    <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none uppercase italic">
                         Intelligence <span className="text-gradient">Audit Logs</span>
                     </h1>
-                    <p className="text-slate-500 text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em]">Comprehensive telemetry stream from global inference clusters.</p>
+                    <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.3em]">Comprehensive telemetry stream from active inference clusters.</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                         <input
-                            placeholder="Filter by Node or Vector..."
-                            className="bg-white/[0.02] border border-white/[0.05] rounded-xl py-3 pl-11 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-soc-accent/20 transition-all w-64"
+                            placeholder="Filter by Node_ID..."
+                            className="bg-white/[0.02] border border-white/[0.05] rounded-xl py-3 pl-11 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-soc-accent/20 transition-all w-64 uppercase tracking-widest"
                         />
                     </div>
-                    <button className="soc-button soc-button-secondary py-3 px-6 rounded-xl">
+                    <button className="soc-button soc-button-secondary py-3 px-6 rounded-xl border-white/5">
                         <Download className="w-4 h-4" />
-                        Export Audit
+                        <span className="text-[10px] uppercase font-black tracking-widest">Export_Audit</span>
                     </button>
                 </div>
             </header>
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div className="xl:col-span-9">
-                    <div className="glass-panel p-0 h-[700px] relative border-white/[0.03]">
+                    <div className="glass-panel p-0 h-[700px] relative border-white/[0.03] bg-black/20">
                         <LogsTable />
                     </div>
                 </div>
@@ -54,22 +56,22 @@ export const Logs = () => {
                     <div className="glass-panel p-8 space-y-6 border-white/[0.03]">
                         <div className="flex items-center gap-2 mb-2">
                             <ActivityIcon className="w-4 h-4 text-soc-accent" />
-                            <h3 className="text-[11px] font-bold uppercase tracking-widest text-white">Audit Summary</h3>
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Audit_Summary</h3>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Total Inspections</span>
-                                <span className="text-2xl font-bold text-white tabular-nums">2,482</span>
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Total_Inspections</span>
+                                <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{stats.scanned.toLocaleString()}</span>
                             </div>
                             <div className="h-px bg-white/[0.03]" />
                             <div className="flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Neutralized Threats</span>
-                                <span className="text-2xl font-bold text-soc-danger tabular-nums">128</span>
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Neutralized_Threats</span>
+                                <span className="text-3xl font-black text-soc-danger tabular-nums tracking-tighter">{stats.malicious.toLocaleString()}</span>
                             </div>
                             <div className="h-px bg-white/[0.03]" />
                             <div className="flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Confidence Interval</span>
-                                <span className="text-2xl font-bold text-soc-success tabular-nums">99.2%</span>
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Confidence_Interval</span>
+                                <span className="text-3xl font-black text-soc-success tabular-nums tracking-tighter">99.2%</span>
                             </div>
                         </div>
                     </div>

@@ -68,7 +68,12 @@ export const UIProvider = ({ children }) => {
     const addLog = useCallback((log) => {
         setLogs(prev => {
             const newLogs = [
-                { id: Date.now(), timestamp: new Date().toISOString(), ...log },
+                { 
+                    id: Date.now(), 
+                    timestamp: new Date().toISOString(), 
+                    source: 'manual',
+                    ...log 
+                },
                 ...prev.slice(0, 49) // Keep last 50
             ];
 
@@ -81,71 +86,52 @@ export const UIProvider = ({ children }) => {
         });
     }, []);
 
-    // Initial Telemetry Load
-    useEffect(() => {
-        const fetchInitialStats = async () => {
-            try {
-                const response = await fetch('http://localhost:8001/api/analytics/stats');
-                if (response.ok) {
-                    const data = await response.json();
-                    setStats(prev => ({
-                        ...prev,
-                        scanned: data.total_scanned,
-                        malicious: data.malicious_blocked,
-                        suspicious: data.suspicious
-                    }));
-                }
-
-                const logsRes = await fetch('http://localhost:8001/api/analytics/logs');
-                if (logsRes.ok) {
-                    const logsData = await logsRes.json();
-                    const mappedLogs = logsData.map(l => ({
-                        id: l._id,
-                        timestamp: l.timestamp,
-                        node: l.type === 'URL' ? 'Neural_Node_7' : 'NLP_Node_2',
-                        vector: `${l.type} [${l.input}]`,
-                        risk: l.result.risk_score,
-                        verdict: l.result.classification
-                    }));
-                    setLogs(mappedLogs);
-                }
-            } catch (err) {
-                console.error("Telemetry fetch failed:", err);
-            }
-        };
-        fetchInitialStats();
-    }, []);
-
-    // Simulation logic effect
-    useEffect(() => {
-        if (isSimulationMode && !isPlaybackPaused) {
-            const simInterval = setInterval(() => {
-                const isThreat = Math.random() > (isZeroDayMode ? 0.6 : 0.85);
-                const risk = isThreat ? (75 + Math.random() * 20).toFixed(1) : (1 + Math.random() * 5).toFixed(1);
-
-                const newLog = {
-                    node: `Node_${['Alpha', 'Beta', 'Gamma', 'Delta'][Math.floor(Math.random() * 4)]}_${Math.floor(Math.random() * 100)}`,
-                    vector: isThreat
-                        ? `${['Threat Match', 'Polymorphic Signature', 'C2 Callback'][Math.floor(Math.random() * 3)]} [${['bank-verify.cc', 'login-secured.net', 'update-account.io', 'portal-auth.sh'][Math.floor(Math.random() * 4)]}]`
-                        : `Heuristic Scan [${['google.com', 'github.com', 'slack.com'][Math.floor(Math.random() * 3)]}]`,
-                    risk: parseFloat(risk),
-                    verdict: isThreat ? 'Malicious' : 'Safe'
-                };
-
-                addLog(newLog);
+    const refreshTelemetry = useCallback(async () => {
+        try {
+            const response = await fetch('http://localhost:8001/api/analytics/stats');
+            if (response.ok) {
+                const data = await response.json();
                 setStats(prev => ({
                     ...prev,
-                    scanned: prev.scanned + 1,
-                    malicious: isThreat ? prev.malicious + 1 : prev.malicious,
-                    suspicious: !isThreat && Math.random() > 0.9 ? prev.suspicious + 1 : prev.suspicious
+                    scanned: data.total_scanned,
+                    malicious: data.malicious_blocked,
+                    suspicious: data.suspicious
                 }));
-            }, (isZeroDayMode ? 2000 : 5000) / playbackSpeed);
-            return () => clearInterval(simInterval);
-        } else {
-            // clearInterval(simInterval.current); // This line is removed as simInterval is now local
+            }
+
+            const logsRes = await fetch('http://localhost:8001/api/analytics/logs');
+            if (logsRes.ok) {
+                const logsData = await logsRes.json();
+                const mappedLogs = logsData.map(l => ({
+                    id: l._id || Math.random().toString(36).substr(2, 9),
+                    timestamp: l.timestamp,
+                    node: l.result?.node_id || 'Neural_Node_7',
+                    vector: `${l.type} [${l.input}]`,
+                    risk: l.result?.risk_score ?? 0,
+                    verdict: l.result?.classification ?? 'Unknown',
+                    source: l.source || 'manual'
+                }));
+                setLogs(mappedLogs);
+            }
+        } catch (err) {
+            console.error("Telemetry fetch failed:", err);
         }
-        // return () => clearInterval(simInterval.current); // This line is removed as cleanup is handled inside the if block
-    }, [isSimulationMode, isPlaybackPaused, playbackSpeed, isZeroDayMode, addLog]);
+    }, [addToast]);
+
+    // Initial Telemetry Load
+    useEffect(() => {
+        refreshTelemetry();
+        // Background polling for forensic logs
+        const interval = setInterval(refreshTelemetry, 8000);
+        return () => clearInterval(interval);
+    }, [refreshTelemetry]);
+
+    // Simulation logic disabled
+    useEffect(() => {
+        if (isSimulationMode && !isPlaybackPaused) {
+            // Simulation Logic disabled for pure backend stream
+        }
+    }, [isSimulationMode, isPlaybackPaused]);
 
     // Simulation logic helper
     const toggleSimulation = () => {
@@ -183,7 +169,8 @@ export const UIProvider = ({ children }) => {
         logs,
         addLog,
         stats,
-        setStats
+        setStats,
+        refreshTelemetry
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

@@ -5,12 +5,12 @@ import { clsx } from 'clsx';
 import { useUI } from '../context/UIContext';
 
 export const LogsTable = () => {
-    const { logs } = useUI();
+    const { logs, refreshTelemetry } = useUI();
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchLogs = async () => {
         setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await refreshTelemetry();
         setIsLoading(false);
     };
 
@@ -48,6 +48,7 @@ export const LogsTable = () => {
                             <th className="px-6 py-4">Timestamp</th>
                             <th className="px-6 py-4">Node_Identifier</th>
                             <th className="px-6 py-4">Vector_Source</th>
+                            <th className="px-6 py-4">Source</th>
                             <th className="px-6 py-4">Risk_Idx</th>
                             <th className="px-6 py-4">System_Verdict</th>
                             <th className="px-6 py-4"></th>
@@ -76,9 +77,11 @@ export const LogsTable = () => {
                                     </td>
                                 </motion.tr>
                             ) : (
-                                logs.map((log, idx) => (
-                                    <motion.tr
-                                        key={log.id}
+                                [...logs]
+                                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                                    .map((log, idx) => (
+                                        <motion.tr
+                                            key={log.id}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.05 }}
@@ -96,6 +99,14 @@ export const LogsTable = () => {
                                         <td className="px-6 py-3.5 text-slate-400">
                                             <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
                                                 {log.vector}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-3.5">
+                                            <span className={clsx(
+                                                "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase",
+                                                log.source === 'extension' ? "text-soc-accent bg-soc-accent/10 border border-soc-accent/20" : "text-slate-400 bg-white/5 border border-white/10"
+                                            )}>
+                                                {log.source || 'manual'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-3.5">

@@ -6,12 +6,14 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from typing import List, Optional
 import uvicorn
 import os
+import asyncio
 from datetime import datetime
 
 from app.core.engine import intelligence_engine
 from app.core.email_analyzer import email_analyzer
 from app.core.nlp_engine import nlp_engine
 from app.core.qr_scanner import qr_scanner
+import adaptive_learner
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -79,6 +81,7 @@ except Exception as e:
 # ── Pydantic Models ───────────────────────────────────────────
 class URLRequest(BaseModel):
     url: str
+    source: str = "manual"
 
     @field_validator('url')
     @classmethod
@@ -120,6 +123,11 @@ class BlacklistEntry(BaseModel):
 @app.on_event("startup")
 async def startup_db_client():
     print("Feluda AI Backend starting up...")
+    # Start adaptive retraining scheduler
+    asyncio.create_task(
+        adaptive_learner.schedule_auto_retrain(db=db, engine=intelligence_engine)
+    )
+    print("Feluda Learner: Adaptive cloud-sync engine scheduled.")
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -153,7 +161,13 @@ async def scan_url(request: URLRequest):
         }
 
     # ── Full intelligence analysis ────────────────────────────
-    result = await intelligence_engine.analyze_url(request.url)
+    result = await intelligence_engine.analyze_url(request.url, source=request.source)
+
+    # ── Adaptive Feedback: Auto-queue blocked threats ─────────
+    if result.get("classification") == "Malicious":
+        adaptive_learner.append_to_feedback(
+            url=request.url, label=1, source="auto_scan"
+        )
 
     # ── Persist scan log ──────────────────────────────────────
     log_entry = {
@@ -161,6 +175,7 @@ async def scan_url(request: URLRequest):
         "type": "URL",
         "input": request.url,
         "result": result,
+        "source": request.source
     }
     try:
         if logs is not None:
@@ -321,6 +336,24 @@ async def add_to_blacklist(entry: BlacklistEntry):
     return {"status": "success", "message": f"{entry.domain} has been blacklisted."}
 
 
+# ── Global System State ──────────────────────────────────────
+protection_enabled = True
+
+@app.get("/api/system/config", tags=["System"])
+async def get_system_config():
+    """Get the global system configuration."""
+    return {
+        "protection_enabled": protection_enabled,
+        "engine_version": "2.1.0-NeuralSweep"
+    }
+
+@app.post("/api/system/config", tags=["System"])
+async def update_system_config(enabled: bool):
+    """Toggle the global protection state."""
+    global protection_enabled
+    protection_enabled = enabled
+    return {"status": "success", "protection_enabled": protection_enabled}
+
 @app.get("/api/health", tags=["System"])
 async def health_check():
     """Health check endpoint for uptime monitoring."""
@@ -328,7 +361,37 @@ async def health_check():
         "status": "active",
         "engine": "Feluda Intelligence Engine v2",
         "ml_model_loaded": intelligence_engine.model is not None,
+        "protection_active": protection_enabled
     }
+
+
+# ── Self-Learning: Feedback & Retrain ───────────────────────
+class FeedbackEntry(BaseModel):
+    url: str
+    label: int  # 1 = Malicious, 0 = Safe
+    source: str = "manual"
+
+
+@app.post("/api/admin/feedback", tags=["Admin"])
+async def submit_feedback(entry: FeedbackEntry):
+    """Submit a URL as a labelled training sample for the adaptive learner."""
+    # Use DB storage for cloud persistence
+    await adaptive_learner.append_to_db_feedback(
+        db=db, url=entry.url, label=entry.label, source=entry.source
+    )
+    return {"status": "persisted", "url": entry.url, "label": entry.label}
+
+
+@app.post("/api/admin/retrain", tags=["Admin"])
+async def trigger_retrain():
+    """Manually trigger an adaptive retraining cycle."""
+    try:
+        success, message = await adaptive_learner.retrain_with_feedback(
+            db=db, engine=intelligence_engine
+        )
+        return {"success": success, "message": message}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Legacy endpoints (backward-compatible) ────────────────────

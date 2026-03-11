@@ -7,7 +7,8 @@ import {
     Lock,
     TrendingUp,
     Fingerprint,
-    Waves
+    Waves,
+    Zap
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
@@ -22,9 +23,7 @@ export const StatsGrid = () => {
             icon: ShieldCheck,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            trend: '+12.4%',
-            trendUp: true,
-            desc: 'Real-time inspection nodes'
+            desc: 'Total forensic inspections'
         },
         {
             label: 'Threats Blocked',
@@ -32,29 +31,23 @@ export const StatsGrid = () => {
             icon: ShieldAlert,
             color: 'text-soc-danger',
             accent: 'bg-soc-danger/5',
-            trend: '+2.1%',
-            trendUp: true,
             desc: 'Neutralized malicious vectors'
         },
         {
-            label: 'Model Accuracy',
-            value: `${(100 - stats.avgRisk / 3).toFixed(1)}%`,
-            icon: TrendingUp,
+            label: 'Global Intelligence',
+            value: 'Connected',
+            icon: Globe2,
             color: 'text-soc-success',
             accent: 'bg-soc-success/5',
-            trend: 'Nominal',
-            trendUp: true,
-            desc: 'Averaged inference confidence'
+            desc: 'ML Core synchronization active'
         },
         {
-            label: 'Neural Nodes',
-            value: '42 Active',
-            icon: Globe2,
+            label: 'System Status',
+            value: 'Operational',
+            icon: Zap,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            trend: 'Stable',
-            trendUp: true,
-            desc: 'Global intelligence cluster'
+            desc: 'Protection engine online'
         }
     ];
 
@@ -77,24 +70,17 @@ export const StatsGrid = () => {
                         <div className={clsx("p-2.5 rounded-xl border border-white/[0.05] shadow-inner", stat.accent)}>
                             <stat.icon className={clsx("w-5 h-5", stat.color)} />
                         </div>
-                        <div className={clsx(
-                            "px-2 py-0.5 rounded flex items-center gap-1 border border-white/[0.05] bg-white/[0.02] text-[9px] font-bold tracking-wider uppercase leading-none",
-                            stat.trendUp ? "text-soc-success" : "text-soc-danger"
-                        )}>
-                            {stat.trendUp && <TrendingUp className="w-2.5 h-2.5" />}
-                            {stat.trend}
-                        </div>
                     </div>
 
                     <div className="space-y-1 relative z-10">
-                        <div className="text-3xl font-bold text-white tracking-tight tabular-nums transition-transform group-hover:translate-x-1 duration-300">
+                        <div className="text-3xl font-black text-white tracking-tighter tabular-nums group-hover:text-soc-accent transition-colors duration-500">
                             {stat.value}
                         </div>
                         <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">
                                 {stat.label}
                             </span>
-                            <span className="text-[9px] font-medium text-slate-600 uppercase tracking-tight leading-none">
+                            <span className="text-[8px] font-bold text-slate-600 uppercase tracking-tight leading-none opacity-60">
                                 {stat.desc}
                             </span>
                         </div>

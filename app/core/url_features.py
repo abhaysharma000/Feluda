@@ -39,7 +39,6 @@ class URLFeatureExtractor:
             return 0, "Unknown"
 
         try:
-            # We use a primitive timeout guard because python-whois is blocking
             import socket
             socket.setdefaulttimeout(1.0)
             w = whois.whois(domain)
@@ -47,17 +46,33 @@ class URLFeatureExtractor:
             if isinstance(creation_date, list):
                 creation_date = creation_date[0]
 
+            registrar = w.registrar or "Unknown"
+            country = w.country or "Unknown"
+
             if creation_date and isinstance(creation_date, datetime):
                 age = max(0, (datetime.now() - creation_date).days)
                 date_str = creation_date.strftime('%Y-%m-%d')
-                _whois_cache[domain] = {"age": age, "date": date_str, "ts": now, "failed": False}
+                _whois_cache[domain] = {
+                    "age": age, 
+                    "date": date_str, 
+                    "ts": now, 
+                    "failed": False,
+                    "registrar": registrar,
+                    "country": country
+                }
                 return age, date_str
         except Exception:
             pass
 
-        # Cache negative result (to avoid repeated failing/slow lookups)
-        _whois_cache[domain] = {"age": 0, "date": "Unknown", "ts": now, "failed": True}
+        # Cache negative result
+        _whois_cache[domain] = {"age": 0, "date": "Unknown", "ts": now, "failed": True, "registrar": "Unknown", "country": "Unknown"}
         return 0, "Unknown"
+
+    def _get_registrar(self, domain: str) -> str:
+        return _whois_cache.get(domain, {}).get("registrar", "Unknown")
+
+    def _get_country(self, domain: str) -> str:
+        return _whois_cache.get(domain, {}).get("country", "Unknown")
 
     def _calculate_entropy(self, text: str) -> float:
         """Calculate Shannon Entropy of a string."""

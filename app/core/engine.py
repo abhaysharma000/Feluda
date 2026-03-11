@@ -79,7 +79,7 @@ class IntelligenceEngine:
 
     # ──────────────────────────────────────────────────────────────
     # ──────────────────────────────────────────────────────────────
-    async def analyze_url(self, url: str) -> dict:
+    async def analyze_url(self, url: str, skip_whois: bool = False, source: str = "manual") -> dict:
         import asyncio
         start_ts = time.time()
         
@@ -153,25 +153,33 @@ class IntelligenceEngine:
                 except Exception as e:
                     print(f"SHAP calculation error: {e}")
 
-        # ── Step 7: Visual & Behavioral Analysis (Simplified for Speed) ──
-        # In a real-time EXTENSION block, we don't always wait for full DOM fetch
-        # unless it's a dedicated scan. We mark as "Pending" or skip for now.
-        visual_result = None # visual_engine.analyze_similarity(url)
-        behavior_result = {"findings": [], "behavior_risk_score": 0} 
-
+        # ── Step 7: Behavioral Analysis (Live HTML Fetch) ─────────────
+        # We perform a full behavioral scan to detect credential harvesting
+        html_content = await behavioral_engine.fetch_html(url)
+        behavior_result = behavioral_engine.analyze_behavior(html_content, url)
+        
         # ── Step 8: Hybrid Risk Scoring & Reasoning ────────────────────
         risk_score = self._calculate_risk_score(
-            features, classification, confidence, gsb_result, vt_result, visual_result, behavior_result
+            features, classification, confidence, gsb_result, vt_result, None, behavior_result
         )
 
         explanation = self._generate_explanation(
             features, classification, risk_score,
-            gsb_result, vt_result, visual_result, behavior_result, url
+            gsb_result, vt_result, None, behavior_result, url
         )
 
         final_classification = (
             "Malicious" if risk_score >= 65 else ("Suspicious" if risk_score >= 35 else "Safe")
         )
+
+        # Enhance raw features for the frontend
+        features.update({
+            "form_count": sum(1 for f in behavior_result.get("findings", []) if "form" in f.lower()),
+            "password_fields": sum(1 for f in behavior_result.get("findings", []) if "password" in f.lower()),
+            "external_scripts": sum(1 for f in behavior_result.get("findings", []) if "script" in f.lower()),
+            "registrar": extractor._get_registrar(domain),
+            "country": extractor._get_country(domain)
+        })
 
         latency = (time.time() - start_ts) * 1000
 
@@ -184,11 +192,13 @@ class IntelligenceEngine:
             "latency_ms": round(latency, 2),
             "raw_features": features,
             "top_contributors": shap_contributors,
-            "brand_analysis": visual_result or {"status": "Visual check skipped for latency"},
             "threat_intel_reports": {
                 "google_safe_browsing": gsb_result or {"status": "skipped_or_timeout"},
                 "virustotal": vt_result or {"status": "skipped_or_timeout"},
             },
+            "behavioral_analysis": behavior_result,
+            "source": source,
+            "node_id": "Neural_Node_7"
         }
 
     # ──────────────────────────────────────────────────────────────

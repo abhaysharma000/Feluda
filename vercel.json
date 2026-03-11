@@ -2,17 +2,11 @@
     "version": 2,
     "builds": [
         {
-            "src": "package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dashboard-react/dist"
-            }
-        },
-        {
             "src": "app/main.py",
             "use": "@vercel/python",
             "config": {
-                "maxLambdaSize": "50mb"
+                "maxLambdaSize": "512mb",
+                "runtime": "python3.9"
             }
         }
     ],
@@ -20,15 +14,6 @@
         {
             "src": "/api/(.*)",
             "dest": "app/main.py"
-        },
-        {
-            "src": "/dashboard/(.*)",
-            "dest": "/$1",
-            "check": true
-        },
-        {
-            "src": "/dashboard/(.*)",
-            "dest": "/index.html"
         },
         {
             "src": "/(.*)",

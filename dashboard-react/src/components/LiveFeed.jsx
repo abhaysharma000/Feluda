@@ -40,10 +40,19 @@ export const LiveFeed = () => {
                                     </span>
                                     <div className="flex items-center gap-1.5 translate-y-[0.5px]">
                                         <Shield className={clsx("w-2.5 h-2.5",
+                                            log.source === 'extension' ? 'text-soc-accent' :
                                             log.verdict === 'Malicious' ? 'text-soc-danger' :
                                                 log.verdict === 'Suspicious' ? 'text-soc-warning' : 'text-soc-accent/50'
                                         )} />
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{log.node}</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{log.node}</span>
+                                            <span className={clsx(
+                                                "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
+                                                log.source === 'extension' ? "bg-soc-accent/10 text-soc-accent border border-soc-accent/20" : "bg-white/5 text-slate-600 border border-white/5"
+                                            )}>
+                                                {log.source || 'manual'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <span className={clsx(
