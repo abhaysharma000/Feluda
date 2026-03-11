@@ -1,7 +1,10 @@
 import joblib
 import os
+import time
+import asyncio
 import pandas as pd
 import numpy as np
+from urllib.parse import urlparse
 from app.core.url_features import extractor
 from app.core.threat_intel import threat_intel
 from app.core.visual_engine import visual_engine

@@ -55,7 +55,7 @@ if os.path.exists(extension_path):
 
 @app.get("/", include_in_schema=False)
 async def root():
-    return RedirectResponse(url="/dashboard")
+    return RedirectResponse(url="/dashboard/")
 
 
 # ── MongoDB / In-Memory Fallback ──────────────────────────────
@@ -122,12 +122,9 @@ class BlacklistEntry(BaseModel):
 # ── Startup ────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_db_client():
-    print("Feluda AI Backend starting up...")
-    # Start adaptive retraining scheduler
-    asyncio.create_task(
-        adaptive_learner.schedule_auto_retrain(db=db, engine=intelligence_engine)
-    )
-    print("Feluda Learner: Adaptive cloud-sync engine scheduled.")
+    print("Feluda AI Backend starting up in Serverless Mode.")
+    # Background tasks are disabled on Vercel to prevent function crashes
+    # Retraining should be triggered manually via /api/admin/retrain
 
 
 # ─────────────────────────────────────────────────────────────────
