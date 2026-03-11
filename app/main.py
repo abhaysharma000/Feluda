@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from pydantic import BaseModel, HttpUrl, field_validator
 from typing import List, Optional
 import uvicorn
@@ -43,10 +43,10 @@ react_dist = os.path.join(base_dir, "app", "static", "dashboard")
 dev_dist = os.path.join(base_dir, "dashboard-react", "dist")
 extension_path = os.path.join(base_dir, "extension")
 
-if os.path.exists(react_dist):
-    app.mount("/dashboard", StaticFiles(directory=react_dist, html=True), name="react_dist")
-elif os.path.exists(dev_dist):
-    app.mount("/dashboard", StaticFiles(directory=dev_dist, html=True), name="dev_dist")
+_dashboard_dir = react_dist if os.path.exists(react_dist) else (dev_dist if os.path.exists(dev_dist) else None)
+
+if _dashboard_dir:
+    app.mount("/dashboard/assets", StaticFiles(directory=os.path.join(_dashboard_dir, "assets")), name="assets")
 
 if os.path.exists(extension_path):
     app.mount("/extension", StaticFiles(directory=extension_path, html=True), name="extension")
@@ -55,6 +55,18 @@ if os.path.exists(extension_path):
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/dashboard/")
+
+
+# SPA catch-all: serve index.html for all /dashboard/* routes
+@app.get("/dashboard", include_in_schema=False)
+@app.get("/dashboard/{path:path}", include_in_schema=False)
+async def serve_dashboard(path: str = ""):
+    if _dashboard_dir:
+        index_path = os.path.join(_dashboard_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+    return RedirectResponse(url="/")
+
 
 
 # ── MongoDB / In-Memory Fallback ──────────────────────────────
