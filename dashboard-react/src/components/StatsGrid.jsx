@@ -18,36 +18,36 @@ export const StatsGrid = () => {
 
     const statsConfig = [
         {
-            label: 'Assets Scanned',
-            value: stats.scanned.toLocaleString(),
+            label: 'URLs Scanned Today',
+            value: stats.scanned_today.toLocaleString(),
             icon: ShieldCheck,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            desc: 'Total forensic inspections'
+            desc: 'Real-time daily volume'
         },
         {
             label: 'Threats Blocked',
-            value: stats.malicious.toLocaleString(),
+            value: stats.blocked.toLocaleString(),
             icon: ShieldAlert,
             color: 'text-soc-danger',
             accent: 'bg-soc-danger/5',
             desc: 'Neutralized malicious vectors'
         },
         {
-            label: 'Global Intelligence',
-            value: 'Connected',
+            label: 'Suspicious Activities',
+            value: stats.suspicious.toLocaleString(),
             icon: Globe2,
-            color: 'text-soc-success',
-            accent: 'bg-soc-success/5',
-            desc: 'ML Core synchronization active'
+            color: 'text-soc-warning',
+            accent: 'bg-soc-warning/5',
+            desc: 'Awaiting deeper heuristic scan'
         },
         {
-            label: 'System Status',
-            value: 'Operational',
+            label: 'Backend Latency',
+            value: `${stats.latency_ms}ms`,
             icon: Zap,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
-            desc: 'Protection engine online'
+            desc: 'API Intelligence response'
         }
     ];
 

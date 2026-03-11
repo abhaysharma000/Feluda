@@ -13,6 +13,7 @@ from app.core.engine import intelligence_engine
 from app.core.email_analyzer import email_analyzer
 from app.core.nlp_engine import nlp_engine
 from app.core.qr_scanner import qr_scanner
+from app.core.behavioral_engine import behavioral_engine
 import adaptive_learner
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -183,6 +184,39 @@ async def scan_url(request: URLRequest):
     return result
 
 
+@app.post("/api/analyze/html", tags=["Scan"])
+async def analyze_html(request: URLRequest):
+    """Perform deep behavioral analysis of a webpage's HTML and DOM structure."""
+    html = await behavioral_engine.fetch_html(request.url)
+    analysis = behavioral_engine.analyze_behavior(html, request.url)
+    
+    # Map to requested SOC format
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    forms = soup.find_all('form')
+    passwords = soup.find_all('input', {'type': 'password'})
+    scripts = soup.find_all('script')
+    
+    findings = analysis.get("findings", [])
+    suspicious_action = any("external domain" in f.lower() for f in findings)
+    
+    risk = "LOW"
+    if analysis["behavior_risk_score"] >= 65: risk = "HIGH"
+    elif analysis["behavior_risk_score"] >= 35: risk = "MEDIUM"
+
+    return {
+        "url": request.url,
+        "forms_detected": len(forms),
+        "password_fields": len(passwords),
+        "external_scripts": len(scripts),
+        "redirect_chains": 0, # Placeholder for more complex crawler
+        "suspicious_form_action": suspicious_action,
+        "risk": risk,
+        "behavior_report": analysis
+    }
+
+
 @app.post("/api/scan/email", tags=["Scan"])
 async def scan_email(request: EmailRequest):
     """Analyze email content using the unified NLP engine (ML) + heuristic semantic analysis."""
@@ -281,6 +315,89 @@ async def get_stats():
         "email_phish": sum(1 for l in mock_logs if l.get('type') == 'EMAIL'),
         "qr_threats": 0,
     }
+
+
+@app.get("/api/stats", tags=["Analytics"])
+async def get_soc_stats():
+    """Get SOC-specific real-time stats."""
+    now = datetime.utcnow()
+    day_start = datetime(now.year, now.month, now.day)
+    
+    scanned_today = 0
+    blocked = 0
+    suspicious = 0
+    latencies = []
+
+    try:
+        if logs is not None:
+            scanned_today = await logs.count_documents({"timestamp": {"$gte": day_start}})
+            blocked = await logs.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Malicious"})
+            suspicious = await logs.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Suspicious"})
+            
+            # Get avg latency
+            cursor = logs.find({"timestamp": {"$gte": day_start}}).limit(100)
+            async for doc in cursor:
+                lat = doc.get("result", {}).get("latency_ms")
+                if lat: latencies.append(lat)
+        else:
+            raise Exception("Using in-memory")
+    except Exception:
+        today_logs = [l for l in mock_logs if l['timestamp'] >= day_start]
+        scanned_today = len(today_logs)
+        blocked = sum(1 for l in today_logs if l['result'].get('classification') == 'Malicious')
+        suspicious = sum(1 for l in today_logs if l['result'].get('classification') == 'Suspicious')
+        latencies = [l['result'].get('latency_ms', 0) for l in today_logs if 'latency_ms' in l['result']]
+
+    avg_lat = int(sum(latencies) / len(latencies)) if latencies else 14
+    
+    return {
+        "scanned_today": scanned_today,
+        "blocked": blocked,
+        "suspicious": suspicious,
+        "latency_ms": avg_lat
+    }
+
+
+@app.get("/api/top-threats", tags=["Analytics"])
+async def get_top_threats():
+    """Get top malicious domains from recent logs."""
+    counts = {}
+    try:
+        data = []
+        if logs is not None:
+            cursor = logs.find({"result.classification": "Malicious"}).sort("timestamp", -1).limit(500)
+            async for doc in cursor:
+                data.append(doc)
+        else:
+            data = [l for l in mock_logs if l['result'].get('classification') == 'Malicious']
+        
+        for entry in data:
+            url = entry.get("input", "")
+            domain = url.split("//")[-1].split("/")[0] if "//" in url else url
+            if domain:
+                counts[domain] = counts.get(domain, 0) + 1
+    except Exception:
+        pass
+    
+    sorted_threats = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    return [t[0] for t in sorted_threats] if sorted_threats else ["No threats identified"]
+
+
+@app.get("/api/logs", tags=["Analytics"])
+async def get_soc_logs(limit: int = 50):
+    """Retrieve logs in standardized SOC format."""
+    raw_logs = await get_logs(limit=limit)
+    soc_logs = []
+    for entry in raw_logs:
+        result = entry.get("result", {})
+        soc_logs.append({
+            "timestamp": entry.get("timestamp"),
+            "domain": entry.get("input", "").split("//")[-1].split("/")[0] if "//" in entry.get("input", "") else "Unknown",
+            "risk_score": result.get("risk_score", 0),
+            "classification": result.get("classification", "Unknown"),
+            "source": entry.get("source", "System")
+        })
+    return soc_logs
 
 
 @app.get("/api/analytics/logs", tags=["Analytics"])

@@ -8,20 +8,13 @@ import { Topbar } from './components/Topbar'
 import { Dashboard } from './pages/Dashboard'
 import { Logs } from './pages/Logs'
 import { Settings } from './pages/Settings'
-import { ShowcaseModal } from './components/ShowcaseModal'
-import { NeuralBackground } from './components/NeuralBackground'
-import { LiveFeed } from './components/LiveFeed'
-
 const App = () => {
   const location = useLocation();
 
   return (
     <ErrorBoundary>
       <div className="relative min-h-screen bg-soc-bg text-slate-300 overflow-hidden font-sans">
-        <NeuralBackground />
-
         <GlobalToast />
-        <ShowcaseModal />
 
         <div className="flex h-screen overflow-hidden relative z-10 w-full">
           <Sidebar />
@@ -43,17 +36,6 @@ const App = () => {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/logs" element={<Logs />} />
-                    <Route path="/live-feed" element={
-                      <div className="h-full flex flex-col space-y-8 pb-12">
-                        <header>
-                          <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2 italic">Threat_Stream_Horizon</h1>
-                          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">Real-time forensic telemetry from localized inference nodes.</p>
-                        </header>
-                        <div className="flex-1 glass-panel p-0 overflow-hidden relative border-white/[0.03] bg-black/20">
-                          <LiveFeed />
-                        </div>
-                      </div>
-                    } />
                     <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </motion.div>

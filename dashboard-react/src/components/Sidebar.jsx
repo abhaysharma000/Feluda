@@ -4,27 +4,23 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
     Shield,
     LayoutDashboard,
-    Globe2,
-    Activity,
     Terminal,
     Settings,
     Download,
     Cpu,
-    Zap,
-    CircleStop
+    Lock
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 const navItems = [
     { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, path: '/' },
-    { id: 'live-feed', label: 'Threat Stream', icon: Activity, path: '/live-feed' },
     { id: 'logs', label: 'Forensic Audit', icon: Terminal, path: '/logs' },
-    { id: 'admin', label: 'Configurations', icon: Settings, path: '/settings' },
+    { id: 'settings', label: 'SOC Configurations', icon: Settings, path: '/settings' },
 ];
 
 export const Sidebar = () => {
-    const { isSimulationMode, toggleSimulation, isSidebarOpen, setIsSidebarOpen } = useUI();
+    const { isSidebarOpen, setIsSidebarOpen } = useUI();
     const location = useLocation();
 
     return (
@@ -54,10 +50,10 @@ export const Sidebar = () => {
                             <Shield className="text-soc-accent w-6 h-6 relative z-10" />
                         </div>
                         <div className="flex flex-col">
-                            <h2 className="text-xl font-bold text-white tracking-tight -mb-1">
+                            <h2 className="text-xl font-black text-white tracking-widest leading-none">
                                 FELUDA
                             </h2>
-                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">SOC Engine v2.4</span>
+                            <span className="text-[8px] font-black text-soc-accent uppercase tracking-[0.3em] mt-1">Phish_Shield SOC</span>
                         </div>
                     </div>
                 </div>
@@ -107,43 +103,25 @@ export const Sidebar = () => {
                 </nav>
 
                 {/* Footer Actions */}
-                <div className="p-6 mt-auto border-t border-white/5 bg-black/10">
-                    <div className="glass-panel p-4 space-y-4 border-white/[0.03]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Engine Status</span>
-                                <div className="flex items-center gap-2">
-                                    <div className={clsx("w-2 h-2 rounded-full", isSimulationMode ? "bg-soc-warning animate-pulse" : "bg-soc-success")} />
-                                    <span className="text-[11px] font-bold text-white uppercase tracking-tight">
-                                        {isSimulationMode ? 'Simulation' : 'Active'}
-                                    </span>
-                                </div>
+                <div className="p-8 mt-auto border-t border-white/5 bg-black/20">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[8px] font-black uppercase text-slate-600 tracking-[0.2em]">Engine Status</span>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-soc-success animate-pulse" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-tight">PROTECTED</span>
                             </div>
-                            <button
-                                onClick={toggleSimulation}
-                                className={clsx(
-                                    "p-2.5 rounded-xl transition-all duration-300",
-                                    isSimulationMode
-                                        ? "bg-soc-warning/10 text-soc-warning border border-soc-warning/20 shadow-lg shadow-soc-warning/5"
-                                        : "bg-white/5 text-slate-500 hover:text-white hover:bg-white/10"
-                                )}
-                                title={isSimulationMode ? "Stop Data Stream" : "Start Data Stream"}
-                            >
-                                {isSimulationMode ? <CircleStop className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
-                            </button>
                         </div>
-
-                        <button className="soc-button soc-button-secondary w-full justify-center py-2.5 border-white/[0.05] hover:bg-white/[0.05]">
-                            <Download className="w-4 h-4" />
-                            <span className="text-[10px] uppercase tracking-[0.15em]">System Brief</span>
-                        </button>
+                        <div className="p-2.5 rounded-xl bg-soc-success/10 text-soc-success border border-soc-success/20 shadow-lg shadow-soc-success/5">
+                            <Lock className="w-5 h-5" />
+                        </div>
                     </div>
 
-                    <div className="mt-5 px-2 flex items-center justify-between text-[8px] font-bold text-slate-600 uppercase tracking-widest leading-none">
-                        <span className="hover:text-slate-400 transition-colors cursor-help">Neural Engine v2.4</span>
-                        <div className="flex items-center gap-1.5">
-                            <Cpu className="w-2.5 h-2.5" />
-                            <span>Node_01_Alpha</span>
+                    <div className="flex items-center justify-between text-[8px] font-black text-slate-700 uppercase tracking-[0.3em] italic">
+                        <span>Node_01_Alpha</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-soc-accent" />
+                            <span>v2.5.0_PROD</span>
                         </div>
                     </div>
                 </div>

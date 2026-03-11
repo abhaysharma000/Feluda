@@ -25,9 +25,9 @@ export const HeroPanel = () => {
     const activeColor = isScanning ? 'accent' : (isThreatState ? 'danger' : 'success');
 
     const statusMap = {
-        accent: { text: "NEURAL SCAN ACTIVE", icon: Activity, color: "text-soc-accent", bg: "bg-soc-accent/5", border: "border-soc-accent/20" },
+        accent: { text: "SYSTEM INVESTIGATION ACTIVE", icon: Activity, color: "text-soc-accent", bg: "bg-soc-accent/5", border: "border-soc-accent/20" },
         danger: { text: "THREAT ANOMALY DETECTED", icon: AlertTriangle, color: "text-soc-danger", bg: "bg-soc-danger/5", border: "border-soc-danger/20" },
-        success: { text: "INTELLIGENCE GRID SECURE", icon: ShieldCheck, color: "text-soc-success", bg: "bg-soc-success/5", border: "border-soc-success/20" }
+        success: { text: "SOC PROTECTION ENABLED", icon: ShieldCheck, color: "text-soc-success", bg: "bg-soc-success/5", border: "border-soc-success/20" }
     };
 
     const currentStatus = statusMap[activeColor];
@@ -96,24 +96,24 @@ export const HeroPanel = () => {
                             </div>
 
                             <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1]">
-                                <span className="text-gradient">Security Operations</span>
-                                <br /> Command Console
+                                <span className="text-gradient">SOC Investigation</span>
+                                <br /> Command Terminal
                             </h1>
 
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-3 pt-4 text-slate-500">
                                 <div className="flex items-center gap-2">
                                     <Cpu className="w-4 h-4 text-soc-accent/40" />
                                     <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                        Latency: {scanResult?.latency_ms ? `${scanResult.latency_ms}ms` : "---"}
+                                        Latency: {stats.latency_ms}ms
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Database className="w-4 h-4 text-soc-accent/40" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Node: {scanResult?.node_id ?? "Global_Node_Alpha"}</span>
+                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Node: FELUDA_NODE_01</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Zap className="w-4 h-4 text-soc-accent/40" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Engine: FELUDA_ML_v2.4</span>
+                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">System: PHISH_SHIELD_v2.4</span>
                                 </div>
                             </div>
                         </div>
@@ -122,27 +122,25 @@ export const HeroPanel = () => {
                     {/* Stats Summary Cards */}
                     <div className="grid grid-cols-2 gap-4 w-full lg:w-96">
                         <div className="glass-panel bg-white/[0.01] p-6 hover:bg-white/[0.03] transition-colors border-white/[0.03] group">
-                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Inspections</div>
+                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Daily Volume</div>
                             <div className="text-3xl font-bold text-white mb-2 tabular-nums group-hover:text-soc-accent transition-colors">
-                                <Counter value={stats.scanned} />
+                                <Counter value={stats.scanned_today} />
                             </div>
                             <div className="flex items-center gap-1.5 text-[9px] font-bold text-soc-accent/60">
                                 <Activity className="w-3 h-3" />
-                                <span className="uppercase">Real-time Stream</span>
+                                <span className="uppercase">Real-time Stats</span>
                             </div>
                         </div>
                             <div className="glass-panel bg-white/[0.01] p-6 hover:bg-white/[0.03] transition-colors border-white/[0.03] group">
-                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Aggregate Risk Index</div>
-                            <div className={clsx("text-3xl font-bold mb-2 tabular-nums transition-colors",
-                                stats.avgRisk > 50 ? "text-soc-danger" : "text-soc-accent group-hover:text-white"
-                            )}>
-                                <Counter value={stats.avgRisk} suffix="%" />
+                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Neutralized Threats</div>
+                            <div className="text-3xl font-bold text-white mb-2 tabular-nums group-hover:text-soc-danger transition-colors">
+                                <Counter value={stats.blocked} />
                             </div>
                             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${stats.avgRisk}%` }}
-                                    className={clsx("h-full", stats.avgRisk > 50 ? "bg-soc-danger" : "bg-soc-accent")}
+                                    animate={{ width: `${(stats.blocked / (stats.scanned_today || 1)) * 100}%` }}
+                                    className="h-full bg-soc-danger"
                                 />
                             </div>
                         </div>

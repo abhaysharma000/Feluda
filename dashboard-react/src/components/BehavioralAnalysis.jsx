@@ -24,11 +24,11 @@ export const BehavioralAnalysis = ({ data, isLoading }) => {
     }
 
     // Forensic indicators extracted from structural and behavioral analysis
-    const behavior = data.raw_features || {};
-    const findings = data.explanation?.filter(e => e.startsWith('Behavior:') || e.startsWith('Structural:')) || [];
+    const behavior = data.behavior || {};
+    const findings = behavior.behavior_report?.findings || [];
 
     const stats = [
-        { label: 'Form Count', value: behavior.form_count ?? 0, icon: Smartphone, color: 'text-soc-accent' },
+        { label: 'Form Count', value: behavior.forms_detected ?? 0, icon: Smartphone, color: 'text-soc-accent' },
         { label: 'Password Fields', value: behavior.password_fields ?? 0, icon: Lock, color: 'text-soc-danger' },
         { label: 'External Scripts', value: behavior.external_scripts ?? 0, icon: Code, color: 'text-soc-warning' },
     ];
@@ -42,53 +42,63 @@ export const BehavioralAnalysis = ({ data, isLoading }) => {
             {/* Visual Indicators */}
             <div className="grid grid-cols-3 gap-4">
                 {stats.map((s, i) => (
-                    <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center space-y-2 group hover:bg-white/[0.04] transition-colors">
+                    <div key={i} className="p-4 rounded-xl bg-white/[0.01] border border-white/[0.05] text-center space-y-2 group hover:bg-white/[0.03] transition-colors shadow-inner">
                         <s.icon className={clsx("w-4 h-4 mx-auto opacity-50 group-hover:opacity-100 transition-opacity", s.color)} />
-                        <div className="text-xl font-black text-white">{s.value}</div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</div>
+                        <div className="text-xl font-black text-white tabular-nums">{s.value}</div>
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
                     </div>
                 ))}
             </div>
 
             {/* Critical Findings */}
-            <div className="space-y-3">
-                <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Behavioral Red Flags</h4>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Forensic Signal Matrix</h4>
+                    {behavior.suspicious_form_action && (
+                        <span className="px-2 py-0.5 rounded-full bg-soc-danger/10 text-soc-danger text-[7px] font-black uppercase tracking-widest border border-soc-danger/20 animate-pulse">
+                            Suspicious Action
+                        </span>
+                    )}
+                </div>
+                
                 <div className="grid gap-2">
                     {findings.length > 0 ? (
                         findings.map((f, i) => (
-                            <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-soc-danger/5 border border-soc-danger/10">
-                                <ShieldAlert className="w-3.5 h-3.5 text-soc-danger" />
-                                <span className="text-[10px] font-bold text-soc-danger uppercase tracking-tight">{f.replace('Behavior: ', '').replace('Structural: ', '')}</span>
+                            <div key={i} className="flex items-center gap-3 p-4 rounded-xl bg-soc-danger/5 border border-soc-danger/10 group hover:border-soc-danger/30 transition-all">
+                                <ShieldAlert className="w-4 h-4 text-soc-danger" />
+                                <span className="text-[10px] font-black text-soc-danger uppercase tracking-tight">{f}</span>
                             </div>
                         ))
                     ) : (
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-soc-success/5 border border-soc-success/10">
-                            <CheckCircle className="w-3.5 h-3.5 text-soc-success" />
-                            <span className="text-[10px] font-bold text-soc-success uppercase tracking-tight">No malicious behaviors detected</span>
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-soc-success/5 border border-soc-success/10">
+                            <CheckCircle className="w-4 h-4 text-soc-success" />
+                            <span className="text-[10px] font-black text-soc-success uppercase tracking-widest">No malicious behaviors detected in DOM</span>
                         </div>
                     )}
 
                     {/* Forensic Meta-data */}
-                    {data.behavioral_analysis?.redirect_chain_length > 1 && (
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-soc-warning/5 border border-soc-warning/10">
-                            <Activity className="w-3.5 h-3.5 text-soc-warning" />
-                            <span className="text-[10px] font-bold text-soc-warning uppercase tracking-tight">Redirect Chain: {data.behavioral_analysis.redirect_chain_length} hops detected</span>
+                    {behavior.redirect_chains > 1 && (
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-soc-warning/5 border border-soc-warning/10">
+                            <Activity className="w-4 h-4 text-soc-warning" />
+                            <span className="text-[10px] font-black text-soc-warning uppercase tracking-tight">Redirect Chain: {behavior.redirect_chains} hops detected</span>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* DOM Trust Score */}
-            <div className="pt-4 border-t border-white/[0.03]">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">DOM Integrity Score</span>
-                    <span className="text-xs font-bold text-white tracking-tight">{(100 - (data.risk_score * 0.4)).toFixed(0)}%</span>
+            <div className="pt-6 border-t border-white/5">
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Behavioral Integrity</span>
+                    <span className="text-xs font-black text-white tracking-tighter tabular-nums">
+                        {behavior.risk === 'HIGH' ? '24%' : (behavior.risk === 'MEDIUM' ? '68%' : '98%')}
+                    </span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
                     <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${(100 - (data.risk_score * 0.4))}%` }}
-                        className={clsx("h-full", data.risk_score > 60 ? "bg-soc-danger" : "bg-soc-accent")}
+                        animate={{ width: behavior.risk === 'HIGH' ? '24%' : (behavior.risk === 'MEDIUM' ? '68%' : '98%') }}
+                        className={clsx("h-full shadow-[0_0_10px]", behavior.risk === 'HIGH' ? "bg-soc-danger shadow-soc-danger/30" : "bg-soc-accent shadow-soc-accent/30")}
                     />
                 </div>
             </div>

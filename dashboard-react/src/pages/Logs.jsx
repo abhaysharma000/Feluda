@@ -9,6 +9,8 @@ const ActivityIcon = ({ className }) => (
     </svg>
 );
 
+import { useUI } from '../context/UIContext';
+
 export const Logs = () => {
     const { stats } = useUI();
     

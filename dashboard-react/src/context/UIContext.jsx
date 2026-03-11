@@ -3,11 +3,6 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 const UIContext = createContext();
 
 export const UIProvider = ({ children }) => {
-    // Simulation / Playback State
-    const [isSimulationMode, setIsSimulationMode] = useState(false);
-    const [isPlaybackPaused, setIsPlaybackPaused] = useState(false);
-    const [playbackSpeed, setPlaybackSpeed] = useState(1); // 1x, 2x, 4x
-
     // Global Toast State
     const [toasts, setToasts] = useState([]);
     const addToast = useCallback((message, type = 'info', duration = 3000) => {
@@ -36,7 +31,7 @@ export const UIProvider = ({ children }) => {
         setIsNLPScanning(true);
         setNlpResult(null);
         try {
-            const response = await fetch('http://localhost:8001/api/scan/email', {
+            const response = await fetch('/api/scan/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
@@ -58,97 +53,49 @@ export const UIProvider = ({ children }) => {
 
     // Real-time Data State
     const [logs, setLogs] = useState([]);
+    const [topThreats, setTopThreats] = useState([]);
     const [stats, setStats] = useState({
-        scanned: 0,
-        malicious: 0,
+        scanned_today: 0,
+        blocked: 0,
         suspicious: 0,
-        avgRisk: 0
+        latency_ms: 0
     });
-
-    const addLog = useCallback((log) => {
-        setLogs(prev => {
-            const newLogs = [
-                { 
-                    id: Date.now(), 
-                    timestamp: new Date().toISOString(), 
-                    source: 'manual',
-                    ...log 
-                },
-                ...prev.slice(0, 49) // Keep last 50
-            ];
-
-            // Calculate new average risk for visual consistency
-            const totalRisk = newLogs.reduce((acc, curr) => acc + (curr.risk || 0), 0);
-            const newAvgRisk = newLogs.length > 0 ? (totalRisk / newLogs.length).toFixed(1) : 0;
-
-            setStats(s => ({ ...s, avgRisk: parseFloat(newAvgRisk) }));
-            return newLogs;
-        });
-    }, []);
 
     const refreshTelemetry = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8001/api/analytics/stats');
-            if (response.ok) {
-                const data = await response.json();
-                setStats(prev => ({
-                    ...prev,
-                    scanned: data.total_scanned,
-                    malicious: data.malicious_blocked,
-                    suspicious: data.suspicious
-                }));
+            // 1. System Stats
+            const statsRes = await fetch('/api/stats');
+            if (statsRes.ok) {
+                const data = await statsRes.json();
+                setStats(data);
             }
 
-            const logsRes = await fetch('http://localhost:8001/api/analytics/logs');
+            // 2. Intelligence Logs
+            const logsRes = await fetch('/api/logs?limit=50');
             if (logsRes.ok) {
                 const logsData = await logsRes.json();
-                const mappedLogs = logsData.map(l => ({
-                    id: l._id || Math.random().toString(36).substr(2, 9),
-                    timestamp: l.timestamp,
-                    node: l.result?.node_id || 'Neural_Node_7',
-                    vector: `${l.type} [${l.input}]`,
-                    risk: l.result?.risk_score ?? 0,
-                    verdict: l.result?.classification ?? 'Unknown',
-                    source: l.source || 'manual'
-                }));
-                setLogs(mappedLogs);
+                setLogs(logsData);
+            }
+
+            // 3. Top Threats
+            const threatRes = await fetch('/api/top-threats');
+            if (threatRes.ok) {
+                const threatData = await threatRes.json();
+                setTopThreats(threatData);
             }
         } catch (err) {
-            console.error("Telemetry fetch failed:", err);
+            console.warn("Telemetry fetch failed. Engine offline?");
         }
-    }, [addToast]);
+    }, []);
 
-    // Initial Telemetry Load
+    // Initial Telemetry Load & Polling
     useEffect(() => {
         refreshTelemetry();
-        // Background polling for forensic logs
-        const interval = setInterval(refreshTelemetry, 8000);
+        const interval = setInterval(refreshTelemetry, 5000);
         return () => clearInterval(interval);
     }, [refreshTelemetry]);
 
-    // Simulation logic disabled
-    useEffect(() => {
-        if (isSimulationMode && !isPlaybackPaused) {
-            // Simulation Logic disabled for pure backend stream
-        }
-    }, [isSimulationMode, isPlaybackPaused]);
-
-    // Simulation logic helper
-    const toggleSimulation = () => {
-        setIsSimulationMode(!isSimulationMode);
-        addToast(
-            !isSimulationMode ? "Simulation Mode Active" : "Simulation Mode Deactivated",
-            !isSimulationMode ? "warning" : "info"
-        );
-    };
-
     const value = {
-        isSimulationMode,
-        toggleSimulation,
-        isPlaybackPaused,
-        setIsPlaybackPaused,
-        playbackSpeed,
-        setPlaybackSpeed,
         toasts,
         addToast,
         isZeroDayMode,
@@ -157,8 +104,6 @@ export const UIProvider = ({ children }) => {
         setIsScanning,
         scanResult,
         setScanResult,
-        isShowcaseOpen,
-        setIsShowcaseOpen,
         lastScanVerdict,
         setLastScanVerdict,
         isSidebarOpen,
@@ -167,9 +112,8 @@ export const UIProvider = ({ children }) => {
         nlpResult,
         analyzeEmail,
         logs,
-        addLog,
+        topThreats,
         stats,
-        setStats,
         refreshTelemetry
     };
 
