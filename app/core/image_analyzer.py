@@ -4,16 +4,17 @@ Analyzes static images for deepfake signatures and face spoofing using DeepFace.
 """
 import os
 import io
-import cv2
-import numpy as np
-from PIL import Image
-
 try:
+    import cv2
+    import numpy as np
     from deepface import DeepFace
     DEEPFACE_AVAILABLE = True
 except ImportError:
     DEEPFACE_AVAILABLE = False
-    print("WARNING: 'deepface' not installed. Image analysis will be limited.")
+    cv2 = None
+    np = None
+    DeepFace = None
+    print("WARNING: 'deepface' or 'cv2' not installed. Image analysis will be limited.")
 
 class ImageAnalyzer:
     def __init__(self):
