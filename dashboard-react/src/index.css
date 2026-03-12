@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @theme {
     --color-soc-bg: #0B0F19;
@@ -21,8 +21,20 @@
 
 @layer base {
     body {
-        @apply bg-soc-bg text-slate-300 font-sans selection:bg-soc-accent/30 selection:text-white antialiased;
+        background-color: #0B0F19 !important;
+        color: #cbd5e1 !important;
+        font-family: sans-serif;
         overflow-x: hidden;
+    }
+
+    .test-red {
+        background-color: red !important;
+        width: 100px;
+        height: 100px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        z-index: 10000;
     }
 
     /* Custom Scrollbar */
