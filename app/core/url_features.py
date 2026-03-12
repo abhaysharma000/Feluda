@@ -26,6 +26,16 @@ class URLFeatureExtractor:
             'signin', 'credential', 'password', 'confirm', 'auth', 'webscr',
             'ebayisapi', 'secure-login', 'wallet', 'crypto', 'bonus', 'gift'
         ]
+        self.shorteners = [
+            'bit.ly', 'goo.gl', 'shorte.st', 'go2l.ink', 'x.co', 'ow.ly', 't.co', 
+            'tinyurl.com', 'tr.im', 'is.gd', 'cli.gs', 'yfrog.com', 'migre.me',
+            'ff.im', 'tiny.cc', 'url4.eu', 'twit.ac', 'su.pr', 'twurl.nl', 'snipurl.com',
+            'short.to', 'BudURL.com', 'ping.fm', 'post.ly', 'Justas.li', 'bkite.com',
+            'snipr.com', 'fic.kr', 'loopt.us', 'doiop.com', 'short.ie', 'kl.am',
+            'wp.me', 'rubyurl.com', 'om.ly', 'to.ly', 'bit.do', 't.ly'
+        ]
+        self.risky_tlds = ['.xyz', '.tk', '.top', '.ga', '.cf', '.ml', '.gq', '.shop', '.buzz', '.pw']
+        self.top_brands = ['google', 'microsoft', 'apple', 'amazon', 'netflix', 'facebook', 'instagram', 'paypal', 'ebay', 'banking']
 
     def _get_domain_age(self, domain: str):
         """Return (age_in_days, creation_date_str) with caching and 1s cap."""
@@ -134,6 +144,19 @@ class URLFeatureExtractor:
         # Suspicious keyword check
         url_lower = url.lower()
         features['suspicious_keywords'] = sum(1 for kw in self.suspicious_keywords if kw in url_lower)
+
+        # ── Advanced Signals (v2.1) ──────────────────────────
+        # 1. URL Shortener Detection
+        features['is_shortened'] = 1 if any(s in url_lower for s in self.shorteners) else 0
+        
+        # 2. TLD Risk Score
+        features['tld_risk_score'] = 1 if any(url_lower.endswith(tld) for tld in self.risky_tlds) else 0
+        
+        # 3. Brand in Subdomain (Phishing indicator)
+        features['brand_in_subdomain'] = 1 if any(brand in subdomain.lower() for brand in self.top_brands) else 0
+        
+        # 4. Digit-to-Length Ratio
+        features['digit_ratio'] = features['num_digits'] / features['url_length'] if features['url_length'] > 0 else 0
 
         return features
 

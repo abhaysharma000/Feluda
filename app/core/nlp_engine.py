@@ -55,16 +55,40 @@ class NLPEngine:
         return text
 
     def _heuristic_analysis(self, text: str) -> dict:
-        """Fallback keyword-based scoring."""
+        """Enhanced heuristic analysis targeting Social Engineering."""
         text_lower = text.lower()
+        
+        # 1. General Suspicious Keywords
         keywords = ['urgent', 'verify', 'account', 'security', 'suspended', 'login', 'click', 'identity', 'unauthorized', 'bonus']
-        matches = [kw for kw in keywords if kw in text_lower]
-        score = min(len(matches) * 15, 100)
+        keyword_matches = [kw for kw in keywords if kw in text_lower]
+        
+        # 2. Social Engineering Patterns (Fake Messages / Scams)
+        se_patterns = {
+            'Lottery/Prize': r'\b(won|winner|lottery|jackpot|prize|reward|gift card)\b',
+            'Emergency/Fear': r'\b(help|urgent|immediate|arrest|police|legal|threat|lawsuit)\b',
+            'OTP/Account': r'\b(otp|verification code|password reset|verify account|locked|restricted)\b',
+            'Financial/Bank': r'\b(bank|transfer|refund|payment|invoice|overdue|billing|crypto|wallet)\b'
+        }
+        
+        se_matches = []
+        for category, pattern in se_patterns.items():
+            if re.search(pattern, text_lower):
+                se_matches.append(category)
+                
+        # 3. Calculate Score
+        score = len(keyword_matches) * 10 + len(se_matches) * 20
+        score = min(score, 100)
+        
+        explanation = []
+        if keyword_matches: explanation.append(f"Suspicious keywords: {', '.join(keyword_matches[:3])}")
+        if se_matches: explanation.append(f"Social engineering triggers: {', '.join(se_matches)}")
         
         return {
             "risk_score": score,
             "classification": "Malicious" if score >= 65 else ("Suspicious" if score >= 35 else "Safe"),
-            "note": "Heuristic fallback"
+            "social_engineering_indicators": se_matches,
+            "explanation": explanation,
+            "note": "Advanced Heuristic Analysis"
         }
 
 nlp_engine = NLPEngine()

@@ -25,3 +25,8 @@ beautifulsoup4
 # ─── Utilities ──────────────────────────────────────────
 python-dotenv
 pydantic
+
+# ─── Advanced Image Analysis (Deepfake/Face) ────────────
+deepface
+tf-keras
+opencv-python-headless

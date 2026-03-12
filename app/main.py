@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
@@ -14,6 +14,8 @@ from app.core.email_analyzer import email_analyzer
 from app.core.nlp_engine import nlp_engine
 from app.core.qr_scanner import qr_scanner
 from app.core.behavioral_engine import behavioral_engine
+from app.core.image_analyzer import image_analyzer
+from app.core.spam_protector import spam_protector
 import adaptive_learner
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -143,8 +145,13 @@ async def startup_db_client():
 # ─────────────────────────────────────────────────────────────────
 
 @app.post("/api/scan/url", tags=["Scan"])
-async def scan_url(request: URLRequest):
+async def scan_url(request: URLRequest, req_obj: Request):
     """Scan a URL for phishing using the full 7-step intelligence pipeline."""
+    # ── Spam & Rate Limit Check ──────────────────────────────
+    ip = req_obj.client.host
+    if not spam_protector.check_rate_limit(ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Too many scans from this IP.")
+    
     domain = request.url.split("//")[-1].split("/")[0]
 
     # ── Blacklist check first ─────────────────────────────────
@@ -230,8 +237,16 @@ async def analyze_html(request: URLRequest):
 
 
 @app.post("/api/scan/email", tags=["Scan"])
-async def scan_email(request: EmailRequest):
+async def scan_email(request: EmailRequest, req_obj: Request):
     """Analyze email content using the unified NLP engine (ML) + heuristic semantic analysis."""
+    # ── Spam & Bombing Protection ──────────────────────────
+    if not spam_protector.check_duplicate_content(request.content):
+        return {
+            "risk_score": 100,
+            "classification": "Malicious",
+            "note": "Message Bombing Detected: Identical content sent repeatedly."
+        }
+        
     # 1. High-speed ML Prediction (TF-IDF + Logistic Regression)
     nlp_result = nlp_engine.predict(request.content)
     
@@ -303,6 +318,37 @@ async def scan_qr(file: UploadFile = File(...)):
             findings.append({"qr_data": qr['data'], "analysis": {"note": "Not a URL payload"}})
 
     return {"count": len(findings), "findings": findings}
+
+
+@app.post("/api/scan/image", tags=["Scan"])
+async def scan_image(file: UploadFile = File(...), req_obj: Request = None):
+    """
+    Upload an image for deepfake and face analysis using DeepFace.
+    """
+    # ── Spam & Rate Limit Check ──────────────────────────────
+    ip = req_obj.client.host if req_obj else "unknown"
+    if not spam_protector.check_rate_limit(ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded.")
+
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image.")
+
+    contents = await file.read()
+    result = image_analyzer.analyze_image(contents)
+    
+    # Log scan
+    log_entry = {
+        "timestamp": datetime.utcnow(),
+        "type": "IMAGE_FACIAL",
+        "input": file.filename,
+        "result": result,
+    }
+    try:
+        if logs is not None: await logs.insert_one(log_entry)
+        else: mock_logs.append(log_entry)
+    except: pass
+
+    return result
 
 
 @app.get("/api/analytics/stats", tags=["Analytics"])

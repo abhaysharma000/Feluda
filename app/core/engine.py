@@ -50,16 +50,21 @@ class IntelligenceEngine:
 
     def __init__(self):
         base_dir = os.path.dirname(os.path.dirname(__file__))
-        self.model_path = os.path.join(base_dir, 'models', 'phishing_model.pkl')
+        # Prioritize the heavy-duty extension model if available
+        ext_model_path = os.path.join(base_dir, 'models', 'extension_model.pkl')
+        legacy_model_path = os.path.join(base_dir, 'models', 'phishing_model.pkl')
+        
+        self.model_path = ext_model_path if os.path.exists(ext_model_path) else legacy_model_path
         self.model = None
         self.explainer = None
 
         if os.path.exists(self.model_path):
             try:
                 self.model = joblib.load(self.model_path)
+                print(f"Feluda: Loaded ML model from {os.path.basename(self.model_path)}")
                 self._init_shap()
             except Exception as e:
-                print(f"WARNING: Could not load ML model — {e}")
+                print(f"WARNING: Could not load ML model ({self.model_path}) — {e}")
 
     def _init_shap(self):
         """Pre-initialize SHAP explainer for fast local explanations."""

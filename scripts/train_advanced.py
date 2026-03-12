@@ -66,7 +66,7 @@ def load_datasets():
     if os.path.exists(benign_path):
         df = pd.read_csv(benign_path)
         common_col = 'url' if 'url' in df.columns else df.columns[0]
-        b_list = df[common_col].head(8000).tolist() # Limit for speed
+        b_list = df[common_col].head(20000).tolist() # Increased to 20k
         urls.extend(b_list)
         labels.extend([0] * len(b_list))
         print(f" [+] Ingested Benign: {len(b_list)} samples")
@@ -77,7 +77,7 @@ def load_datasets():
     if os.path.exists(phish_path):
         df = pd.read_csv(phish_path)
         if 'url' in df.columns:
-            p_df = df[df.get('phishing', df.get('label', 1)) == 1].head(5000)
+            p_df = df[df.get('phishing', df.get('label', 1)) == 1].head(15000) # Increased to 15k
             p_list = p_df['url'].tolist()
             urls.extend(p_list)
             labels.extend([1] * len(p_list))
@@ -87,7 +87,7 @@ def load_datasets():
     op_path = os.path.join(RAW_DATA_DIR, 'openphish_feed.txt')
     if os.path.exists(op_path) and os.path.getsize(op_path) > 500:
         with open(op_path, 'r') as f:
-            lines = [l.strip() for l in f.readlines() if l.strip()][:3000]
+            lines = [l.strip() for l in f.readlines() if l.strip()][:5000] # Increased to 5k
             urls.extend(lines)
             labels.extend([1] * len(lines))
             print(f" [+] Ingested OpenPhish: {len(lines)} samples")
@@ -122,11 +122,18 @@ def train_advanced():
     X = pd.DataFrame(features)
     y = np.array(final_labels)
 
-    print(f"[*] Training Calibrated Random Forest (N={len(X)})...")
+    print(f"[*] Training Optimized Calibrated Random Forest (N={len(X)})...")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    base_rf = RandomForestClassifier(n_estimators=100, max_depth=12, n_jobs=-1, random_state=42)
-    model = CalibratedClassifierCV(base_rf, method='sigmoid', cv=3)
+    # Increase model capacity for higher accuracy
+    base_rf = RandomForestClassifier(
+        n_estimators=300, 
+        max_depth=20, 
+        min_samples_split=5, 
+        n_jobs=-1, 
+        random_state=42
+    )
+    model = CalibratedClassifierCV(base_rf, method='sigmoid', cv=5)
     model.fit(X_train, y_train)
 
     print(f"[+] Accuracy: {model.score(X_test, y_test):.4f}")
