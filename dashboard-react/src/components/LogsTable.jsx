@@ -93,10 +93,10 @@ export const LogsTable = ({ filterSource = null }) => {
                                             <td className="px-6 py-4 text-slate-500 tabular-nums">
                                                 <div className="flex flex-col">
                                                     <span className="text-white/60">
-                                                        {new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: '2-digit' })}
+                                                        {log.timestamp ? new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: '2-digit' }) : "---"}
                                                     </span>
                                                     <span className="text-[9px]">
-                                                        {new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                        {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }) : "--:--"}
                                                     </span>
                                                 </div>
                                             </td>

@@ -14,7 +14,7 @@ export const BehavioralAnalysis = ({ data, isLoading }) => {
         );
     }
 
-    if (!data || !data.brand_analysis) {
+    if (!data || (!data.behavioral_analysis && !data.behavior)) {
         return (
             <div className="flex flex-col items-center justify-center py-10 opacity-30 text-center">
                 <Code className="w-8 h-8 mb-4 text-slate-500" />
