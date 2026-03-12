@@ -5,6 +5,7 @@ import { UIProvider } from './context/UIContext'
 import './index.css'
 import App from './App.jsx'
 
+console.log("MAIN.JSX: Initializing Core...");
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <UIProvider>

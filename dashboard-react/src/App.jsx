@@ -9,6 +9,7 @@ import { Dashboard } from './pages/Dashboard'
 import { InterceptorLogs } from './pages/InterceptorLogs'
 import { Settings } from './pages/Settings'
 const App = () => {
+  console.log("APP.JSX: Rendering...");
   const location = useLocation();
 
   return (
