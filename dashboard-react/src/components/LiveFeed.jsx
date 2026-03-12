@@ -5,7 +5,8 @@ import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
 export const LiveFeed = () => {
-    const { logs, isSimulationMode, isPlaybackPaused } = useUI();
+    const { logs } = useUI();
+    const isSimulationMode = false;
     const terminalRef = useRef(null);
 
     // Auto-scroll to top when a new log arrives
