@@ -83,14 +83,14 @@ export const ChartsPanel = ({ type = 'line' }) => {
                 }
             });
         } else {
-            const safeCount = Math.max(0, stats.scanned - stats.malicious - stats.suspicious);
+            const safeCount = Math.max(0, (stats.scanned_today || 0) - (stats.blocked || 0) - (stats.suspicious || 0));
 
             chartInstance.current = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Safe_Zone', 'Anomalous', 'Suspected'],
                     datasets: [{
-                        data: [safeCount || 100, stats.malicious, stats.suspicious],
+                        data: [safeCount || 100, stats.blocked || 0, stats.suspicious || 0],
                         backgroundColor: ['#22C55E', '#EF4444', '#FACC15'],
                         borderColor: '#111827',
                         borderWidth: 4,
