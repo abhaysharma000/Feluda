@@ -5,8 +5,11 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { GlobalToast } from './components/GlobalToast'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
+import { SherlockAI } from './components/SherlockAI'
+import { GlobalTicker } from './components/GlobalTicker'
 import { Dashboard } from './pages/Dashboard'
 import { InterceptorLogs } from './pages/InterceptorLogs'
+import { ThreatMapPage } from './pages/ThreatMapPage'
 import { Settings } from './pages/Settings'
 const App = () => {
   const location = useLocation();
@@ -14,6 +17,12 @@ const App = () => {
   return (
     <ErrorBoundary>
       <div className="relative min-h-screen bg-soc-bg text-slate-300 overflow-hidden font-sans">
+        {/* Animated Neural Background */}
+        <div className="absolute inset-0 z-0 opacity-20 transition-all duration-1000">
+          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-soc-accent/20 rounded-full blur-[160px] animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soc-primary/10 rounded-full blur-[120px] animation-delay-2000 animate-pulse" />
+        </div>
+        <GlobalTicker />
         <GlobalToast />
 
         <div className="flex h-screen overflow-hidden relative z-10 w-full">
@@ -36,10 +45,12 @@ const App = () => {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/intercepts" element={<InterceptorLogs />} />
+                    <Route path="/threat-matrix" element={<ThreatMapPage />} />
                     <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </motion.div>
               </AnimatePresence>
+              <SherlockAI />
             </div>
           </main>
         </div>

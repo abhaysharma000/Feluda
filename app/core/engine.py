@@ -135,6 +135,11 @@ class IntelligenceEngine:
             feat_df = pd.DataFrame([features])
             if 'domain_creation_date' in feat_df.columns:
                 feat_df = feat_df.drop('domain_creation_date', axis=1)
+            if 'url_lower' in feat_df.columns:
+                feat_df = feat_df.drop('url_lower', axis=1)
+            for feat in ['ip_address', 'asn', 'organization']:
+                if feat in feat_df.columns:
+                    feat_df = feat_df.drop(feat, axis=1)
 
             # Ensure all columns match the model's training features
             # and are in the correct order if possible, though RF is robust.
@@ -267,7 +272,19 @@ class IntelligenceEngine:
         if (gsb and 'matches' in gsb) or (vt and isinstance(vt, dict) and vt.get('flagged')):
             intel_weight = 10.0
 
-        total_score = ml_weight + structural_weight + age_weight + intel_weight
+        # 5. Software Risk Heuristics (NEW v2.1)
+        # Directly penalize keywords like 'apk', 'mod', 'cracked' in the URL structure
+        software_risk = 0
+        sw_keywords = ['apk', 'mod', 'cracked', 'premium', 'hack', 'cheat', 'patch']
+        url_lower = features.get('url_lower', '').lower() # We might need to ensure this is passed or extracted
+        
+        sw_matches = sum(1 for kw in sw_keywords if kw in url_lower)
+        if sw_matches >= 1:
+            software_risk += 15.0 # Baseline penalty for presence
+        if sw_matches >= 2:
+            software_risk += 15.0 # Aggressive penalty for keyword stacking
+        
+        total_score = ml_weight + structural_weight + age_weight + intel_weight + software_risk
         
         # Override: Direct Brand Impersonation or Behavioral Critical Findings
         if visual or behavior.get('behavior_risk_score', 0) > 50:

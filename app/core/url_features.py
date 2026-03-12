@@ -24,7 +24,8 @@ class URLFeatureExtractor:
         self.suspicious_keywords = [
             'login', 'verify', 'update', 'secure', 'account', 'banking',
             'signin', 'credential', 'password', 'confirm', 'auth', 'webscr',
-            'ebayisapi', 'secure-login', 'wallet', 'crypto', 'bonus', 'gift'
+            'ebayisapi', 'secure-login', 'wallet', 'crypto', 'bonus', 'gift',
+            'apk', 'mod', 'cracked', 'premium-apk', 'patch', 'hack', 'cheat'
         ]
         self.shorteners = [
             'bit.ly', 'goo.gl', 'shorte.st', 'go2l.ink', 'x.co', 'ow.ly', 't.co', 
@@ -92,6 +93,18 @@ class URLFeatureExtractor:
         entropy = - sum([p * math.log(p) / math.log(2.0) for p in prob])
         return entropy
 
+    def _get_ip_info(self, domain: str) -> dict:
+        """Fetch basic IP and ASN info (lightweight)."""
+        try:
+            ip = socket.gethostbyname(domain)
+            return {
+                "ip": ip,
+                "asn": "Pending", # Would require a pyasn or similar DB for local, skipping real lookup for speed
+                "org": "Cloud Provider / ISP"
+            }
+        except:
+            return {"ip": "Unknown", "asn": "N/A", "org": "N/A"}
+
     def extract_features(self, url: str, skip_whois: bool = False) -> dict:
         self.last_url = url
         parsed_url = urlparse(url)
@@ -108,6 +121,12 @@ class URLFeatureExtractor:
         )
         features['domain_age_days'] = age_days
         features['domain_creation_date'] = creation_date
+
+        # Network Intel (NEW v2.2)
+        ip_info = self._get_ip_info(domain)
+        features['ip_address'] = ip_info['ip']
+        features['asn'] = ip_info['asn']
+        features['organization'] = ip_info['org']
 
         # Structural features (Unified Architecture v2.0)
         features['url_length'] = len(url)
@@ -158,6 +177,7 @@ class URLFeatureExtractor:
         # 4. Digit-to-Length Ratio
         features['digit_ratio'] = features['num_digits'] / features['url_length'] if features['url_length'] > 0 else 0
 
+        features['url_lower'] = url_lower
         return features
 
     def _is_ip(self, domain: str) -> bool:

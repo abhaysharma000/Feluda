@@ -8,6 +8,7 @@ import { BehavioralAnalysis } from '../components/BehavioralAnalysis';
 import { TopThreatsPanel } from '../components/TopThreatsPanel';
 import { LiveFeed } from '../components/LiveFeed';
 import { LogsTable } from '../components/LogsTable';
+import { ForensicDossier } from '../components/ForensicDossier';
 import { Activity, Shield, Globe } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
@@ -19,11 +20,14 @@ export const Dashboard = () => {
     const [inputValue, setInputValue] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisData, setAnalysisData] = useState(null);
+    const [isDossierOpen, setIsDossierOpen] = useState(false);
 
-    const performAnalysis = async (targetUrl, source = 'manual') => {
-        if (!targetUrl) return;
+    const performAnalysis = async (targetUrl, source = 'manual', showDossier = false) => {
+        const urlToScan = targetUrl || inputValue;
+        if (!urlToScan) return;
         setIsAnalyzing(true);
         setAnalysisData(null);
+        if (showDossier) setIsDossierOpen(false);
         
         try {
             // Run Scan and Behavior Analysis in parallel
@@ -49,6 +53,7 @@ export const Dashboard = () => {
                     behavior: behaviorData
                 });
                 
+                if (showDossier) setIsDossierOpen(true);
                 addToast("Inference Complete", scanData.classification === 'Malicious' ? 'warning' : 'success');
             } else {
                 addToast("Analysis Pipeline Failed", "danger");
@@ -150,6 +155,12 @@ export const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            <ForensicDossier 
+                isOpen={isDossierOpen}
+                onClose={() => setIsDossierOpen(false)}
+                data={analysisData}
+            />
         </div>
     );
 };

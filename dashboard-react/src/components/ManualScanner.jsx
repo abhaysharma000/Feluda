@@ -26,19 +26,36 @@ export const ManualScanner = ({ inputValue, setInputValue, onAnalyze, isAnalyzin
                     />
                 </div>
                 
-                <button 
-                    type="submit"
-                    disabled={isAnalyzing}
-                    className={clsx(
-                        "w-full md:w-auto soc-button px-10 py-5 rounded-2xl flex items-center justify-center gap-3 group transition-all duration-500",
-                        isAnalyzing ? "opacity-50 cursor-not-allowed" : "shadow-xl shadow-soc-primary/10 hover:shadow-soc-primary/20"
-                    )}
-                >
-                    <span className="text-xs font-black uppercase tracking-[0.2em]">
-                        {isAnalyzing ? "Processing..." : "Run Forensics"}
-                    </span>
-                    <Send className={clsx("w-4 h-4 transition-transform duration-500", !isAnalyzing && "group-hover:translate-x-1 group-hover:-translate-y-1")} />
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <button 
+                        type="submit"
+                        disabled={isAnalyzing}
+                        className={clsx(
+                            "flex-1 md:w-auto soc-button px-8 py-5 rounded-2xl flex items-center justify-center gap-3 group transition-all duration-500",
+                            isAnalyzing ? "opacity-50 cursor-not-allowed" : "shadow-xl shadow-soc-primary/10 hover:shadow-soc-primary/20"
+                        )}
+                    >
+                        <span className="text-xs font-black uppercase tracking-[0.2em]">
+                            {isAnalyzing ? "Processing..." : "Run Forensics"}
+                        </span>
+                        <Send className={clsx("w-4 h-4 transition-transform duration-500", !isAnalyzing && "group-hover:translate-x-1 group-hover:-translate-y-1")} />
+                    </button>
+
+                    <button 
+                        type="button"
+                        onClick={() => onAnalyze(null, 'manual', true)}
+                        disabled={isAnalyzing}
+                        className={clsx(
+                            "flex-1 md:w-auto px-8 py-5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-500 border border-soc-accent/20 bg-soc-accent/5",
+                            isAnalyzing ? "opacity-50 cursor-not-allowed" : "hover:bg-soc-accent/10 hover:border-soc-accent/40"
+                        )}
+                    >
+                        <Search className="w-4 h-4 text-soc-accent" />
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-white">
+                            Dossier
+                        </span>
+                    </button>
+                </div>
             </form>
         </div>
     );
