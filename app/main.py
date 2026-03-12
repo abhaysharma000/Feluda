@@ -49,17 +49,23 @@ if os.path.exists(_dashboard_dir):
 @app.get("/dashboard/{path:path}", include_in_schema=False)
 async def serve_dashboard(path: str = ""):
     if _dashboard_dir:
-        # Check if requesting a specific file like vite.svg
+        # 1. Direct file check (e.g., vite.svg, assets/*)
         if path:
             file_path = os.path.join(_dashboard_dir, path)
             if os.path.isfile(file_path):
                 return FileResponse(file_path)
+            
+            # 2. Strict Asset Guard: If we are in the assets/ path or requesting a file-like resource
+            # and it's missing, return 404. DO NOT fallback to index.html (which causes JS SyntaxErrors).
+            if "assets/" in path or (path and "." in os.path.basename(path)):
+                raise HTTPException(status_code=404, detail="Neural asset not found")
         
-        # Fallback to index.html for SPA
+        # 3. SPA Fallback: Return index.html for all other routes to support React Router
         index_path = os.path.join(_dashboard_dir, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
-    return RedirectResponse(url="/")
+            
+    return RedirectResponse(url="/dashboard/")
 
 
 @app.get("/", include_in_schema=False)
