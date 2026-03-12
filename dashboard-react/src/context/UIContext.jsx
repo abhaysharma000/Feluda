@@ -115,7 +115,9 @@ export const UIProvider = ({ children }) => {
         logs,
         topThreats,
         stats,
-        refreshTelemetry
+        refreshTelemetry,
+        isShowcaseOpen,
+        setIsShowcaseOpen
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

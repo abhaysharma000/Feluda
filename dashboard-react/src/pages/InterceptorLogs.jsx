@@ -53,7 +53,7 @@ export const InterceptorLogs = () => {
                             <div className="h-px bg-white/[0.03]" />
                             <div className="flex flex-col gap-1">
                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Telemetry_Latency</span>
-                                <span className="text-3xl font-black text-soc-success tabular-nums tracking-tighter">{stats.latency_ms}ms</span>
+                                <span className="text-3xl font-black text-soc-success tabular-nums tracking-tighter">{(stats?.latency_ms || 0)}ms</span>
                             </div>
                         </div>
                     </div>

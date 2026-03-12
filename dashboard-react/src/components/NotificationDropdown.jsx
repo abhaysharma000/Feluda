@@ -28,18 +28,20 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                             key={log.id}
                             className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group"
                             onClick={() => {
-                                navigate('/logs');
+                                navigate('/intercepts');
                                 onClose();
                             }}
                         >
-                            <div className="flex justify-between items-start mb-1">
+                             <div className="flex justify-between items-start mb-1">
                                 <span className={clsx(
                                     "text-[9px] font-bold uppercase",
-                                    log.verdict === 'Malicious' ? "text-danger" : "text-emerald-400"
-                                )}>{log.verdict} DETECTED</span>
-                                <span className="text-[8px] text-slate-600 italic">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                    (log.classification || log.verdict) === 'Malicious' ? "text-soc-danger" : "text-soc-success"
+                                )}>{(log.classification || log.verdict || 'Signal')} DETECTED</span>
+                                <span className="text-[8px] text-slate-600 italic">
+                                    {log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "--:--:--"}
+                                </span>
                             </div>
-                            <p className="text-[10px] text-slate-300 line-clamp-1 opacity-80 group-hover:opacity-100">{log.vector}</p>
+                            <p className="text-[10px] text-slate-300 line-clamp-1 opacity-80 group-hover:opacity-100">{log.domain || log.vector || log.input}</p>
                         </div>
                     ))
                 ) : (
@@ -48,7 +50,7 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
             </div>
             <button
                 onClick={() => {
-                    navigate('/logs');
+                    navigate('/intercepts');
                     onClose();
                 }}
                 className="w-full p-3 text-[9px] font-black uppercase tracking-widest text-cyan-accent hover:bg-cyan-accent/10 transition-colors border-t border-white/5"
