@@ -25,6 +25,7 @@ beautifulsoup4
 # ─── Utilities ──────────────────────────────────────────
 python-dotenv
 pydantic
+dnspython
 
 # ─── Advanced Image Analysis (Deepfake/Face) ────────────
 # Note: DeepFace/TF are too heavy for Vercel deployment.
