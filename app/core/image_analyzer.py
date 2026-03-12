@@ -26,9 +26,10 @@ class ImageAnalyzer:
         """
         if not DEEPFACE_AVAILABLE:
             return {
-                "error": "Deepface is not installed. Please install 'deepface' to enable image analysis.",
                 "risk_score": 0,
-                "classification": "Unknown"
+                "classification": "Unknown",
+                "findings": ["Image analysis unavailable in serverless environment"],
+                "note": "For deepfake and facial analysis, please use the desktop version of Feluda."
             }
 
         try:

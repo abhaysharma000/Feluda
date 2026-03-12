@@ -27,6 +27,8 @@ python-dotenv
 pydantic
 
 # ─── Advanced Image Analysis (Deepfake/Face) ────────────
-deepface
-tf-keras
-opencv-python-headless
+# Note: DeepFace/TF are too heavy for Vercel deployment.
+# Image analysis is available in the desktop environment only.
+# deepface
+# tf-keras
+# opencv-python-headless
