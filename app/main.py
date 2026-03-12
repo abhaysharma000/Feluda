@@ -128,6 +128,38 @@ class BlacklistEntry(BaseModel):
     domain: str
     reason: str
 
+class SherlockRequest(BaseModel):
+    query: str
+
+@app.post("/api/sherlock/query")
+async def sherlock_query(req: SherlockRequest):
+    query = req.query.lower()
+    
+    response = "I've analyzed your query. To better protect your perimeter, I recommend a comprehensive forensic sweep of any suspicious vectors you encounter."
+    insights = ["Autonomous Defense", "Neural Patterns"]
+    
+    if "phishing" in query or "block" in query:
+        response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy."
+        insights = ["RF Classifier", "Behavioral DOM"]
+    elif "dashboard" in query or "how" in query:
+        response = "The SOC Dashboard provides real-time telemetry from our global inference mesh. You can manually scan URLs, view live threat feeds, and explore the Tactical Intelligence Matrix (Threat Map)."
+        insights = ["SOC Telemetry", "Tactical Matrix"]
+    elif "dossier" in query or "deep" in query:
+        response = "The Forensic Dossier provides a high-fidelity intelligence report including ASN data, registrar age, and structural DNA analysis. You can trigger it by clicking 'Dossier' in the Manual Scanner."
+        insights = ["Forensic Report", "ASN Intel"]
+    elif "help" in query:
+        response = "I am Sherlock, your cyber-intelligence assistant. I can explain security concepts, guide you through the dashboard, or provide details on specific threat vectors Feluda has detected."
+        insights = ["AI Personal", "Guidance Mode"]
+    elif "malicious" in query or "dangerous" in query:
+        response = "High-risk vectors are instantly quarantined. If you encounter a 'Neural Quarantine' screen, our engine has detected signatures matching known malicious patterns."
+        insights = ["Quarantine Mode", "Pattern Match"]
+
+    return {
+        "response": response,
+        "insights": insights,
+        "timestamp": datetime.now().isoformat()
+    }
+
 
 # ── Startup ────────────────────────────────────────────────────
 @app.on_event("startup")

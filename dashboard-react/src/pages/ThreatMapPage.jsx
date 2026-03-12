@@ -6,10 +6,10 @@ import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 
 export const ThreatMapPage = () => {
-    const { stats, logs } = useUI();
+    const { stats, logs = [] } = useUI();
 
     // Filter malicious logs for urgent alerts
-    const urgentAlerts = logs.filter(l => l.verdict === 'Malicious').slice(0, 3);
+    const urgentAlerts = (logs || []).filter(l => l.verdict === 'Malicious').slice(0, 3);
 
     return (
         <div className="space-y-8 pb-12">

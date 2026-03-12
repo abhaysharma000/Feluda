@@ -35,12 +35,12 @@ export const Dashboard = () => {
                 fetch('/api/scan/url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl, source })
+                    body: JSON.stringify({ url: urlToScan, source })
                 }),
                 fetch('/api/analyze/html', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl, source })
+                    body: JSON.stringify({ url: urlToScan, source })
                 })
             ]);
             
