@@ -13,6 +13,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
+      <div className="fixed top-0 left-0 z-[9999] bg-white text-black p-2 font-bold">REACT_RENDER_OK</div>
       <div className="relative min-h-screen bg-soc-bg text-slate-300 overflow-hidden font-sans">
         <GlobalToast />
 
