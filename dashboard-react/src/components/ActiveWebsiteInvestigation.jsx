@@ -43,7 +43,7 @@ export const ActiveWebsiteInvestigation = ({ data, isLoading }) => {
         );
     }
 
-    const domain = data.url.split("//")[1]?.split("/")[0] || data.url;
+    const domain = data && data.url ? (data.url.split("//")[1]?.split("/")[0] || data.url) : "Unknown Source";
     const isMalicious = data.classification === 'Malicious';
     const variantColor = isMalicious ? 'danger' : (data.classification === 'Suspicious' ? 'warning' : 'success');
 

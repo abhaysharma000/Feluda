@@ -19,7 +19,7 @@ export const StatsGrid = () => {
     const statsConfig = [
         {
             label: 'Unit Ingestion Level',
-            value: stats.scanned_today.toLocaleString(),
+            value: (stats?.scanned_today || 0).toLocaleString(),
             icon: ShieldCheck,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
@@ -27,7 +27,7 @@ export const StatsGrid = () => {
         },
         {
             label: 'Neutralized Vectors',
-            value: stats.blocked.toLocaleString(),
+            value: (stats?.blocked || 0).toLocaleString(),
             icon: ShieldAlert,
             color: 'text-soc-danger',
             accent: 'bg-soc-danger/5',
@@ -35,7 +35,7 @@ export const StatsGrid = () => {
         },
         {
             label: 'Heuristic Flags',
-            value: stats.suspicious.toLocaleString(),
+            value: (stats?.suspicious || 0).toLocaleString(),
             icon: Globe2,
             color: 'text-soc-warning',
             accent: 'bg-soc-warning/5',
@@ -43,7 +43,7 @@ export const StatsGrid = () => {
         },
         {
             label: 'Inference Latency',
-            value: `${stats.latency_ms}ms`,
+            value: `${stats?.latency_ms || 0}ms`,
             icon: Zap,
             color: 'text-soc-accent',
             accent: 'bg-soc-accent/5',
