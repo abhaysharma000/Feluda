@@ -34,7 +34,7 @@ export const LiveFeed = () => {
                             )}
                         >
                             <span className="text-[10px] font-black tabular-nums opacity-60 min-w-[70px]">
-                                [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}]
+                                [{log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }) : "--:--"}]
                             </span>
                             
                             <span className={clsx(

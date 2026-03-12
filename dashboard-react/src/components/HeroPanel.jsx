@@ -12,8 +12,10 @@ const Counter = ({ value, prefix = "", suffix = "" }) => {
     const [display, setDisplay] = useState(0);
 
     useEffect(() => {
-        const val = typeof value === 'string' ? parseInt(value) : value;
-        const controls = animate(0, val || 0, {
+        let val = typeof value === 'string' ? parseInt(value) : value;
+        if (isNaN(val) || val === undefined || val === null) val = 0;
+        
+        const controls = animate(0, val, {
             duration: 1,
             ease: "easeOut",
             onUpdate: (latest) => setDisplay(Math.floor(latest))
@@ -21,7 +23,7 @@ const Counter = ({ value, prefix = "", suffix = "" }) => {
         return () => controls.stop();
     }, [value]);
 
-    return <span>{prefix}{display.toLocaleString()}{suffix}</span>;
+    return <span>{prefix}{(display || 0).toLocaleString()}{suffix}</span>;
 };
 
 export const HeroPanel = () => {
@@ -97,11 +99,11 @@ export const HeroPanel = () => {
                             />
                             <StatBox 
                                 label="Threat Blocks" 
-                                value={stats.blocked} 
+                                value={stats?.blocked || 0} 
                                 icon={AlertTriangle}
                                 color="text-soc-danger"
                                 subtext="Malicious Intercepts"
-                                progress={(stats.blocked / (stats.scanned_today || 1)) * 100}
+                                progress={((stats?.blocked || 0) / (stats?.scanned_today || 1)) * 100}
                             />
                         </div>
 
