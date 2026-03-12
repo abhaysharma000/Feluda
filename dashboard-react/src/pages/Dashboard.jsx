@@ -6,6 +6,7 @@ import { ManualScanner } from '../components/ManualScanner';
 import { ActiveWebsiteInvestigation } from '../components/ActiveWebsiteInvestigation';
 import { BehavioralAnalysis } from '../components/BehavioralAnalysis';
 import { TopThreatsPanel } from '../components/TopThreatsPanel';
+import { LiveFeed } from '../components/LiveFeed';
 import { LogsTable } from '../components/LogsTable';
 import { Activity, Shield, Globe } from 'lucide-react';
 import { useUI } from '../context/UIContext';
