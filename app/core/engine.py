@@ -50,21 +50,23 @@ class IntelligenceEngine:
 
     def __init__(self):
         base_dir = os.path.dirname(os.path.dirname(__file__))
-        # Prioritize the heavy-duty extension model if available
         ext_model_path = os.path.join(base_dir, 'models', 'extension_model.pkl')
         legacy_model_path = os.path.join(base_dir, 'models', 'phishing_model.pkl')
-        
         self.model_path = ext_model_path if os.path.exists(ext_model_path) else legacy_model_path
-        self.model = None
+        self._model = None
         self.explainer = None
 
-        if os.path.exists(self.model_path):
+    @property
+    def model(self):
+        """Lazy-load the model only when needed."""
+        if self._model is None and os.path.exists(self.model_path):
             try:
-                self.model = joblib.load(self.model_path)
+                self._model = joblib.load(self.model_path)
                 print(f"Feluda: Loaded ML model from {os.path.basename(self.model_path)}")
                 self._init_shap()
             except Exception as e:
                 print(f"WARNING: Could not load ML model ({self.model_path}) — {e}")
+        return self._model
 
     def _init_shap(self):
         """Pre-initialize SHAP explainer for fast local explanations."""
@@ -129,37 +131,44 @@ class IntelligenceEngine:
         confidence = 0.0
         shap_contributors = []
 
-        if self.model:
+        if self.model: # Using the lazy-load property
             feat_df = pd.DataFrame([features])
             if 'domain_creation_date' in feat_df.columns:
                 feat_df = feat_df.drop('domain_creation_date', axis=1)
 
-            prediction = self.model.predict(feat_df)[0]
-            probabilities = self.model.predict_proba(feat_df)[0]
-            classification = "Malicious" if prediction == 1 else "Safe"
-            confidence = float(probabilities[prediction]) * 100
+            # Ensure all columns match the model's training features
+            # and are in the correct order if possible, though RF is robust.
+            
+            try:
+                prediction = self.model.predict(feat_df)[0]
+                probabilities = self.model.predict_proba(feat_df)[0]
+                classification = "Malicious" if prediction == 1 else "Safe"
+                confidence = float(probabilities[prediction]) * 100
 
-            # ── Step 6a: SHAP Explainability ────────────────────────
-            if self.explainer and SHAP_AVAILABLE and prediction == 1:
-                try:
-                    shap_values = self.explainer.shap_values(feat_df)
-                    if isinstance(shap_values, list):
-                        vals = shap_values[1][0]
-                    elif len(shap_values.shape) == 3:
-                        vals = shap_values[0, :, 1]
-                    else:
-                        vals = shap_values[0]
+                # ── Step 6a: SHAP Explainability ────────────────────────
+                if self.explainer and SHAP_AVAILABLE and prediction == 1:
+                    try:
+                        shap_values = self.explainer.shap_values(feat_df)
+                        if isinstance(shap_values, list):
+                            # For CalibratedClassifierCV or specific multi-class outputs
+                            vals = shap_values[1][0]
+                        elif len(shap_values.shape) == 3:
+                            vals = shap_values[0, :, 1]
+                        else:
+                            vals = shap_values[0]
 
-                    feature_importance = dict(zip(feat_df.columns, vals))
-                    sorted_features = sorted(
-                        feature_importance.items(), key=lambda x: x[1], reverse=True
-                    )
-                    shap_contributors = [
-                        self.FEATURE_LABEL_MAP.get(f, f.replace('_', ' ').title())
-                        for f, v in sorted_features[:3] if v > 0
-                    ]
-                except Exception as e:
-                    print(f"SHAP calculation error: {e}")
+                        feature_importance = dict(zip(feat_df.columns, vals))
+                        sorted_features = sorted(
+                            feature_importance.items(), key=lambda x: x[1], reverse=True
+                        )
+                        shap_contributors = [
+                            self.FEATURE_LABEL_MAP.get(f, f.replace('_', ' ').title())
+                            for f, v in sorted_features[:3] if v > 0
+                        ]
+                    except Exception as e:
+                        print(f"SHAP calculation error: {e}")
+            except Exception as e:
+                print(f"ML Prediction Error: {e}")
 
         # ── Step 7: Behavioral Analysis (Live HTML Fetch) ─────────────
         # We perform a full behavioral scan to detect credential harvesting
