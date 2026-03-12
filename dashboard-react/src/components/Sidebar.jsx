@@ -8,7 +8,8 @@ import {
     Settings,
     Download,
     Cpu,
-    Lock
+    Lock,
+    Activity
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
