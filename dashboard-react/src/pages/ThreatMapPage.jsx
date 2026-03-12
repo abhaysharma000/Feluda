@@ -82,8 +82,8 @@ export const ThreatMapPage = () => {
                         <div className="space-y-4">
                             {[
                                 { label: 'Avg Latency', val: '12ms' },
-                                { label: 'Threat Depth', val: `${stats.avgRisk}%` },
-                                { label: 'Total Ingress', val: stats.scanned.toLocaleString() },
+                                { label: 'Threat Depth', val: `${stats?.blocked || 0}` },
+                                { label: 'Total Ingress', val: (stats?.scanned_today || 0).toLocaleString() },
                                 { label: 'Cluster Count', val: '42' },
                             ].map((item, i) => (
                                 <div key={i} className="flex justify-between items-center py-2 border-b border-white/[0.03]">
