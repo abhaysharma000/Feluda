@@ -160,12 +160,12 @@ export const ForensicDossier = ({ isOpen, onClose, data }) => {
                         {/* Footer */}
                         <div className="px-8 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
                             <div className="flex items-center gap-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                                <span>Engine: Feluda_Neural_v2.2</span>
+                                <span>Engine: {data.source === 'extension' || data.source === 'extension_heuristic' ? 'Feluda_Edge_Interceptor' : 'Feluda_Neural_Core'}</span>
                                 <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                <span>Core: Sherlock_Inference</span>
+                                <span>Core: {data.source === 'extension_heuristic' ? 'Local_Heuristics' : 'Sherlock_Inference'}</span>
                             </div>
                             <button className="px-5 py-2 rounded-lg bg-soc-accent text-soc-bg text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(var(--soc-accent-rgb),0.3)]">
-                                Download PDF Report
+                                Download Analysis Report
                             </button>
                         </div>
                     </motion.div>

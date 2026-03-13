@@ -18,9 +18,9 @@ export const InterceptorLogs = () => {
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Extension_Intercept_Stream</span>
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none uppercase italic">
-                        Real-Time <span className="text-gradient">Intercepts</span>
+                        Neural <span className="text-gradient">Intercepts</span>
                     </h1>
-                    <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.3em]">Direct telemetry from the Phish_Shield browser extension clusters.</p>
+                    <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.3em]">Direct forensic telemetry from the browser extension clusters & edge nodes.</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">

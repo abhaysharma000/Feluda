@@ -92,6 +92,7 @@ except Exception as e:
 class URLRequest(BaseModel):
     url: str
     source: str = "manual"
+    forced_result: Optional[dict] = None  # NEW: Allow reporting local heuristic blocks
 
     @field_validator('url')
     @classmethod
@@ -239,16 +240,20 @@ async def scan_url(request: URLRequest, req_obj: Request):
         is_blacklisted = any(b['domain'] == domain for b in mock_blacklist)
 
     if is_blacklisted:
-        return {
+        result = {
             "url": request.url,
             "classification": "Malicious",
             "risk_score": 100,
             "explanation": ["Domain is manually blacklisted by the administrator."],
             "source": "Blacklist",
         }
-
-    # ── Full intelligence analysis ────────────────────────────
-    result = await intelligence_engine.analyze_url(request.url, source=request.source)
+    elif request.forced_result:
+        # User/Extension already determined the result (Local Heuristics)
+        result = request.forced_result
+        if "url" not in result: result["url"] = request.url
+    else:
+        # ── Full intelligence analysis ────────────────────────────
+        result = await intelligence_engine.analyze_url(request.url, source=request.source)
 
     # ── Adaptive Feedback: Auto-queue blocked threats ─────────
     if result.get("classification") == "Malicious":
