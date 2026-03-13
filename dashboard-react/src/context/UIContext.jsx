@@ -68,24 +68,30 @@ export const UIProvider = ({ children }) => {
             const statsRes = await fetch('/api/stats');
             if (statsRes.ok) {
                 const data = await statsRes.json();
-                setStats(data);
+                setStats({
+                    scanned_today: data.scanned_today || 0,
+                    blocked: data.blocked || data.malicious_blocked || 0,
+                    suspicious: data.suspicious || 0,
+                    latency_ms: data.latency_ms || 0,
+                    system_health: data.system_health || { cpu: '---', memory: '---', uptime: '---', tld_breakdown: {} }
+                });
             }
 
             // 2. Intelligence Logs
-            const logsRes = await fetch('/api/logs?limit=50');
+            const logsRes = await fetch('/api/logs?limit=100');
             if (logsRes.ok) {
                 const logsData = await logsRes.json();
-                setLogs(logsData);
+                setLogs(Array.isArray(logsData) ? logsData : []);
             }
 
             // 3. Top Threats
             const threatRes = await fetch('/api/top-threats');
             if (threatRes.ok) {
                 const threatData = await threatRes.json();
-                setTopThreats(threatData);
+                setTopThreats(Array.isArray(threatData) ? threatData : []);
             }
         } catch (err) {
-            console.warn("Telemetry fetch failed. Engine offline?");
+            console.warn("Telemetry fetch failed. Engine offline?", err);
         }
     }, []);
 

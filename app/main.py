@@ -539,19 +539,28 @@ async def get_top_threats():
 
 
 @app.get("/api/logs", tags=["Analytics"])
-async def get_soc_logs(limit: int = 50):
+async def get_soc_logs(limit: int = Query(default=100, ge=1, le=500)):
     """Retrieve logs in standardized SOC format."""
     raw_logs = await get_logs(limit=limit)
     soc_logs = []
     for entry in raw_logs:
         result = entry.get("result", {})
+        url = entry.get("input", "")
+        domain = url.split("//")[-1].split("/")[0] if "//" in url else (url or "Unknown")
+        # Serialize timestamp to ISO string for JSON compatibility
+        ts = entry.get("timestamp")
+        if hasattr(ts, 'isoformat'):
+            ts = ts.isoformat()
         soc_logs.append({
-            "timestamp": entry.get("timestamp"),
-            "domain": entry.get("input", "").split("//")[-1].split("/")[0] if "//" in entry.get("input", "") else "Unknown",
+            "id": entry.get("_id", str(id(entry))),
+            "timestamp": ts,
+            "input": url,
+            "domain": domain,
             "risk_score": result.get("risk_score", 0),
             "classification": result.get("classification", "Unknown"),
-            "source": entry.get("source", "System"),
-            "explanation": result.get("explanation", [])
+            "source": entry.get("source", "system"),
+            "explanation": result.get("explanation", []),
+            "result": result
         })
     return soc_logs
 

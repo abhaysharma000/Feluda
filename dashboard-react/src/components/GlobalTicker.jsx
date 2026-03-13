@@ -1,18 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Activity, Shield, AlertTriangle, Globe as GlobeIcon, Cpu } from 'lucide-react';
+import { useUI } from '../context/UIContext';
 
 export const GlobalTicker = () => {
+    const { stats, logs } = useUI();
+
     const alerts = [
-        { icon: Zap, text: "Ingress Saturation: 84.2%", color: "text-soc-accent" },
-        { icon: Shield, text: "Zero-Day Shield: ACTIVE", color: "text-soc-success" },
-        { icon: AlertTriangle, text: "Bypass Attempt: Blocked (Node 42)", color: "text-soc-danger" },
+        { icon: Zap, text: `Ingress Volume: ${(stats?.scanned_today || 0).toLocaleString()} URLs Today`, color: "text-soc-accent" },
+        { icon: Shield, text: `Zero-Day Shield: ACTIVE`, color: "text-soc-success" },
+        { icon: AlertTriangle, text: `Threats Neutralized: ${(stats?.blocked || 0).toLocaleString()}`, color: "text-soc-danger" },
         { icon: GlobeIcon, text: "Mesh Integrity: 99.9% Synchronized", color: "text-soc-accent" },
-        { icon: Cpu, text: "Neural Latency: 1.2ms (Optimal)", color: "text-soc-success" },
-        { icon: Activity, text: "Live Trace: AS2981 -> Intercepted", color: "text-soc-warning" }
+        { icon: Cpu, text: `Neural Latency: ${stats?.latency_ms || 0}ms${(stats?.latency_ms || 0) < 100 ? ' (Optimal)' : ''}`, color: "text-soc-success" },
+        { icon: Activity, text: `Intercept Stream: ${logs?.length || 0} Active Entries`, color: "text-soc-warning" }
     ];
 
-    // Double the items for seamless loop
+    // Triple the items for seamless loop
     const tickerItems = [...alerts, ...alerts, ...alerts];
 
     return (
