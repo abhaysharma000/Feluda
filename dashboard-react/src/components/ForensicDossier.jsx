@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    X, Shield, Globe, Activity, Lock, 
+    X, Shield, Globe as GlobeIcon, Activity, Lock, 
     Cpu, Server, Zap, Database, Search,
     AlertTriangle, CheckCircle, BarChart3
 } from 'lucide-react';
@@ -122,7 +122,7 @@ export const ForensicDossier = ({ isOpen, onClose, data }) => {
                                         <div className="space-y-4">
                                             {[
                                                 { label: 'Registrar', val: data.raw_features?.registrar || 'Unknown', icon: Database },
-                                                { label: 'Infrastructure', val: data.raw_features?.country || 'Distributed', icon: Globe },
+                                                { label: 'Infrastructure', val: data.raw_features?.country || 'Distributed', icon: GlobeIcon },
                                                 { label: 'Connection', val: data.raw_features?.has_https ? 'SECURE_SSL' : 'PLAINTEXT', icon: Lock },
                                                 { label: 'ASN Path', val: 'AS' + (Math.floor(Math.random() * 50000) + 1000), icon: Server }
                                             ].map((item, i) => (

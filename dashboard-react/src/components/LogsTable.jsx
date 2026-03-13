@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCcw, Clock, Terminal, Shield, ArrowRight, Globe, Search as SearchIcon } from 'lucide-react';
+import { RefreshCcw, Clock, Terminal, Shield, ArrowRight, Globe as GlobeIcon, Search as SearchIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useUI } from '../context/UIContext';
 import { ForensicDossier } from './ForensicDossier';
@@ -105,7 +105,7 @@ export const LogsTable = ({ filterSource = null }) => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="flex items-center gap-2 text-white font-bold tracking-tight">
-                                                    <Globe className="w-3.5 h-3.5 text-soc-accent/60 group-hover:scale-110 transition-transform" />
+                                                    <GlobeIcon className="w-3.5 h-3.5 text-soc-accent/60 group-hover:scale-110 transition-transform" />
                                                     {log.domain || (log.input ? new URL(log.input).hostname : "Unknown")}
                                                 </span>
                                             </td>

@@ -9,7 +9,7 @@ import { TopThreatsPanel } from '../components/TopThreatsPanel';
 import { LiveFeed } from '../components/LiveFeed';
 import { LogsTable } from '../components/LogsTable';
 import { ForensicDossier } from '../components/ForensicDossier';
-import { Activity, Shield, Globe } from 'lucide-react';
+import { Activity, Shield, Globe as GlobeIcon } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
 export const Dashboard = () => {
