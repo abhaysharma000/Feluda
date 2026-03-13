@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, Shield, Cpu, Database, Bell, Eye, Lock, Globe, Zap, Key, Activity } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Cpu, Database, Bell, Eye, Lock, Globe as GlobeIcon, Zap, Key, Activity } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const Settings = () => {
@@ -84,7 +84,7 @@ export const Settings = () => {
 
                 <div className="xl:col-span-4 space-y-8">
                     <div className="glass-panel p-8 space-y-8 relative overflow-hidden group border-white/[0.03]">
-                        <Globe className="absolute top-[-10px] right-[-10px] w-24 h-24 text-soc-accent/[0.03] transition-transform duration-700 group-hover:scale-110" />
+                        <GlobeIcon className="absolute top-[-10px] right-[-10px] w-24 h-24 text-soc-accent/[0.03] transition-transform duration-700 group-hover:scale-110" />
                         <div className="flex items-center gap-3 mb-2 border-b border-white/[0.03] pb-6">
                             <Database className="w-4 h-4 text-soc-accent" />
                             <h3 className="text-[11px] font-bold uppercase tracking-widest text-white">Node Identity</h3>

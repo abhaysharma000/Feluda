@@ -16,7 +16,13 @@ export const LogsTable = ({ filterSource = null }) => {
         setIsLoading(false);
     };
 
-    const filteredLogs = logs.filter(log => !filterSource || log.source === filterSource);
+    const filteredLogs = logs.filter(log => {
+        if (!filterSource) return true;
+        if (filterSource === 'extension') {
+            return log.source === 'extension' || log.source === 'extension_heuristic';
+        }
+        return log.source === filterSource;
+    });
 
     return (
         <div className="flex flex-col h-full glass-panel border-white/[0.03] overflow-hidden">

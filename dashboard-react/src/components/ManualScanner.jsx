@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Globe, Send } from 'lucide-react';
+import { Search, Globe as GlobeIcon, Send } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const ManualScanner = ({ inputValue, setInputValue, onAnalyze, isAnalyzing }) => {
@@ -8,7 +8,7 @@ export const ManualScanner = ({ inputValue, setInputValue, onAnalyze, isAnalyzin
             <form onSubmit={onAnalyze} className="flex flex-col md:flex-row items-center gap-6">
                 <div className="flex items-center gap-4 min-w-fit">
                     <div className="p-3 bg-soc-accent/10 rounded-xl border border-soc-accent/20 shadow-lg shadow-soc-accent/5">
-                        <Globe className="w-6 h-6 text-soc-accent" />
+                        <GlobeIcon className="w-6 h-6 text-soc-accent" />
                     </div>
                     <div>
                         <h3 className="text-sm font-black text-white uppercase tracking-tight">Manual Investigation</h3>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThreatMap } from '../components/ThreatMap';
-import { Activity, Globe, ShieldAlert, Cpu, Lock, TrendingUp, Zap, Server } from 'lucide-react';
+import { Activity, Globe as GlobeIcon, ShieldAlert, Cpu, Lock, TrendingUp, Zap, Server } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -17,7 +17,7 @@ export const ThreatMapPage = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-soc-accent/10 rounded-lg">
-                            <Globe className="w-5 h-5 text-soc-accent" />
+                            <GlobeIcon className="w-5 h-5 text-soc-accent" />
                         </div>
                         <div className="h-px w-12 bg-white/5" />
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">Global_Inference_Mesh</span>

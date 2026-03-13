@@ -3,7 +3,7 @@ import { motion, animate } from 'framer-motion';
 import { 
     ShieldCheck, Cpu, Database, Zap, 
     AlertTriangle, Fingerprint, Activity, 
-    Server, Globe, Clock, BarChart3, List
+    Server, Globe as GlobeIcon, Clock, BarChart3, List
 } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, MapPin, Activity, ShieldAlert } from 'lucide-react';
+import { Globe as GlobeIcon, MapPin, Activity, ShieldAlert } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const ThreatMap = () => {
@@ -89,7 +89,7 @@ export const ThreatMap = () => {
             {/* Tactical Overlays */}
             <div className="absolute top-8 left-8 flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-white/5 rounded-full">
-                    <Globe className="w-3.5 h-3.5 text-soc-accent" />
+                    <GlobeIcon className="w-3.5 h-3.5 text-soc-accent" />
                     <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Global Backbone: Active</span>
                 </div>
             </div>

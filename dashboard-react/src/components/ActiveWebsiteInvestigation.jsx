@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-    Shield, Globe, Lock, AlertTriangle, CheckCircle, 
+    Shield, Globe as GlobeIcon, Lock, AlertTriangle, CheckCircle, 
     Info, ExternalLink, Activity, Database, Cpu, 
     ChevronRight, Terminal, Box, List
 } from 'lucide-react';
@@ -189,7 +189,7 @@ const ForensicFlow = ({ data, isMalicious }) => {
 const InfrastructureSpecs = ({ data }) => (
     <div className="glass-panel p-6 bg-soc-accent/[0.01] border-white/[0.03] space-y-6">
         <div className="flex items-center gap-3">
-            <Globe className="w-4 h-4 text-soc-accent opacity-50" />
+            <GlobeIcon className="w-4 h-4 text-soc-accent opacity-50" />
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white">Infrastructure Intelligence</span>
         </div>
         <div className="space-y-4">

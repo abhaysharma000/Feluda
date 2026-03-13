@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Activity, Shield, AlertTriangle, Globe, Cpu } from 'lucide-react';
+import { Zap, Activity, Shield, AlertTriangle, Globe as GlobeIcon, Cpu } from 'lucide-react';
 
 export const GlobalTicker = () => {
     const alerts = [
         { icon: Zap, text: "Ingress Saturation: 84.2%", color: "text-soc-accent" },
         { icon: Shield, text: "Zero-Day Shield: ACTIVE", color: "text-soc-success" },
         { icon: AlertTriangle, text: "Bypass Attempt: Blocked (Node 42)", color: "text-soc-danger" },
-        { icon: Globe, text: "Mesh Integrity: 99.9% Synchronized", color: "text-soc-accent" },
+        { icon: GlobeIcon, text: "Mesh Integrity: 99.9% Synchronized", color: "text-soc-accent" },
         { icon: Cpu, text: "Neural Latency: 1.2ms (Optimal)", color: "text-soc-success" },
         { icon: Activity, text: "Live Trace: AS2981 -> Intercepted", color: "text-soc-warning" }
     ];

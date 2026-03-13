@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Globe, ExternalLink } from 'lucide-react';
+import { ShieldAlert, Globe as GlobeIcon, ExternalLink } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
 export const TopThreatsPanel = () => {
@@ -12,7 +12,7 @@ export const TopThreatsPanel = () => {
                     <ShieldAlert className="w-5 h-5 text-soc-danger" />
                     <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Top Malicious Domains</h3>
                 </div>
-                <Globe className="w-4 h-4 text-slate-700" />
+                <GlobeIcon className="w-4 h-4 text-slate-700" />
             </div>
 
             <div className="space-y-3">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Globe, Lock, AlertTriangle, CheckCircle, Info, ExternalLink } from 'lucide-react';
+import { Shield, Globe as GlobeIcon, Lock, AlertTriangle, CheckCircle, Info, ExternalLink } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -28,7 +28,7 @@ export const InvestigationResults = ({ data, isLoading }) => {
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center p-20 text-slate-600">
-                <Globe className="w-12 h-12 mb-4 opacity-20" />
+                <GlobeIcon className="w-12 h-12 mb-4 opacity-20" />
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Awaiting investigation target...</p>
             </div>
         );
@@ -96,7 +96,7 @@ export const InvestigationResults = ({ data, isLoading }) => {
 
                 <div className="glass-panel p-5 bg-white/[0.01] border-white/[0.03]">
                     <div className="flex items-center gap-3 mb-4">
-                        <Globe className="w-4 h-4 text-soc-accent" />
+                        <GlobeIcon className="w-4 h-4 text-soc-accent" />
                         <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">Identity</h3>
                     </div>
                     <div className="space-y-3">
