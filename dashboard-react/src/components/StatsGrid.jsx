@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
     ShieldCheck,
     ShieldAlert,
-    Globe2,
+    Activity,
     Lock,
     TrendingUp,
     Fingerprint,
@@ -36,7 +36,7 @@ export const StatsGrid = () => {
         {
             label: 'Heuristic Flags',
             value: (stats?.suspicious || 0).toLocaleString(),
-            icon: Globe2,
+            icon: Activity,
             color: 'text-soc-warning',
             accent: 'bg-soc-warning/5',
             desc: 'Deeper forensic analysis required'
