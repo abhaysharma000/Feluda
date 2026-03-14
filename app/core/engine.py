@@ -48,6 +48,20 @@ class IntelligenceEngine:
         'path_length':     'Abnormal Path Length',
     }
 
+    GLOBAL_SAFE_DOMAINS = {
+        'google.com', 'github.com', 'mongodb.com', 'microsoft.com', 'apple.com',
+        'amazon.com', 'facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com',
+        'netflix.com', 'youtube.com', 'wikipedia.org', 'adobe.com', 'oracle.com',
+        'salesforce.com', 'zoom.us', 'slack.com', 'dropbox.com', 'spotify.com',
+        'vercel.app', 'github.io', 'pages.dev', 'netlify.app', 'render.com',
+        'stripe.com', 'paypal.com', 'visa.com', 'mastercard.com', 'chase.com',
+        'bankofamerica.com', 'wellsfargo.com', 'goldmansachs.com', 'gmail.com',
+        'outlook.com', 'yahoo.com', 'icloud.com', 'protonmail.com', 'reddit.com',
+        'stackoverflow.com', 'medium.com', 'quora.com', 'npmmj.com', 'pypi.org',
+        'docker.com', 'kubernetes.io', 'hashicorp.com', 'aws.amazon.com',
+        'azure.microsoft.com', 'cloud.google.com', 'bitbucket.org', 'gitlab.com'
+    }
+
     def __init__(self):
         base_dir = os.path.dirname(os.path.dirname(__file__))
         ext_model_path = os.path.join(base_dir, 'models', 'extension_model.pkl')
@@ -97,6 +111,22 @@ class IntelligenceEngine:
         # We skip WHOIS here to maintain <300ms guarantee
         features = extractor.extract_features(url, skip_whois=True)
         domain = urlparse(url).netloc or url.split("//")[-1].split("/")[0]
+        
+        # ── Step 1a: Global Whitelist Early-Exit ──
+        base_domain = '.'.join(domain.lower().split('.')[-2:])
+        if base_domain in self.GLOBAL_SAFE_DOMAINS or domain.lower() in self.GLOBAL_SAFE_DOMAINS:
+            return {
+                "url": url,
+                "classification": "Safe",
+                "confidence_score": "100.00%",
+                "risk_score": 0.0,
+                "explanation": ["Trusted Infrastructure: Domain is on the global verified whitelist."],
+                "latency_ms": 0.1,
+                "raw_features": features,
+                "top_contributors": [],
+                "source": source,
+                "node_id": "Neural_Node_Whitelist"
+            }
 
         # ── Step 2-5: Parallel Async Intelligence Retrieval ───────────
         # Target: Execute within 250ms or skip slow signals

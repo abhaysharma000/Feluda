@@ -15,7 +15,9 @@ openai
 aiohttp
 
 # ─── Database ───────────────────────────────────────────
-motor
+motor==3.3.2
+certifi
+pymongo==4.6.3
 
 # ─── URL / Domain Analysis ──────────────────────────────
 python-whois

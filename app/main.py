@@ -21,10 +21,29 @@ import adaptive_learner
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # ─────────────────────────────────────────────────────────────────
+from contextlib import asynccontextmanager
+
+# ─────────────────────────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic: Initialize MongoDB on the correct event loop
+    print("Feluda AI Backend: Startup lifespan initiated.")
+    try:
+        await initialize_mongo()
+    except Exception as e:
+        print(f"Lifespan Init Error: {e}")
+    yield
+    # Shutdown logic: Close client if needed
+    global client
+    if client:
+        client.close()
+        print("Feluda AI Backend: Connection closed.")
+
 app = FastAPI(
     title="Feluda AI — Cyber Intelligence API",
     version="2.0.0",
     description="AI-powered phishing detection: URLs, Emails, and QR Codes.",
+    lifespan=lifespan
 )
 
 # CORS — allow all origins (tighten to specific domains post-launch)
@@ -68,55 +87,56 @@ async def root():
 
 
 
-# ── MongoDB / Lazy Connection (Vercel Serverless Safe) ────────
-MONGO_URI = os.getenv("MONGO_URI", "")
-
-# Module-level cached client (reused across warm Vercel invocations)
-_mongo_client = None
-_mongo_db = None
-_mongo_available = None  # None = untested, True = works, False = broken
+# ── MongoDB / In-Memory Fallback ──────────────────────────────
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017").strip()
+client = None
+db = None
+logs = None
+blacklist = None
+db_init_error = None
+db_debug_logs = []
 
 mock_logs: list = []
 mock_blacklist: list = []
 
-async def get_db():
-    """Lazy MongoDB connection that properly tests connectivity on first use."""
-    global _mongo_client, _mongo_db, _mongo_available
-    if _mongo_available is True:
-        return _mongo_db
-    if _mongo_available is False:
-        return None
-    if not MONGO_URI or MONGO_URI == "mongodb://localhost:27017":
-        _mongo_available = False
-        print("Feluda: No MONGO_URI set. Running in stateless mode.")
-        return None
+async def try_connect(uri, **kwargs):
+    db_debug_logs.append(f"Attempting connect with kwargs keys: {list(kwargs.keys())}")
     try:
-        if _mongo_client is None:
-            _mongo_client = AsyncIOMotorClient(
-                MONGO_URI,
-                serverSelectionTimeoutMS=5000,
-                connectTimeoutMS=5000,
-                socketTimeoutMS=10000,
-            )
-        # Force a real connectivity test
-        await _mongo_client.admin.command('ping')
-        _mongo_db = _mongo_client.feluda
-        _mongo_available = True
-        print("Feluda: MongoDB connected successfully.")
-        return _mongo_db
+        test_client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=2000, **kwargs)
+        await test_client.admin.command('ping')
+        return test_client, None
     except Exception as e:
-        _mongo_available = False
-        print(f"Feluda: MongoDB unavailable ({e}). Running in stateless mode.")
-        return None
+        db_debug_logs.append(f"Connect failed: {e}")
+        return None, str(e)
 
-async def get_logs_col():
-    db = await get_db()
-    return db.scan_logs if db is not None else None
+async def initialize_mongo():
+    global client, db, logs, blacklist, db_init_error
+    
+    # Simple URI without extra query params
+    clean_uri = MONGO_URI.split('?')[0] if '?' in MONGO_URI else MONGO_URI
+    
+    import certifi
+    ca = certifi.where()
+    try:
+        # Standard secure connection on the correct loop
+        client = AsyncIOMotorClient(
+            clean_uri, 
+            serverSelectionTimeoutMS=5000,
+            tls=True,
+            tlsCAFile=ca
+        )
+        await client.admin.command('ping')
+        db = client.feluda
+        logs = db.scan_logs
+        blacklist = db.blacklist
+        db_init_error = None
+        print(f"MongoDB connected successfully ({client.address}).")
+    except Exception as e:
+        db_init_error = str(e)
+        print(f"MongoDB connection failed: {e}")
+        client = None
 
-async def get_blacklist_col():
-    db = await get_db()
-    return db.blacklist if db is not None else None
-
+# Trigger initialization removed in favor of Lifespan
 
 # ── Pydantic Models ───────────────────────────────────────────
 class URLRequest(BaseModel):
@@ -214,25 +234,60 @@ async def health_check():
         "mesh_node": "NODE_01_INDIA"
     }
 
-@app.get("/api/debug")
-async def debug_connection():
-    """Diagnostic endpoint to verify MongoDB connectivity on Vercel."""
-    global _mongo_available
-    # Reset so we re-test
-    _mongo_available = None
-    db_obj = await get_db()
-    log_count = 0
-    if db_obj is not None:
-        try:
-            log_count = await db_obj.scan_logs.count_documents({})
-        except Exception as e:
-            return {"mongo": "error", "detail": str(e), "mongo_uri_set": bool(MONGO_URI)}
-    return {
-        "mongo": "connected" if db_obj is not None else "offline",
-        "log_count": log_count,
-        "mongo_uri_set": bool(MONGO_URI),
-        "mongo_uri_prefix": MONGO_URI[:20] + "..." if MONGO_URI else "NOT SET"
+@app.get("/api/db-health")
+async def db_health():
+    """Test the MongoDB connection and return status."""
+    import certifi
+    import os
+    ca_path = certifi.where()
+    ca_exists = os.path.exists(ca_path)
+    uri_len = len(MONGO_URI) if MONGO_URI else 0
+    uri_masked = f"{MONGO_URI[:15]}...{MONGO_URI[-5:]}" if uri_len > 20 else "TOO_SHORT"
+    
+    import motor
+    import pymongo
+    import urllib.request
+    
+    https_status = "Unknown"
+    try:
+        with urllib.request.urlopen("https://www.google.com", timeout=2) as r:
+            https_status = f"Success ({r.status})"
+    except Exception as e:
+        https_status = f"Failed ({e})"
+
+    import ssl
+    health_data = {
+        "ca_path": ca_path,
+        "ca_exists": ca_exists,
+        "uri_len": uri_len,
+        "uri_info": uri_masked,
+        "init_error": db_init_error,
+        "https_check": https_status,
+        "ssl_paths": str(ssl.get_default_verify_paths()),
+        "motor_version": getattr(motor, "version", "unknown"),
+        "pymongo_version": getattr(pymongo, "version", "unknown")
     }
+    
+    if client is None:
+        return {"status": "error", "error": "Client is None", "init_error": db_init_error, **health_data}
+    
+    try:
+        # Avoid complex property access on Motor objects during health check
+        await client.admin.command('ping')
+        db_name = "unknown"
+        if db is not None:
+            try:
+                db_name = str(db.name)
+            except:
+                db_name = "exists_but_no_name"
+        
+        return {
+            "status": "connected", 
+            "database": db_name,
+            **health_data
+        }
+    except Exception as e:
+        return {"status": "error", "error": f"Ping failed: {e}", "init_error": db_init_error, **health_data}
 
 @app.get("/api/analytics/stats")
 async def get_global_stats():
@@ -279,10 +334,9 @@ async def scan_url(request: URLRequest, req_obj: Request):
 
     # ── Blacklist check first ─────────────────────────────────
     is_blacklisted = False
-    bl_col = await get_blacklist_col()
     try:
-        if bl_col is not None:
-            bl_check = await bl_col.find_one({"domain": domain})
+        if blacklist is not None:
+            bl_check = await blacklist.find_one({"domain": domain})
             if bl_check:
                 is_blacklisted = True
         else:
@@ -321,12 +375,14 @@ async def scan_url(request: URLRequest, req_obj: Request):
         "source": request.source
     }
     try:
-        log_col = await get_logs_col()
-        if log_col is not None:
-            await log_col.insert_one(log_entry)
+        if logs is not None:
+            await logs.insert_one(log_entry)
         else:
             mock_logs.append(log_entry)
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"CRITICAL: MongoDB Insert Error: {e}")
+        traceback.print_exc()
         mock_logs.append(log_entry)
 
     return result
@@ -401,9 +457,8 @@ async def scan_email(request: EmailRequest, req_obj: Request):
         },
     }
     try:
-        log_col = await get_logs_col()
-        if log_col is not None:
-            await log_col.insert_one(log_entry)
+        if logs is not None:
+            await logs.insert_one(log_entry)
         else:
             mock_logs.append(log_entry)
     except Exception:
@@ -474,8 +529,7 @@ async def scan_image(file: UploadFile = File(...), req_obj: Request = None):
         "result": result,
     }
     try:
-        log_col = await get_logs_col()
-        if log_col is not None: await log_col.insert_one(log_entry)
+        if logs is not None: await logs.insert_one(log_entry)
         else: mock_logs.append(log_entry)
     except: pass
 
@@ -485,12 +539,11 @@ async def scan_image(file: UploadFile = File(...), req_obj: Request = None):
 @app.get("/api/analytics/stats", tags=["Analytics"])
 async def get_stats():
     """Get cumulative scan statistics."""
-    log_col = await get_logs_col()
     try:
-        if log_col is not None:
-            total = await log_col.count_documents({})
-            malicious = await log_col.count_documents({"result.classification": "Malicious"})
-            suspicious = await log_col.count_documents({"result.classification": "Suspicious"})
+        if logs is not None:
+            total = await logs.count_documents({})
+            malicious = await logs.count_documents({"result.classification": "Malicious"})
+            suspicious = await logs.count_documents({"result.classification": "Suspicious"})
         else:
             raise Exception("Using in-memory")
     except Exception:
@@ -518,45 +571,41 @@ async def get_soc_stats():
     suspicious = 0
     latencies = []
 
-    log_col = await get_logs_col()
     try:
-        if log_col is not None:
-            scanned_today = await log_col.count_documents({"timestamp": {"$gte": day_start}})
-            blocked = await log_col.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Malicious"})
-            suspicious = await log_col.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Suspicious"})
-            cursor = log_col.find({"timestamp": {"$gte": day_start}}).limit(100)
+        if logs is not None:
+            scanned_today = await logs.count_documents({"timestamp": {"$gte": day_start}})
+            blocked = await logs.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Malicious"})
+            suspicious = await logs.count_documents({"timestamp": {"$gte": day_start}, "result.classification": "Suspicious"})
+            
+            # Get avg latency
+            cursor = logs.find({"timestamp": {"$gte": day_start}}).limit(100)
             async for doc in cursor:
                 lat = doc.get("result", {}).get("latency_ms")
                 if lat: latencies.append(lat)
         else:
-            today_logs = [l for l in mock_logs if l['timestamp'] >= day_start]
-            scanned_today = len(today_logs)
-            blocked = sum(1 for l in today_logs if l['result'].get('classification') == 'Malicious')
-            suspicious = sum(1 for l in today_logs if l['result'].get('classification') == 'Suspicious')
-            latencies = [l['result'].get('latency_ms', 0) for l in today_logs if 'latency_ms' in l['result']]
-    except Exception as e:
-        print(f"Stats error: {e}")
+            raise Exception("Using in-memory")
+    except Exception:
+        today_logs = [l for l in mock_logs if l['timestamp'] >= day_start]
+        scanned_today = len(today_logs)
+        blocked = sum(1 for l in today_logs if l['result'].get('classification') == 'Malicious')
+        suspicious = sum(1 for l in today_logs if l['result'].get('classification') == 'Suspicious')
+        latencies = [l['result'].get('latency_ms', 0) for l in today_logs if 'latency_ms' in l['result']]
 
     avg_lat = int(sum(latencies) / len(latencies)) if latencies else 14
     
+    # Mocked system health for SOC realism
     import random
     cpu_usage = random.randint(12, 45)
     mem_usage = random.randint(400, 1200)
     uptime = "24d 14h 22m"
     
-    # TLD breakdown from MongoDB
+    # Simple TLD breakdown from mock_logs for tactical overview
     tld_counts = {}
-    try:
-        if log_col is not None:
-            cursor = log_col.find({}).sort("timestamp", -1).limit(200)
-            async for doc in cursor:
-                inp = doc.get("input", "")
-                domain = inp.split("//")[-1].split("/")[0] if "//" in inp else ""
-                if "." in domain:
-                    tld = domain.split(".")[-1][:10]
-                    tld_counts[tld] = tld_counts.get(tld, 0) + 1
-    except Exception:
-        pass
+    for l in mock_logs:
+        domain = l['input'].split("//")[-1].split("/")[0] if "//" in l['input'] else ""
+        if "." in domain:
+            tld = domain.split(".")[-1]
+            tld_counts[tld] = tld_counts.get(tld, 0) + 1
     
     return {
         "scanned_today": scanned_today,
@@ -567,7 +616,7 @@ async def get_soc_stats():
             "cpu": f"{cpu_usage}%",
             "memory": f"{mem_usage}MB",
             "uptime": uptime,
-            "tld_breakdown": dict(sorted(tld_counts.items(), key=lambda x: x[1], reverse=True)[:5])
+            "tld_breakdown": dict(sorted(tld_counts.items(), key=lambda x: x[1], reverse=True)[:3])
         }
     }
 
@@ -576,11 +625,10 @@ async def get_soc_stats():
 async def get_top_threats():
     """Get top malicious domains from recent logs."""
     counts = {}
-    log_col = await get_logs_col()
     try:
         data = []
-        if log_col is not None:
-            cursor = log_col.find({"result.classification": "Malicious"}).sort("timestamp", -1).limit(500)
+        if logs is not None:
+            cursor = logs.find({"result.classification": "Malicious"}).sort("timestamp", -1).limit(500)
             async for doc in cursor:
                 data.append(doc)
         else:
@@ -595,7 +643,7 @@ async def get_top_threats():
         pass
     
     sorted_threats = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    return [t[0] for t in sorted_threats] if sorted_threats else []
+    return [t[0] for t in sorted_threats] if sorted_threats else ["No threats identified"]
 
 
 @app.get("/api/logs", tags=["Analytics"])
@@ -626,22 +674,21 @@ async def get_soc_logs(limit: int = Query(default=100, ge=1, le=500)):
 
 
 @app.get("/api/analytics/logs", tags=["Analytics"])
-async def get_logs(limit: int = Query(default=100, ge=1, le=500)):
+async def get_logs(limit: int = Query(default=50, ge=1, le=200)):
     """Retrieve recent scan history."""
     history = []
-    log_col = await get_logs_col()
     try:
-        if log_col is not None:
-            cursor = log_col.find().sort("timestamp", -1).limit(limit)
+        if logs is not None:
+            cursor = logs.find().sort("timestamp", -1).limit(limit)
             async for doc in cursor:
                 doc["_id"] = str(doc["_id"])
                 history.append(doc)
         else:
-            history = sorted(mock_logs, key=lambda x: x['timestamp'], reverse=True)[:limit]
-            for h in history:
-                h["_id"] = "mock_" + str(id(h))
-    except Exception as e:
-        print(f"get_logs error: {e}")
+            raise Exception("Using in-memory")
+    except Exception:
+        history = sorted(mock_logs, key=lambda x: x['timestamp'], reverse=True)[:limit]
+        for h in history:
+            h["_id"] = "mock_" + str(id(h))
 
     return history
 
@@ -649,10 +696,9 @@ async def get_logs(limit: int = Query(default=100, ge=1, le=500)):
 @app.post("/api/admin/blacklist", tags=["Admin"])
 async def add_to_blacklist(entry: BlacklistEntry):
     """Manually blacklist a domain."""
-    bl_col = await get_blacklist_col()
     try:
-        if bl_col is not None:
-            await bl_col.update_one(
+        if blacklist is not None:
+            await blacklist.update_one(
                 {"domain": entry.domain},
                 {"$set": {
                     "domain": entry.domain,
@@ -664,6 +710,7 @@ async def add_to_blacklist(entry: BlacklistEntry):
         else:
             raise Exception("In-memory")
     except Exception:
+        # Remove existing entry if present, then add
         mock_blacklist[:] = [b for b in mock_blacklist if b['domain'] != entry.domain]
         mock_blacklist.append({
             "domain": entry.domain,

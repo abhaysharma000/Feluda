@@ -46,3 +46,5 @@ _agents/
 _agent/
 .gemini/
 .antigravity/
+
+.vercel

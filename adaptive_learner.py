@@ -40,16 +40,22 @@ RETRAIN_INTERVAL_HOURS = 24  # Auto-retrain every 24 hours
 
 def append_to_feedback(url: str, label: int, source: str = "auto"):
     """Add a URL + label to the feedback queue (File fallback)."""
-    os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
-    entry = {
-        "url": url,
-        "label": label,
-        "source": source,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-    with open(FEEDBACK_FILE, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry) + "\n")
-    logger.info(f"Feluda Learner (Local): Queued {url}")
+    try:
+        os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
+        entry = {
+            "url": url,
+            "label": label,
+            "source": source,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        with open(FEEDBACK_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+        logger.info(f"Feluda Learner (Local): Queued {url}")
+    except OSError as e:
+        # Prevent crash on read-only filesystems (like Vercel)
+        logger.warning(f"Could not write feedback to disk (Read-only OS?): {e}")
+    except Exception as e:
+        logger.error(f"Feedback write error: {e}")
 
 async def append_to_db_feedback(db, url: str, label: int, source: str = "auto"):
     """Add feedback to MongoDB for persistent cloud learning."""
