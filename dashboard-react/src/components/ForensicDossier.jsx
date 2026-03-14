@@ -66,7 +66,7 @@ export const ForensicDossier = ({ isOpen, onClose, data }) => {
                                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Target Signature</h3>
                                 </div>
                                 <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 font-mono text-sm text-soc-accent break-all leading-relaxed shadow-inner">
-                                    {data.url}
+                                    {data.url || 'No URL Signature'}
                                 </div>
                             </section>
 
@@ -145,7 +145,7 @@ export const ForensicDossier = ({ isOpen, onClose, data }) => {
                                         </div>
                                         <div className="space-y-3">
                                             <div className="text-[11px] font-medium text-slate-400 leading-relaxed italic">
-                                                Querying global distributed consensus nodes for vector {data.url.slice(0, 15)}...
+                                                Querying global distributed consensus nodes for vector {(data.url || 'Unknown').slice(0, 15)}...
                                             </div>
                                             <div className="flex items-center gap-2 text-[10px] font-black text-soc-success uppercase tracking-widest">
                                                 <CheckCircle className="w-3 h-3" />

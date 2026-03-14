@@ -112,7 +112,7 @@ export const LogsTable = ({ filterSource = null }) => {
                                             <td className="px-6 py-4">
                                                 <span className="flex items-center gap-2 text-white font-bold tracking-tight">
                                                     <GlobeIcon className="w-3.5 h-3.5 text-soc-accent/60 group-hover:scale-110 transition-transform" />
-                                                    {log.domain || (log.input ? new URL(log.input).hostname : "Unknown")}
+                                                    {log.domain || (log.input ? (log.input.includes('://') ? new URL(log.input).hostname : log.input) : "Unknown")}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
