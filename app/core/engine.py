@@ -258,68 +258,72 @@ class IntelligenceEngine:
         self, features, ml_class, confidence, gsb, vt, visual, behavior
     ) -> float:
         """
-        Unified Weighted Risk Scoring Engine (v2.0):
-        - ML Score (Classifier Probability): 60%
-        - Structural Risk (URL patterns): 20%
-        - Domain Age (WHOIS legacy): 10%
-        - Threat Intel (GSB/VT): 10%
+        Unified Weighted Risk Scoring Engine (v2.5 Hackathon Optimized):
+        - ML Score (Core Intelligence): 50%
+        - Structural & Heuristic Signals: 30%
+        - Behavioral (Live DOM): 10%
+        - Threat Intel (Third-party): 10%
         """
         ml_weight = 0.0
         structural_weight = 0.0
-        age_weight = 0.0
+        behavior_weight = 0.0
         intel_weight = 0.0
 
-        # 1. ML Score (Max 60 pts)
+        # 1. ML Score (Max 50 pts)
         if ml_class == "Malicious":
-            # Direct projection of confidence percentage to 60pt scale
-            ml_weight = (confidence / 100.0) * 60.0
-        elif ml_class == "Safe" and confidence < 70:
+            # Calibrated projection
+            ml_weight = (confidence / 100.0) * 50.0
+        elif ml_class == "Safe" and confidence < 65:
             # High-uncertainty safe predictions contribute minor risk
-            ml_weight = (1.0 - (confidence / 100.0)) * 10.0
+            ml_weight = (1.0 - (confidence / 100.0)) * 12.0
 
-        # 2. Structural Risk (Max 20 pts)
+        # 2. Structural & Heuristic Risk (Max 30 pts)
         s_score = 0
-        if features.get('is_ip_address'): s_score += 8
-        if features.get('has_homoglyph'): s_score += 8
-        if features.get('entropy', 0) > 4.5: s_score += 4
-        if features.get('dot_count', 0) > 3: s_score += 2
-        if features.get('suspicious_keywords', 0) > 0: s_score += 4
+        if features.get('is_ip_address'): s_score += 10
+        if features.get('has_homoglyph'): s_score += 10
+        if features.get('double_extension'): s_score += 12 # Highly suspicious
+        if features.get('brand_hyphenation'): s_score += 8  # typosquatting sign
+        if features.get('brand_in_subdomain'): s_score += 6
+        if features.get('tld_risk_score'): s_score += 5
+        if features.get('non_standard_port'): s_score += 7
+        if features.get('is_shortened'): s_score += 3
         if not features.get('has_https'): s_score += 4
-        structural_weight = min(20.0, float(s_score))
+        
+        # Keyword stacking penalty
+        if features.get('cred_trigger_count', 0) >= 3: s_score += 8
+        elif features.get('cred_trigger_count', 0) >= 1: s_score += 3
+        
+        structural_weight = min(30.0, float(s_score))
 
-        # 3. Domain Age (Max 10 pts)
-        age = features.get('domain_age_days', 0)
-        if 0 < age < 7:
-            age_weight = 10.0
-        elif 0 < age < 30:
-            age_weight = 7.0
-        elif 0 < age < 90:
-            age_weight = 4.0
-        elif age == 0: # Unknown/Error often indicates freshly minted or hidden
-            age_weight = 5.0
+        # 3. Behavioral Risk (Max 10 pts)
+        # Pulling from the live DOM analysis engine
+        b_score = behavior.get('behavior_risk_score', 0)
+        behavior_weight = (b_score / 100.0) * 10.0
 
         # 4. Threat Intel (Max 10 pts)
         if (gsb and 'matches' in gsb) or (vt and isinstance(vt, dict) and vt.get('flagged')):
             intel_weight = 10.0
 
-        # 5. Software Risk Heuristics (NEW v2.1)
-        # Directly penalize keywords like 'apk', 'mod', 'cracked' in the URL structure
+        # 5. Software Risk Heuristics (Penalty Overlay)
         software_risk = 0
         sw_keywords = ['apk', 'mod', 'cracked', 'premium', 'hack', 'cheat', 'patch']
-        url_lower = features.get('url_lower', '').lower() # We might need to ensure this is passed or extracted
-        
+        url_lower = features.get('url_lower', '').lower()
         sw_matches = sum(1 for kw in sw_keywords if kw in url_lower)
-        if sw_matches >= 1:
-            software_risk += 15.0 # Baseline penalty for presence
-        if sw_matches >= 2:
-            software_risk += 15.0 # Aggressive penalty for keyword stacking
+        if sw_matches >= 1: software_risk += 15.0
+        if sw_matches >= 2: software_risk += 15.0
         
-        total_score = ml_weight + structural_weight + age_weight + intel_weight + software_risk
+        # 6. Freshness Penalty (WHOIS overlay)
+        age_penalty = 0
+        age = features.get('domain_age_days', 0)
+        if 0 < age < 14: age_penalty = 15.0
+        elif 0 < age < 60: age_penalty = 8.0
         
-        # Override: Direct Brand Impersonation or Behavioral Critical Findings
-        if visual or behavior.get('behavior_risk_score', 0) > 50:
-            total_score = max(total_score, 85.0)
-
+        total_score = ml_weight + structural_weight + behavior_weight + intel_weight + software_risk + age_penalty
+        
+        # Global Overrides for Critical Findings
+        if visual or behavior.get('behavior_risk_score', 0) >= 60:
+            total_score = max(total_score, 92.0)
+            
         return min(100.0, total_score)
 
     # ──────────────────────────────────────────────────────────────
@@ -335,15 +339,21 @@ class IntelligenceEngine:
         # Structural 
         if features.get('is_ip_address'):
             reasons.append("Structural: Usage of raw IP address signals identity masking")
+        if features.get('double_extension'):
+            reasons.append("Structural: Suspicious double file extension (Phishing Payload)")
         if features.get('has_homoglyph'):
             reasons.append("Structural: Visual homoglyph characters detected (Brand Spoofing)")
         if features.get('entropy', 0) > 4.8:
             reasons.append(f"Structural: High URL entropy ({features['entropy']:.2f}) indicates obfuscation")
+        if features.get('brand_hyphenation'):
+            reasons.append("Heuristic: Defensive hyphenation matching trusted brands detected")
             
         # Age
         age = features.get('domain_age_days', 0)
-        if 0 < age < 30:
-            reasons.append(f"Identity: Domain is only {age} days old (High-risk registration window)")
+        if 0 < age < 14:
+            reasons.append(f"Identity: Exceptionally young domain ({age} days) detected")
+        elif 0 < age < 60:
+            reasons.append(f"Identity: Domain is in high-risk registration window ({age} days)")
             
         # Intel
         if gsb and 'matches' in gsb:

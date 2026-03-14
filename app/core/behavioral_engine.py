@@ -20,6 +20,8 @@ class BehavioralEngine:
         (r'String\.fromCharCode', 'String.fromCharCode encoding'),
         (r'_0x[a-f0-9]+', 'Hex-obfuscated variable names'),
         (r'document\.write\(unescape', 'document.write + unescape combo'),
+        (r'debugger', 'Anti-analysis debugger trigger'),
+        (r'window\.devtools', 'DevTools detection attempt'),
     ]
 
     # Timeout for fetching live page HTML
@@ -90,14 +92,27 @@ class BehavioralEngine:
                 results.append("Hidden iframe detected (possible clickjacking / malware loading)")
                 risk_modifier += 15
 
-        # ── 3. JavaScript obfuscation detection ──────────────────────
+        # ── 3. JavaScript obfuscation & Anti-Analysis ──────────
         for script in soup.find_all('script'):
             script_content = script.string or ""
             for pattern, label in self.OBFUSCATION_PATTERNS:
                 if re.search(pattern, script_content):
-                    results.append(f"Obfuscated JavaScript detected: {label}")
-                    risk_modifier += 10
-                    break  # One alert per script block
+                    results.append(f"Security: {label} (Possible evasion attempt)")
+                    risk_modifier += 15
+                    break 
+
+        # ── 4. Fake Trust Indicators ─────────────────────────
+        # Most phishing kits have broken/static social media links
+        social_patterns = ['facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com']
+        fb_links = soup.find_all('a', href=re.compile(r'facebook\.com'))
+        
+        # If the page mentions 'login' but social links are missing or point to root brands,
+        # it's often a signal of a quickly generated phishing kit.
+        if "login" in html_content.lower() and not fb_links:
+            # Check for generic 'brand' footer without real social integration
+            if len(soup.find_all('a')) < 10: # Very few links often = phishing kit
+                 results.append("Behavior: Abnormal link density for a service portal")
+                 risk_modifier += 10
 
         return {
             "findings": results,

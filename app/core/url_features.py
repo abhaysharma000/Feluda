@@ -35,8 +35,15 @@ class URLFeatureExtractor:
             'snipr.com', 'fic.kr', 'loopt.us', 'doiop.com', 'short.ie', 'kl.am',
             'wp.me', 'rubyurl.com', 'om.ly', 'to.ly', 'bit.do', 't.ly'
         ]
-        self.risky_tlds = ['.xyz', '.tk', '.top', '.ga', '.cf', '.ml', '.gq', '.shop', '.buzz', '.pw']
-        self.top_brands = ['google', 'microsoft', 'apple', 'amazon', 'netflix', 'facebook', 'instagram', 'paypal', 'ebay', 'banking']
+        self.risky_tlds = [
+            '.xyz', '.tk', '.top', '.ga', '.cf', '.ml', '.gq', '.shop', '.buzz', 
+            '.pw', '.zip', '.review', '.country', '.loan', '.download', '.site', '.click'
+        ]
+        self.top_brands = [
+            'google', 'microsoft', 'apple', 'amazon', 'netflix', 'facebook', 
+            'instagram', 'paypal', 'ebay', 'banking', 'binance', 'coinbase', 
+            'metamask', 'outlook', 'office', 'adobe', 'dropbox', 'chase', 'wellsfargo'
+        ]
 
     def _get_domain_age(self, domain: str):
         """Return (age_in_days, creation_date_str) with caching and 1s cap."""
@@ -164,18 +171,34 @@ class URLFeatureExtractor:
         url_lower = url.lower()
         features['suspicious_keywords'] = sum(1 for kw in self.suspicious_keywords if kw in url_lower)
 
-        # ── Advanced Signals (v2.1) ──────────────────────────
+        # ── Advanced Signals (v2.3 Hackathon Boost) ───────────
+        
         # 1. URL Shortener Detection
         features['is_shortened'] = 1 if any(s in url_lower for s in self.shorteners) else 0
         
         # 2. TLD Risk Score
         features['tld_risk_score'] = 1 if any(url_lower.endswith(tld) for tld in self.risky_tlds) else 0
         
-        # 3. Brand in Subdomain (Phishing indicator)
+        # 3. Brand Abuse & Typosquatting
         features['brand_in_subdomain'] = 1 if any(brand in subdomain.lower() for brand in self.top_brands) else 0
         
-        # 4. Digit-to-Length Ratio
+        # Check for hyphenated brand names (common in phishing: secure-paypal.com)
+        features['brand_hyphenation'] = 1 if any(f"{brand}-" in url_lower or f"-{brand}" in url_lower for brand in self.top_brands) else 0
+
+        # 4. Double Extension Detection (e.g. invoice.pdf.exe)
+        double_ext_pattern = r'\.[a-z0-9]{2,4}\.[a-z0-0]{2,4}$'
+        features['double_extension'] = 1 if re.search(double_ext_pattern, parsed_url.path.lower()) else 0
+
+        # 5. Non-Standard Port Check
+        standard_ports = [80, 443, None]
+        features['non_standard_port'] = 1 if parsed_url.port not in standard_ports else 0
+
+        # 6. Digit-to-Length Ratio
         features['digit_ratio'] = features['num_digits'] / features['url_length'] if features['url_length'] > 0 else 0
+
+        # 7. Credential Trigger Keywords
+        cred_keywords = ['login', 'signin', 'verify', 'account', 'password', 'secure', 'update']
+        features['cred_trigger_count'] = sum(1 for kw in cred_keywords if kw in url_lower)
 
         features['url_lower'] = url_lower
         return features
