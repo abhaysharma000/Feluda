@@ -184,6 +184,10 @@ class BlacklistEntry(BaseModel):
     domain: str
     reason: str
 
+class HashRequest(BaseModel):
+    hash: str
+    filename: str
+
 class SherlockRequest(BaseModel):
     query: str
 
