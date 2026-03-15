@@ -5,17 +5,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feluda SOC Terminal v2.5</title>
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      var body = document.body;
+      var errDiv = document.createElement('div');
+      errDiv.style.background = '#000';
+      errDiv.style.color = '#ff0000';
+      errDiv.style.padding = '20px';
+      errDiv.style.position = 'fixed';
+      errDiv.style.top = '0';
+      errDiv.style.left = '0';
+      errDiv.style.zIndex = '10000';
+      errDiv.innerHTML = '<b>CRITICAL_JS_ERROR:</b> ' + msg + '<br>Line: ' + line;
+      body.appendChild(errDiv);
+    };
+  </script>
+  <script type="module" crossorigin src="./assets/index-vKOzHad1.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DLbWi022.css">
+</head>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;500;700&display=swap"
     rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-vKOzHad1.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DLbWi022.css">
-</head>
 
 <body>
-  <div id="root">BOOT_INIT_PENDING_JS...</div>
+  <div id="root" style="color: #4ade80; font-family: monospace; padding: 20px;">
+    [FELUDA_SOC_OEST] Initializing Neural Mesh...
+  </div>
+  <script>
+    // Heartbeat to confirm HTML parsing
+    setTimeout(function() {
+      var root = document.getElementById('root');
+      if (root && root.innerText.indexOf('Neural Mesh') !== -1) {
+         root.innerHTML += '<br>[V2.5_HEARTBEAT] HTML Processed. Waiting for JS execution...';
+      }
+    }, 500);
+  </script>
 </body>
 
 </html>
