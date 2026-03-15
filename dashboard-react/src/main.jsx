@@ -6,6 +6,7 @@ import './index.css'
 import App from './App.jsx'
 
 
+console.log("FELUDA_BOOT: Initializing Neural Dashboard...");
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <UIProvider>
