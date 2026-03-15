@@ -1,8 +1,40 @@
 import React from 'react';
-import { Settings as SettingsIcon, Shield, Cpu, Database, Bell, Eye, Lock, Globe as GlobeIcon, Zap, Key, Activity } from 'lucide-react';
+import { 
+    Settings as SettingsIcon, Shield, Cpu, Database, Bell, Eye, Lock, 
+    Globe as GlobeIcon, Zap, Key, Activity, AlertTriangle 
+} from 'lucide-react';
 import { clsx } from 'clsx';
+import { useUI } from '../context/UIContext';
 
 export const Settings = () => {
+    const { failsafeActive, setFailsafeActive, isZeroDayMode, setIsZeroDayMode, addToast } = useUI();
+
+    const toggleFailsafe = async () => {
+        const newState = !failsafeActive;
+        try {
+            const res = await fetch(`/api/system/failsafe?active=${newState}`, { method: 'POST' });
+            if (res.ok) {
+                setFailsafeActive(newState);
+                addToast(newState ? "EMERGENCY BYPASS ACTIVE" : "Failsafe Deactivated", newState ? "warning" : "success");
+            }
+        } catch (err) {
+            addToast("Failed to sync failsafe state", "danger");
+        }
+    };
+
+    const toggleProtection = async () => {
+        const newState = !isZeroDayMode;
+        try {
+            const res = await fetch(`/api/system/config?enabled=${newState}`, { method: 'POST' });
+            if (res.ok) {
+                setIsZeroDayMode(newState);
+                addToast(newState ? "Neural Shield Engaged" : "Protection Paused", newState ? "success" : "warning");
+            }
+        } catch (err) {
+            addToast("Failed to sync protection state", "danger");
+        }
+    };
+
     return (
         <div className="space-y-8 pb-12">
             <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
@@ -24,6 +56,39 @@ export const Settings = () => {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div className="xl:col-span-8 space-y-8">
                     <section className="glass-panel p-8 lg:p-10 space-y-10 border-white/[0.03]">
+                        {/* Emergency Failsafe Section */}
+                        <div className={clsx(
+                            "p-6 rounded-2xl border transition-all duration-500",
+                            failsafeActive ? "bg-soc-danger/10 border-soc-danger/30" : "bg-white/[0.02] border-white/5"
+                        )}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className={clsx("p-3 rounded-xl", failsafeActive ? "bg-soc-danger/20" : "bg-white/5")}>
+                                        <AlertTriangle className={clsx("w-6 h-6", failsafeActive ? "text-soc-danger" : "text-slate-500")} />
+                                    </div>
+                                    <div>
+                                        <h3 className={clsx("text-sm font-black uppercase tracking-widest", failsafeActive ? "text-soc-danger" : "text-white")}>
+                                            System Failsafe Mode
+                                        </h3>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-1">
+                                            Immediately bypasses all neural interception and scanning.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={toggleFailsafe}
+                                    className={clsx(
+                                        "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                                        failsafeActive 
+                                            ? "bg-soc-danger text-white shadow-lg shadow-soc-danger/20" 
+                                            : "bg-white/5 text-slate-400 hover:bg-white/10"
+                                    )}
+                                >
+                                    {failsafeActive ? "Bypass Active" : "Engage Failsafe"}
+                                </button>
+                            </div>
+                        </div>
+
                         <div>
                             <div className="flex items-center gap-3 mb-8">
                                 <Cpu className="w-4 h-4 text-soc-accent" />
@@ -58,8 +123,22 @@ export const Settings = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button 
+                                    onClick={toggleProtection}
+                                    className="flex items-center justify-between p-5 rounded-xl bg-white/[0.01] border border-white/[0.03] hover:border-white/[0.08] transition-all group"
+                                >
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-200 transition-colors">Neural Heartbeat Protection</span>
+                                    <div className={clsx(
+                                        "w-10 h-5 rounded-full relative transition-colors duration-500",
+                                        isZeroDayMode ? 'bg-soc-accent/20' : 'bg-white/10'
+                                    )}>
+                                        <div className={clsx(
+                                            "absolute top-1 w-3 h-3 rounded-full transition-all duration-500",
+                                            isZeroDayMode ? 'right-1 bg-soc-accent' : 'left-1 bg-slate-600'
+                                        )} />
+                                    </div>
+                                </button>
                                 {[
-                                    { id: 'zero-day', label: 'Zero-Day Active Shield', active: true },
                                     { id: 'dns-sec', label: 'Passive DNS Intelligence', active: true },
                                     { id: 'entropy', label: 'URL Entropy Analysis', active: false },
                                     { id: 'behavioral', label: 'Behavioral Sandbox', active: true }

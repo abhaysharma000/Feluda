@@ -1,0 +1,43 @@
+# Feluda AI - High-Fidelity Technical Specifications (SOC-Grade)
+
+## 1. System Vision: The "Neural Node" Concept
+Feluda AI is not a passive scanner; it is a **Tactical Cybersecurity Mesh**. It treats every browser as a "Neural Node" that participates in a distributed intelligence grid. By combining local ML-inference with cloud-based forensic telemetry, Feluda achieves a defense-in-depth profile previously reserved for corporate SOCs (Security Operation Centers).
+
+## 2. Advanced Multi-Layer Architecture
+The engine (Neural Node v2.5) follows a deterministic tiered analysis flow:
+
+### Layer 1: Structural DNA (URL Analysis)
+*   **Entropy Scoring:** Measures the unpredictability of the URL string (Phishing links often have high entropy due to obfuscation).
+*   **Homoglyph Filter:** Detects Punycode and visual character spoofing (e.g., Cyrillic 'а' replacing Latin 'a').
+*   **TLD Risk Mesh:** Dynamic weighting for high-risk TLDs (.xyz, .tk, .zip, .click).
+*   **Identity Age:** Real-time WHOIS correlation to flag "Freshly Minted" domains (0-14 days).
+
+### Layer 2: Machine Learning (Random Forest v2)
+*   **Calibrated Probability:** Uses a Platt-scaled Random Forest classifier for high-precision risk scores.
+*   **Feature Importance:** 18+ features including digit-to-length ratio, subdomain depth, and keyword density.
+*   **Explainable AI (SHAP):** Provides a transparent "Reasoning" field for every block (e.g., "Matched Phishing DNA Pattern X").
+
+### Layer 3: Behavioral DOM Probing
+*   **Form Harvesting Detection:** Scans for `<input type="password">` fields posting to external or rogue domains.
+*   **Anti-Analysis Radar:** Detects scripts that attempt to block debuggers or hide code from security analysts.
+*   **Hidden Infrastructure:** Flags invisible `iframes` or script blocks loading malware payloads.
+
+### Layer 4: Intelligence Grid Integration
+*   **Global Reputation:** Real-time sync with Google Safe Browsing and VirusTotal (Aggregated Verdict).
+*   **Visual Similarity (Heuristic):** Targeted brand checks for over 50+ financial and social platforms.
+
+## 3. The "Link Shield" Interface
+*   **Neural Verified Ticks:** Real-time injection of high-fidelity "Verified" badges in search results (Google, Bing, Facebook).
+*   **Mutation-Aware Scanning:** Uses `MutationObserver` to protect dynamic Single-Page Applications (SPAs) without page reloads.
+*   **Quarantine Handshake:** A preemptive blocking screen that requires a manual "Override" for high-risk URLs, including a full forensic risk breakdown.
+
+## 4. Engineering Stack & Deployment
+*   **Core Logic:** Python (FastAPI) for the high-concurrency Intelligence Engine.
+*   **Persistence:** MongoDB Atlas for adaptive feedback and global threat telemetry.
+*   **Frontend Ecosystem:** React 18 with a premium Glassmorphism design system.
+*   **Infrastructure:** Scalable Vercel deployment with SSL/TLS-encrypted handshakes.
+
+## 5. Hackathon Submission Highlights
+*   **Zero-Day Ready:** Detects threats that don't exist in blacklists yet via behavioral DNA.
+*   **SOC Command Center:** Features a real-time table of intercepted threats with full geographic and registrar data.
+*   **Production Maturity:** Extension is ready for 1-click deployment on any MV3-compatible browser.

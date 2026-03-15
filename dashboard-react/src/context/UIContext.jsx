@@ -15,6 +15,7 @@ export const UIProvider = ({ children }) => {
 
     // Zero-Day State
     const [isZeroDayMode, setIsZeroDayMode] = useState(false);
+    const [failsafeActive, setFailsafeActive] = useState(false);
 
     // Scan Logic State
     const [isScanning, setIsScanning] = useState(false);
@@ -90,6 +91,14 @@ export const UIProvider = ({ children }) => {
                 const threatData = await threatRes.json();
                 setTopThreats(Array.isArray(threatData) ? threatData : []);
             }
+
+            // 4. Global System Status (Failsafe & Protection)
+            const statusRes = await fetch('/api/system/status');
+            if (statusRes.ok) {
+                const statusData = await statusRes.json();
+                setFailsafeActive(statusData.failsafe_active);
+                setIsZeroDayMode(statusData.protection_enabled);
+            }
         } catch (err) {
             console.warn("Telemetry fetch failed. Engine offline?", err);
         }
@@ -123,7 +132,9 @@ export const UIProvider = ({ children }) => {
         stats,
         refreshTelemetry,
         isShowcaseOpen,
-        setIsShowcaseOpen
+        setIsShowcaseOpen,
+        failsafeActive,
+        setFailsafeActive
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

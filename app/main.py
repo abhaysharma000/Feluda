@@ -7,6 +7,7 @@ from typing import List, Optional
 import uvicorn
 import os
 import asyncio
+import psutil
 from datetime import datetime
 
 from app.core.engine import intelligence_engine
@@ -16,6 +17,7 @@ from app.core.qr_scanner import qr_scanner
 from app.core.behavioral_engine import behavioral_engine
 from app.core.image_analyzer import image_analyzer
 from app.core.spam_protector import spam_protector
+from app.core.file_scanner import file_scanner
 import adaptive_learner
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -472,6 +474,42 @@ async def scan_email(request: EmailRequest, req_obj: Request):
     }
 
 
+# ── System State & Failsafe ───────────────────────────────────
+failsafe_active = False
+
+@app.get("/api/system/status", tags=["System"])
+async def get_system_status():
+    """Get real-time system resource telemetry and failsafe status."""
+    cpu_percent = psutil.cpu_percent(interval=None)
+    memory = psutil.virtual_memory()
+    
+    # Calculate uptime
+    boot_time = datetime.fromtimestamp(psutil.boot_time())
+    uptime_delta = datetime.now() - boot_time
+    days = uptime_delta.days
+    hours, remainder = divmod(uptime_delta.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    uptime_str = f"{days}d {hours}h {minutes}m"
+
+    return {
+        "telemetry": {
+            "cpu": f"{cpu_percent}%",
+            "memory": f"{int(memory.used / (1024 * 1024))}MB",
+            "uptime": uptime_str,
+            "memory_percent": f"{memory.percent}%"
+        },
+        "failsafe_active": failsafe_active,
+        "protection_enabled": protection_enabled
+    }
+
+@app.post("/api/system/failsafe", tags=["System"])
+async def toggle_failsafe(active: bool):
+    """Toggle the system-wide emergency failsafe (bypass)."""
+    global failsafe_active
+    failsafe_active = active
+    return {"status": "success", "failsafe_active": failsafe_active}
+
+
 @app.post("/api/scan/qr", tags=["Scan"])
 async def scan_qr(file: UploadFile = File(...)):
     """Upload a QR code image and scan the embedded URL for threats."""
@@ -503,6 +541,31 @@ async def scan_qr(file: UploadFile = File(...)):
             findings.append({"qr_data": qr['data'], "analysis": {"note": "Not a URL payload"}})
 
     return {"count": len(findings), "findings": findings}
+
+
+@app.post("/api/scan/file", tags=["Scan"])
+async def scan_file(file: UploadFile = File(...)):
+    """Upload a file to scan for malware using VirusTotal."""
+    contents = await file.read()
+    
+    if len(contents) > 20 * 1024 * 1024:  # 20 MB limit
+        raise HTTPException(status_code=400, detail="File size must be under 20 MB.")
+
+    result = await file_scanner.scan_file(contents, file.filename)
+
+    # Log scan
+    log_entry = {
+        "timestamp": datetime.utcnow(),
+        "type": "FILE",
+        "input": file.filename,
+        "result": result,
+    }
+    try:
+        if logs is not None: await logs.insert_one(log_entry)
+        else: mock_logs.append(log_entry)
+    except: pass
+
+    return result
 
 
 @app.post("/api/scan/image", tags=["Scan"])
@@ -593,11 +656,14 @@ async def get_soc_stats():
 
     avg_lat = int(sum(latencies) / len(latencies)) if latencies else 14
     
-    # Mocked system health for SOC realism
-    import random
-    cpu_usage = random.randint(12, 45)
-    mem_usage = random.randint(400, 1200)
-    uptime = "24d 14h 22m"
+    # REAL Telemetry using psutil
+    cpu_usage = psutil.cpu_percent()
+    memory = psutil.virtual_memory()
+    mem_usage = int(memory.used / (1024 * 1024))
+    
+    boot_time = datetime.fromtimestamp(psutil.boot_time())
+    uptime_delta = datetime.now() - boot_time
+    uptime = f"{uptime_delta.days}d {uptime_delta.seconds // 3600}h {(uptime_delta.seconds % 3600) // 60}m"
     
     # Simple TLD breakdown from mock_logs for tactical overview
     tld_counts = {}
@@ -746,7 +812,8 @@ async def health_check():
         "status": "active",
         "engine": "Feluda Intelligence Engine v2",
         "ml_model_loaded": intelligence_engine.model is not None,
-        "protection_active": protection_enabled
+        "protection_active": protection_enabled,
+        "failsafe_active": failsafe_active
     }
 
 

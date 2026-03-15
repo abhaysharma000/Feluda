@@ -9,6 +9,7 @@ import { TopThreatsPanel } from '../components/TopThreatsPanel';
 import { LiveFeed } from '../components/LiveFeed';
 import { LogsTable } from '../components/LogsTable';
 import { ForensicDossier } from '../components/ForensicDossier';
+import { FileScanner } from '../components/FileScanner';
 import { Activity, Shield, Globe as GlobeIcon } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
@@ -86,13 +87,16 @@ export const Dashboard = () => {
             <HeroPanel />
             <StatsGrid />
 
-            {/* Module 2: URL Intelligence Scanner */}
-            <ManualScanner 
-                inputValue={inputValue}
-                setInputValue={setInputValue}
-                onAnalyze={handleManualSearch}
-                isAnalyzing={isAnalyzing}
-            />
+            {/* Module 2: URL & File Intelligence */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <ManualScanner 
+                    inputValue={inputValue}
+                    setInputValue={setInputValue}
+                    onAnalyze={handleManualSearch}
+                    isAnalyzing={isAnalyzing}
+                />
+                <FileScanner />
+            </div>
 
             {/* Tactical Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
