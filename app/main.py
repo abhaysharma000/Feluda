@@ -229,6 +229,20 @@ async def startup_db_client():
 # EXTENSION SYNC & HEALTH
 # ─────────────────────────────────────────────────────────────────
 
+@app.get("/api/debug/static")
+async def debug_static():
+    files = []
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+    if os.path.exists(base):
+        for root, dirs, filenames in os.walk(base):
+            for f in filenames:
+                files.append(os.path.relpath(os.path.join(root, f), base))
+    return {
+        "base_exists": os.path.exists(base),
+        "base_path": base,
+        "files": files,
+        "current_dir": os.getcwd()
+    }
 @app.get("/api/health")
 async def health_check():
     """Health check for browser extension and status monitoring."""
