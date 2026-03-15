@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: './',
   build: {
-    outDir: '../app/static/dashboard',
+    outDir: '../app/static/cyber-soc',
     emptyOutDir: true,
   }
 })

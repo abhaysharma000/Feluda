@@ -59,7 +59,7 @@ app.add_middleware(
 
 # ── Static file serving ────────────────────────────────────────
 _curr = os.path.dirname(os.path.abspath(__file__))
-_dashboard_dir = os.path.join(_curr, "static", "dashboard")
+_dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
 
 @app.get("/dashboard/assets/{path:path}", include_in_schema=False)
 async def serve_assets(path: str):
