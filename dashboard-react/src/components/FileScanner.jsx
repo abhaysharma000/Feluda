@@ -222,7 +222,7 @@ export const FileScanner = () => {
                                 <motion.button
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    onClick={performAnalysis}
+                                    onClick={performScan}
                                     className="w-full py-4 rounded-xl bg-soc-accent text-black font-black uppercase tracking-[0.2em] text-xs hover:bg-soc-accent/90 transition-all shadow-lg shadow-soc-accent/20"
                                 >
                                     Initiate Full Scan
