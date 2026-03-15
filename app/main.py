@@ -61,25 +61,28 @@ app.add_middleware(
 _curr = os.path.dirname(os.path.abspath(__file__))
 _dashboard_dir = os.path.join(_curr, "static", "dashboard")
 
-if os.path.exists(_dashboard_dir):
-    assets_dir = os.path.join(_dashboard_dir, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/dashboard/assets", StaticFiles(directory=assets_dir), name="assets")
+@app.get("/dashboard/assets/{path:path}", include_in_schema=False)
+async def serve_assets(path: str):
+    file_path = os.path.join(_dashboard_dir, "assets", path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    raise HTTPException(status_code=404)
 
 @app.get("/dashboard", include_in_schema=False)
+@app.get("/dashboard/", include_in_schema=False)
 @app.get("/dashboard/{path:path}", include_in_schema=False)
 async def serve_dashboard(path: str = ""):
-    if _dashboard_dir:
-        # Check if requesting a specific file like vite.svg
-        if path:
-            file_path = os.path.join(_dashboard_dir, path)
-            if os.path.isfile(file_path):
-                return FileResponse(file_path)
-        
-        # Fallback to index.html for SPA
-        index_path = os.path.join(_dashboard_dir, "index.html")
-        if os.path.exists(index_path):
-            return FileResponse(index_path)
+    # 1. Try serving specific file (e.g. vite.svg)
+    if path:
+        file_path = os.path.join(_dashboard_dir, path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+    
+    # 2. Return index.html for all other dashboard routes (SPA)
+    index_path = os.path.join(_dashboard_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
     return RedirectResponse(url="/")
 
 
