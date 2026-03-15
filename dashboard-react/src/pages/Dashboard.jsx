@@ -85,7 +85,6 @@ export const Dashboard = () => {
         <div className="space-y-8 pb-12">
             {/* Hero & Vital Stats */}
             <HeroPanel />
-            <StatsGrid />
 
             {/* Module 2: URL & File Intelligence */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -97,6 +96,8 @@ export const Dashboard = () => {
                 />
                 <FileScanner />
             </div>
+
+            <StatsGrid />
 
             {/* Tactical Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
