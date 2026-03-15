@@ -10,6 +10,7 @@ import { LiveFeed } from '../components/LiveFeed';
 import { LogsTable } from '../components/LogsTable';
 import { ForensicDossier } from '../components/ForensicDossier';
 import { FileScanner } from '../components/FileScanner';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Activity, Shield, Globe as GlobeIcon } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
@@ -94,7 +95,9 @@ export const Dashboard = () => {
                     onAnalyze={handleManualSearch}
                     isAnalyzing={isAnalyzing}
                 />
-                <FileScanner />
+                <ErrorBoundary>
+                    <FileScanner />
+                </ErrorBoundary>
             </div>
 
             <StatsGrid />

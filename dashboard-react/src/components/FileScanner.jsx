@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, Shield, AlertTriangle, CheckCircle2, Loader2, X, Download } from 'lucide-react';
+import { FileUp, Shield, AlertTriangle, ShieldCheck, Loader2, X, Download } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 import { clsx } from 'clsx';
 
@@ -150,7 +150,7 @@ export const FileScanner = () => {
                                     {result.classification === 'Malicious' ? (
                                         <AlertTriangle className="w-12 h-12 text-soc-danger mb-4" />
                                     ) : (
-                                        <CheckCircle2 className="w-12 h-12 text-soc-accent mb-4" />
+                                        <ShieldCheck className="w-12 h-12 text-soc-accent mb-4" />
                                     )}
                                     <h4 className={clsx(
                                         "text-xl font-black uppercase tracking-widest mb-2",
