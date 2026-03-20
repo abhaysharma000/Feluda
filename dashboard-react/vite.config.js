@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -7,6 +7,11 @@ export default defineConfig({
     base: '/dashboard/',
     build: {
         outDir: '../app/static/cyber-soc',
-        emptyOutDir: true
+        emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                manualChunks: undefined
+            }
+        }
     }
 });
