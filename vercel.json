@@ -9,7 +9,13 @@
     ],
     "routes": [
         { "src": "/api/(.*)", "dest": "index.py" },
-        { "handle": "filesystem" },
-        { "src": "/(.*)", "dest": "index.py" }
+        {
+            "src": "/dashboard/(.*)",
+            "headers": { "cache-control": "no-cache, no-store, must-revalidate" }
+        },
+        {
+            "src": "/((?!dashboard/).*)",
+            "dest": "index.py"
+        }
     ]
 }
