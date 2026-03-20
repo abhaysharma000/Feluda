@@ -64,16 +64,26 @@ _dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
 @app.get("/dashboard/assets/{path:path}", include_in_schema=False)
 async def serve_assets(path: str):
     file_path = os.path.join(_dashboard_dir, "assets", path)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
-    raise HTTPException(status_code=404)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404)
+    
+    # Explicit MIME types to prevent browser execution refusal
+    media_type = None
+    if path.endswith(".js"):
+        media_type = "application/javascript"
+    elif path.endswith(".css"):
+        media_type = "text/css"
+    elif path.endswith(".svg"):
+        media_type = "image/svg+xml"
+    
+    return FileResponse(file_path, media_type=media_type)
 
 @app.get("/dashboard", include_in_schema=False)
 @app.get("/dashboard/", include_in_schema=False)
 @app.get("/dashboard/{path:path}", include_in_schema=False)
 async def serve_dashboard(path: str = ""):
     # 1. Try serving specific file (e.g. vite.svg)
-    if path:
+    if path and not path.startswith("api/"):
         file_path = os.path.join(_dashboard_dir, path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
@@ -81,7 +91,7 @@ async def serve_dashboard(path: str = ""):
     # 2. Return index.html for all other dashboard routes (SPA)
     index_path = os.path.join(_dashboard_dir, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        return FileResponse(index_path, media_type="text/html")
     
     return RedirectResponse(url="/")
 
