@@ -11,11 +11,11 @@
         { "src": "/api/(.*)", "dest": "index.py" },
         { "src": "/assets/(.*)", "status": 301, "dest": "/dashboard/assets/$1" },
         {
-            "src": "/dashboard/(.*)",
+            "src": "/dashboard(.*)",
             "headers": { "cache-control": "no-cache, no-store, must-revalidate" }
         },
         {
-            "src": "/((?!dashboard/).*)",
+            "src": "/((?!dashboard).*)",
             "dest": "index.py"
         }
     ]
