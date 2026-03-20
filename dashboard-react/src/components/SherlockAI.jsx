@@ -24,20 +24,21 @@ export const SherlockAI = () => {
         if (isOpen) scrollToBottom();
     }, [messages, isOpen]);
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        if (!inputValue.trim() || isTyping) return;
+    const handleSend = async (val) => {
+        const query = typeof val === 'string' ? val : inputValue;
+        if (!query.trim() || isTyping) return;
 
-        const userMsg = { id: Date.now(), type: 'user', text: inputValue, time: 'Now' };
+        const userMsg = { id: Date.now(), type: 'user', text: query, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
         setMessages(prev => [...prev, userMsg]);
         setInputValue('');
         setIsTyping(true);
 
         try {
+            // Use absolute path for API to ensure it works across deep routes
             const response = await fetch('/api/sherlock/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: inputValue })
+                body: JSON.stringify({ query })
             });
 
             if (response.ok) {
@@ -46,17 +47,22 @@ export const SherlockAI = () => {
                     id: Date.now() + 1, 
                     type: 'bot', 
                     text: data.response, 
-                    time: 'Now',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     insights: data.insights 
                 }]);
             } else {
-                setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Error: Neural connection interrupted. Please try again.", time: 'Now' }]);
+                setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Error: Neural connection interrupted. Please ensure the backend is active.", time: 'Emergency' }]);
             }
         } catch (err) {
-            setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Connection error. Backbone is temporarily unreachable.", time: 'Now' }]);
+            setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Connection error. Backbone node is temporarily unreachable.", time: 'System Error' }]);
         } finally {
             setIsTyping(false);
         }
+    };
+
+    const onFormSubmit = (e) => {
+        e.preventDefault();
+        handleSend();
     };
 
     return (
@@ -168,19 +174,16 @@ export const SherlockAI = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="px-6 py-3 border-t border-white/5 bg-white/[0.01] flex gap-2 overflow-x-auto scrollbar-hide no-scrollbar">
+                        <div className="px-6 py-3 border-t border-white/5 bg-white/[0.01] flex gap-2 overflow-x-auto no-scrollbar scroll-smooth">
                             {[
-                                { label: 'Analyze URL', icon: GlobeIcon, cmd: 'Help me analyze a URL' },
-                                { label: 'Audit Assets', icon: FileUp, cmd: 'Start a file scan' },
-                                { label: 'View Threats', icon: ShieldAlert, cmd: 'What are the current top threats?' }
+                                { label: 'Analyze URL', icon: GlobeIcon, cmd: 'Analyze a URL' },
+                                { label: 'Audit Assets', icon: FileUp, cmd: 'File Shield help' },
+                                { label: 'View Threats', icon: ShieldAlert, cmd: 'Top threats' }
                             ].map((action, i) => (
                                 <button
                                     key={i}
-                                    onClick={() => {
-                                        setInputValue(action.cmd);
-                                        // Wait a tick then submit? 
-                                    }}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-white/5 text-[8px] font-black text-slate-500 uppercase tracking-widest hover:border-soc-accent/40 hover:text-white transition-all whitespace-nowrap"
+                                    onClick={() => handleSend(action.cmd)}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-white/5 text-[8px] font-black text-slate-500 uppercase tracking-widest hover:border-soc-accent/40 hover:text-white transition-all whitespace-nowrap active:scale-95"
                                 >
                                     <action.icon className="w-2.5 h-2.5" />
                                     {action.label}
@@ -189,7 +192,7 @@ export const SherlockAI = () => {
                         </div>
 
                         {/* Input Area */}
-                        <form onSubmit={handleSend} className="p-6 pt-2 border-t border-white/5 bg-white/[0.02]">
+                        <form onSubmit={onFormSubmit} className="p-6 pt-2 border-t border-white/5 bg-white/[0.02]">
                             <div className="relative group">
                                 <div className="absolute -inset-[1px] bg-gradient-to-r from-soc-accent/20 via-transparent to-soc-accent/20 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
                                 <input

@@ -196,9 +196,7 @@ class SherlockRequest(BaseModel):
 async def sherlock_query(req: SherlockRequest):
     query = req.query.lower()
     
-    response = "I've analyzed your query. To better protect your perimeter, I recommend a comprehensive forensic sweep of any suspicious vectors you encounter."
-    insights = ["Autonomous Defense", "Neural Patterns"]
-    
+    # Pre-defined Logic for common SOC tasks
     if "phishing" in query or "block" in query:
         response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy."
         insights = ["RF Classifier", "Behavioral DOM"]
@@ -214,6 +212,15 @@ async def sherlock_query(req: SherlockRequest):
     elif "malicious" in query or "dangerous" in query:
         response = "High-risk vectors are instantly quarantined. If you encounter a 'Neural Quarantine' screen, our engine has detected signatures matching known malicious patterns."
         insights = ["Quarantine Mode", "Pattern Match"]
+    else:
+        # Advanced NLP analysis for unknown queries
+        nlp_analysis = nlp_engine.predict(req.query)
+        if nlp_analysis['risk_score'] > 30:
+            response = f"My neural engine detects a potential security-related context in your query (Risk: {nlp_analysis['risk_score']}%). {nlp_analysis.get('explanation', ['I recommend checking our forensic logs for related patterns.'])[0]}"
+            insights = ["NLP Match", "Heuristic Trace"]
+        else:
+            response = "I've analyzed your query against my current intelligence node. For a targeted investigation, please provide a URL signature or file hash for structural DNA analysis."
+            insights = ["Neural Standby", "Broad Sweep"]
 
     return {
         "response": response,
