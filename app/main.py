@@ -73,18 +73,23 @@ if os.path.exists(_dashboard_dir):
 @app.get("/dashboard/")
 @app.get("/dashboard/{path:path}")
 async def serve_dashboard(request: Request, path: str = ""):
-    # Diagnostic check for local files
+    # 1. Diagnostic guard
     if not os.path.exists(_dashboard_dir):
-        return JSONResponse({"error": "Dashboard static files missing", "path": _dashboard_dir}, status_code=500)
+        return JSONResponse({"error": "Neural Mesh Static Assets Missing", "node": "NODE_01_SOC"}, status_code=500)
     
-    # Check if a specific static file is requested (rare since we mount /assets, but good to have)
-    if path:
-        full_path = os.path.join(_dashboard_dir, path)
-        if os.path.isfile(full_path):
-            return FileResponse(full_path)
+    # 2. Strict static file exclusion for SPA fallback
+    # If the user tries to go to a path that looks like a file (e.g. .js, .css), 
+    # we MUST NOT return index.html because it will cause a white screen (parsing HTML as JS).
+    ignored_extensions = [".js", ".css", ".png", ".jpg", ".svg", ".ico", ".json", ".map", ".woff", ".woff2"]
+    if any(path.lower().endswith(ext) for ext in ignored_extensions):
+        # Let the StaticFiles mount handle it, or return a proper 404
+        file_path = os.path.join(_dashboard_dir, path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        raise HTTPException(status_code=404, detail="Requested asset node not found")
     
-    # Catch-all: serve index.html for SPA routing
-    return FileResponse(os.path.join(_dashboard_dir, "index.html"))
+    # 3. Serve index.html for all UI routes (React SPA Fallback)
+    return FileResponse(os.path.join(_dashboard_dir, "index.html"), media_type="text/html")
 
 
 @app.get("/", include_in_schema=False)
