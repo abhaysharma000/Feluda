@@ -4,30 +4,13 @@
         {
             "src": "index.py",
             "use": "@vercel/python",
-            "config": {
-                "maxLambdaSize": "512mb",
-                "runtime": "python3.9"
-            }
+            "config": { "runtime": "python3.11" }
         }
     ],
-    "cleanUrls": true,
-    "trailingSlash": true,
     "routes": [
-        {
-            "src": "/dashboard/assets/(.*)",
-            "dest": "/app/static/cyber-soc/assets/$1"
-        },
-        {
-            "src": "/dashboard/(.*)",
-            "dest": "/app/static/cyber-soc/index.html"
-        },
-        {
-            "src": "/api/(.*)",
-            "dest": "index.py"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "index.py"
-        }
+        { "src": "/dashboard/assets/(.*)", "dest": "app/static/cyber-soc/assets/$1" },
+        { "src": "/dashboard/(.*)", "dest": "app/static/cyber-soc/index.html" },
+        { "src": "/api/(.*)", "dest": "index.py" },
+        { "src": "/(.*)", "dest": "index.py" }
     ]
 }
