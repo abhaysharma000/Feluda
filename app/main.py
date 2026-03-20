@@ -57,38 +57,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Static file serving ────────────────────────────────────────
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+import os
+
+# ── Static file serving (MIME-Robust) ───────────────────────────
 _curr = os.path.dirname(os.path.abspath(__file__))
 _dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
 
-@app.get("/dashboard/assets/{path:path}", include_in_schema=False)
-async def serve_assets(path: str):
-    file_path = os.path.join(_dashboard_dir, "assets", path)
-    if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404)
-    
-    # Explicit MIME types to prevent browser execution refusal
-    media_type = None
-    if path.endswith(".js"):
-        media_type = "application/javascript"
-    elif path.endswith(".css"):
-        media_type = "text/css"
-    elif path.endswith(".svg"):
-        media_type = "image/svg+xml"
-    
-    return FileResponse(file_path, media_type=media_type)
+# Mount assets specifically first
+if os.path.exists(os.path.join(_dashboard_dir, "assets")):
+    app.mount("/dashboard/assets", StaticFiles(directory=os.path.join(_dashboard_dir, "assets")), name="assets")
 
 @app.get("/dashboard", include_in_schema=False)
 @app.get("/dashboard/", include_in_schema=False)
 @app.get("/dashboard/{path:path}", include_in_schema=False)
 async def serve_dashboard(path: str = ""):
-    # 1. Try serving specific file (e.g. vite.svg)
+    # Serve static files from dashboard dir if they exist
     if path and not path.startswith("api/"):
         file_path = os.path.join(_dashboard_dir, path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
     
-    # 2. Return index.html for all other dashboard routes (SPA)
+    # Fallback to index.html (SPA)
     index_path = os.path.join(_dashboard_dir, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path, media_type="text/html")
