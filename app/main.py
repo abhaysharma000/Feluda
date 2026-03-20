@@ -63,7 +63,7 @@ import os
 
 # ── Static file serving (MIME-Robust) ───────────────────────────
 _curr = os.path.dirname(os.path.abspath(__file__))
-_dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
+_dashboard_dir = os.path.join(os.path.dirname(_curr), "dashboard")
 
 # Mount assets specifically first with a high priority path
 if os.path.exists(_dashboard_dir):
