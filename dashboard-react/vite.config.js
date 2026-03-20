@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [react(), tailwindcss()],
     base: '/dashboard/',
     build: {
-        outDir: '../app/static/cyber-soc',
+        outDir: '../dashboard',
         emptyOutDir: true,
         rollupOptions: {
             output: {
