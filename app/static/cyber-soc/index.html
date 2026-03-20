@@ -30,18 +30,7 @@
     rel="stylesheet">
 
 <body>
-  <div id="root" style="color: #4ade80; font-family: monospace; padding: 20px;">
-    [FELUDA_SOC_OEST] Initializing Neural Mesh...
-  </div>
-  <script>
-    // Heartbeat to confirm HTML parsing
-    setTimeout(function() {
-      var root = document.getElementById('root');
-      if (root && root.innerText.indexOf('Neural Mesh') !== -1) {
-         root.innerHTML += '<br>[V2.5_HEARTBEAT] HTML Processed. Waiting for JS execution...';
-      }
-    }, 500);
-  </script>
+  <div id="root"></div>
 </body>
 
 </html>
