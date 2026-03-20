@@ -1,17 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import tailwindcss from '@tailwindcss/vite'
 
+// https://vite.dev/config/
 export default defineConfig({
-    plugins: [react(), tailwindcss()],
-    base: '/dashboard/',
-    build: {
-        outDir: '../dashboard',
-        emptyOutDir: true,
-        rollupOptions: {
-            output: {
-                manualChunks: undefined
-            }
-        }
-    }
-});
+  plugins: [react(), tailwindcss()],
+  base: './',
+  build: {
+    outDir: '../app/static/cyber-soc',
+    emptyOutDir: true,
+  }
+})

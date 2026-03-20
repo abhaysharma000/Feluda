@@ -54,15 +54,15 @@ export const ActiveWebsiteInvestigation = ({ data, isLoading }) => {
             className="space-y-6"
         >
             {/* Primary Forensic Dashboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Tactical Verdict Header */}
-                <div className="lg:col-span-12 xl:col-span-8 space-y-6">
+                <div className="lg:col-span-8 space-y-6">
                     <div className={clsx(
-                        "p-6 md:p-8 rounded-3xl bg-black/40 border-2 relative overflow-hidden",
+                        "p-8 rounded-3xl bg-black/40 border-2 relative overflow-hidden",
                         isMalicious ? "border-soc-danger/20 shadow-[0_0_30px_rgba(244,63,94,0.05)]" : "border-white/[0.03]"
                     )}>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-6 relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className={clsx("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border", 
@@ -70,32 +70,32 @@ export const ActiveWebsiteInvestigation = ({ data, isLoading }) => {
                                     )}>
                                         Target_{data.node_id || "7"}
                                     </div>
-                                    <div className="h-px w-8 bg-white/5 shrink-0" />
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic truncate">{data.source}</span>
+                                    <div className="h-px w-8 bg-white/5" />
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">{data.source}</span>
                                 </div>
-                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tighter truncate max-w-full md:max-w-xl group relative pr-8">
+                                <h2 className="text-4xl font-black text-white tracking-tighter truncate max-w-xl group relative">
                                     {domain}
-                                    <a href={data.url} target="_blank" rel="noreferrer" className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-100 transition-opacity">
-                                        <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
+                                    <a href={data.url} target="_blank" rel="noreferrer" className="inline-block ml-4 opacity-30 hover:opacity-100 transition-opacity">
+                                        <ExternalLink className="w-5 h-5 mb-1" />
                                     </a>
                                 </h2>
                             </div>
                             
-                            <div className="flex flex-wrap items-center gap-6 md:gap-10">
-                                <div className="text-left md:text-center group">
+                            <div className="flex items-center gap-10">
+                                <div className="text-center group">
                                     <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-soc-accent transition-colors">Risk_Heuristic</div>
-                                    <div className={clsx("text-4xl md:text-5xl font-black tracking-tighter tabular-nums", 
+                                    <div className={clsx("text-5xl font-black tracking-tighter tabular-nums", 
                                         isMalicious ? "text-soc-danger" : "text-soc-accent"
                                     )}>
                                         {data.risk_score}%
                                     </div>
                                 </div>
                                 <div className={clsx(
-                                    "px-6 md:px-10 py-4 md:py-6 rounded-2xl border-2 text-center flex-1 md:flex-none min-w-[150px] md:min-w-[200px] bg-black/40 shadow-inner",
+                                    "px-10 py-6 rounded-2xl border-2 text-center min-w-[200px] bg-black/40 shadow-inner",
                                     isMalicious ? "border-soc-danger/30 text-soc-danger" : "border-soc-accent/30 text-soc-accent"
                                 )}>
-                                    <div className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-1 md:mb-2">Final Verdict</div>
-                                    <div className="text-xl md:text-2xl font-black uppercase tracking-[0.2em] italic">
+                                    <div className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Final Verdict</div>
+                                    <div className="text-2xl font-black uppercase tracking-[0.2em] italic">
                                         {data.classification}
                                     </div>
                                 </div>
@@ -108,7 +108,7 @@ export const ActiveWebsiteInvestigation = ({ data, isLoading }) => {
                 </div>
 
                 {/* Infrastructure Intelligence Sidebar */}
-                <div className="lg:col-span-12 xl:col-span-4 space-y-6">
+                <div className="lg:col-span-4 space-y-6">
                     <InfrastructureSpecs data={data} />
                     <SHAPMatrix contributors={data.top_contributors || []} isMalicious={isMalicious} />
                 </div>

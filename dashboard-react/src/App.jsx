@@ -28,17 +28,17 @@ const App = () => {
         <div className="flex h-screen overflow-hidden relative z-10 w-full">
           <Sidebar />
 
-          <main className="flex-1 flex flex-col overflow-hidden relative lg:pl-72 transition-all duration-500">
+          <main className="flex-1 flex flex-col overflow-hidden relative lg:ml-72">
             <Topbar />
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-10 xl:p-12 space-y-8 md:space-y-12">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-12 space-y-12">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
-                  initial={{ opacity: 0, scale: 0.99, filter: 'blur(4px)' }}
+                  initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
                   animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, scale: 1.01, filter: 'blur(4px)' }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  exit={{ opacity: 0, scale: 1.02, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
                   className="h-full"
                 >
                   <Routes location={location}>

@@ -5,8 +5,5 @@
     "scripts": {
         "build": "cd dashboard-react && npm install && npm run build",
         "install-all": "pip install -r requirements.txt && cd dashboard-react && npm install"
-    },
-    "engines": {
-        "node": "24.x"
     }
 }

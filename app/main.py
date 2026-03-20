@@ -57,39 +57,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
-import os
-
-# ── Static file serving (MIME-Robust) ───────────────────────────
+# ── Static file serving ────────────────────────────────────────
 _curr = os.path.dirname(os.path.abspath(__file__))
-_dashboard_dir = os.path.join(os.path.dirname(_curr), "dashboard")
+_dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
 
-# Mount assets specifically first with a high priority path
-if os.path.exists(_dashboard_dir):
-    app.mount("/dashboard/assets", StaticFiles(directory=os.path.join(_dashboard_dir, "assets")), name="assets")
+@app.get("/dashboard/assets/{path:path}", include_in_schema=False)
+async def serve_assets(path: str):
+    file_path = os.path.join(_dashboard_dir, "assets", path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    raise HTTPException(status_code=404)
 
-@app.get("/dashboard")
-@app.get("/dashboard/")
-@app.get("/dashboard/{path:path}")
-async def serve_dashboard(request: Request, path: str = ""):
-    # 1. Diagnostic guard
-    if not os.path.exists(_dashboard_dir):
-        return JSONResponse({"error": "Neural Mesh Static Assets Missing", "node": "NODE_01_SOC"}, status_code=500)
-    
-    # 2. Strict static file exclusion for SPA fallback
-    # If the user tries to go to a path that looks like a file (e.g. .js, .css), 
-    # we MUST NOT return index.html because it will cause a white screen (parsing HTML as JS).
-    ignored_extensions = [".js", ".css", ".png", ".jpg", ".svg", ".ico", ".json", ".map", ".woff", ".woff2"]
-    if any(path.lower().endswith(ext) for ext in ignored_extensions):
-        # Let the StaticFiles mount handle it, or return a proper 404
+@app.get("/dashboard", include_in_schema=False)
+@app.get("/dashboard/", include_in_schema=False)
+@app.get("/dashboard/{path:path}", include_in_schema=False)
+async def serve_dashboard(path: str = ""):
+    # 1. Try serving specific file (e.g. vite.svg)
+    if path:
         file_path = os.path.join(_dashboard_dir, path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
-        raise HTTPException(status_code=404, detail="Requested asset node not found")
     
-    # 3. Serve index.html for all UI routes (React SPA Fallback)
-    return FileResponse(os.path.join(_dashboard_dir, "index.html"), media_type="text/html")
+    # 2. Return index.html for all other dashboard routes (SPA)
+    index_path = os.path.join(_dashboard_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    return RedirectResponse(url="/")
 
 
 @app.get("/", include_in_schema=False)
@@ -201,35 +195,24 @@ class SherlockRequest(BaseModel):
 async def sherlock_query(req: SherlockRequest):
     query = req.query.lower()
     
-    # Expanded Logic for common SOC tasks and user queries
-    if any(k in query for k in ["phishing", "block", "scam", "suspicious"]):
-        response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy. You can paste a suspected URL in the Manual Investigation field to verify its signature."
-        insights = ["RF Classifier", "Behavioral DOM", "Zero-Day Shield"]
-    elif any(k in query for k in ["threat", "view", "matrix", "map", "danger"]):
-        response = "The Tactical Intelligence Matrix (Threat Map) displays live attack vectors identified by our global inference mesh. Node_01_Alpha is currently monitoring multiple high-latency anomalies. You can explore the map to see real-time geographical risk distributions."
-        insights = ["Inference Mesh", "Tactical Matrix", "Live Geo-Intel"]
-    elif any(k in query for k in ["audit", "asset", "file", "upload", "check"]):
-        response = "The File Audit system generates a cryptographic 'Neural Fingerprint' (SHA-256) for uploaded assets. This fingerprint is instantly compared against our local threat database to detect malicious binaries or scripts without exposing your raw data."
-        insights = ["SHA-256 Hash", "Binary Analysis", "Privacy Guard"]
-    elif any(k in query for k in ["help", "guide", "what can you do", "sherlock"]):
-        response = "I am Sherlock, your autonomous security assistant. I am linked to the Feluda Neural Core. I can analyze URLs, explain security protocols, provide telemetry on current threats, or guide you through our forensic tools."
-        insights = ["AI Personal", "Core Guidance", "SecOps Assist"]
-    elif any(k in query for k in ["dossier", "deep", "forensic", "report"]):
-        response = "The Forensic Report provides granular intelligence including ASN data, registrar history, and visual similarity scores. While I've streamlined the UI, our underlying forensic engine still processes these deep metrics during every domain sweep."
-        insights = ["ASN Intel", "Visual Similarity", "Registrar Scan"]
-    elif any(k in query for k in ["malicious", "dangerous", "virus", "malware"]):
-        response = "High-risk vectors are instantly neutralized. If the Feluda engine detects a 90%+ confidence match for known malware signatures, it triggers a 'Neural Quarantine' to prevent script execution on your workstation."
-        insights = ["Quarantine Hub", "Signature Match", "Active Defense"]
-    else:
-        # Improved NLP analysis for unknown queries
-        nlp_analysis = nlp_engine.predict(req.query)
-        if nlp_analysis.get('risk_score', 0) > 40:
-            exp = nlp_analysis.get('explanation', ["I recommend checking our forensic logs for related patterns."])[0]
-            response = f"My neural engine identifies potential risk signatures in your query (Inference Score: {nlp_analysis['risk_score']}%). {exp}"
-            insights = ["NLP Inference", "Heuristic Trace"]
-        else:
-            response = "I've analyzed your query against the Feluda Knowledge Base. While I don't have a specific tactical brief on this term, I am standing by to perform a targeted DNA analysis on any URL or file hash you provide."
-            insights = ["Neural Standby", "Broad Knowledge Base"]
+    response = "I've analyzed your query. To better protect your perimeter, I recommend a comprehensive forensic sweep of any suspicious vectors you encounter."
+    insights = ["Autonomous Defense", "Neural Patterns"]
+    
+    if "phishing" in query or "block" in query:
+        response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy."
+        insights = ["RF Classifier", "Behavioral DOM"]
+    elif "dashboard" in query or "how" in query:
+        response = "The SOC Dashboard provides real-time telemetry from our global inference mesh. You can manually scan URLs, view live threat feeds, and explore the Tactical Intelligence Matrix (Threat Map)."
+        insights = ["SOC Telemetry", "Tactical Matrix"]
+    elif "dossier" in query or "deep" in query:
+        response = "The Forensic Dossier provides a high-fidelity intelligence report including ASN data, registrar age, and structural DNA analysis. You can trigger it by clicking 'Dossier' in the Manual Scanner."
+        insights = ["Forensic Report", "ASN Intel"]
+    elif "help" in query:
+        response = "I am Sherlock, your cyber-intelligence assistant. I can explain security concepts, guide you through the dashboard, or provide details on specific threat vectors Feluda has detected."
+        insights = ["AI Personal", "Guidance Mode"]
+    elif "malicious" in query or "dangerous" in query:
+        response = "High-risk vectors are instantly quarantined. If you encounter a 'Neural Quarantine' screen, our engine has detected signatures matching known malicious patterns."
+        insights = ["Quarantine Mode", "Pattern Match"]
 
     return {
         "response": response,
