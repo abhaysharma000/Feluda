@@ -10,7 +10,17 @@
             }
         }
     ],
+    "cleanUrls": true,
+    "trailingSlash": true,
     "routes": [
+        {
+            "src": "/dashboard/assets/(.*)",
+            "dest": "/app/static/cyber-soc/assets/$1"
+        },
+        {
+            "src": "/dashboard/(.*)",
+            "dest": "/app/static/cyber-soc/index.html"
+        },
         {
             "src": "/api/(.*)",
             "dest": "index.py"
