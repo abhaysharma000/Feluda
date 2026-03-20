@@ -120,15 +120,18 @@ export const FileScanner = () => {
 
     return (
         <div className="glass-panel p-8 min-h-[400px] flex flex-col relative overflow-hidden group border-soc-accent/5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8 relative z-10">
+            {/* Header Area */}
+            <div className="flex items-center justify-between mb-10 relative z-20">
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-soc-accent/10 rounded-lg">
-                        <Shield className="w-5 h-5 text-soc-accent" />
+                    <div className="relative">
+                        <div className="p-2.5 bg-soc-accent/10 rounded-xl border border-soc-accent/20">
+                            <Shield className="w-5 h-5 text-soc-accent" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-soc-accent rounded-full animate-ping opacity-50" />
                     </div>
-                    <div>
-                        <h3 className="text-xl font-black text-white tracking-widest uppercase">File Armor</h3>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Pre-execution structural validation</p>
+                    <div className="flex flex-col">
+                        <h3 className="text-xl font-black text-white tracking-[0.1em] uppercase leading-none">File Armor</h3>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-2">Neural Structural Validation</p>
                     </div>
                 </div>
             </div>
