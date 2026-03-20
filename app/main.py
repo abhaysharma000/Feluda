@@ -65,26 +65,26 @@ import os
 _curr = os.path.dirname(os.path.abspath(__file__))
 _dashboard_dir = os.path.join(_curr, "static", "cyber-soc")
 
-# Mount assets specifically first
-if os.path.exists(os.path.join(_dashboard_dir, "assets")):
+# Mount assets specifically first with a high priority path
+if os.path.exists(_dashboard_dir):
     app.mount("/dashboard/assets", StaticFiles(directory=os.path.join(_dashboard_dir, "assets")), name="assets")
 
-@app.get("/dashboard", include_in_schema=False)
-@app.get("/dashboard/", include_in_schema=False)
-@app.get("/dashboard/{path:path}", include_in_schema=False)
-async def serve_dashboard(path: str = ""):
-    # Serve static files from dashboard dir if they exist
-    if path and not path.startswith("api/"):
-        file_path = os.path.join(_dashboard_dir, path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
+@app.get("/dashboard")
+@app.get("/dashboard/")
+@app.get("/dashboard/{path:path}")
+async def serve_dashboard(request: Request, path: str = ""):
+    # Diagnostic check for local files
+    if not os.path.exists(_dashboard_dir):
+        return JSONResponse({"error": "Dashboard static files missing", "path": _dashboard_dir}, status_code=500)
     
-    # Fallback to index.html (SPA)
-    index_path = os.path.join(_dashboard_dir, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path, media_type="text/html")
+    # Check if a specific static file is requested (rare since we mount /assets, but good to have)
+    if path:
+        full_path = os.path.join(_dashboard_dir, path)
+        if os.path.isfile(full_path):
+            return FileResponse(full_path)
     
-    return RedirectResponse(url="/")
+    # Catch-all: serve index.html for SPA routing
+    return FileResponse(os.path.join(_dashboard_dir, "index.html"))
 
 
 @app.get("/", include_in_schema=False)
