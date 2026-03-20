@@ -201,31 +201,35 @@ class SherlockRequest(BaseModel):
 async def sherlock_query(req: SherlockRequest):
     query = req.query.lower()
     
-    # Pre-defined Logic for common SOC tasks
-    if "phishing" in query or "block" in query:
-        response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy."
-        insights = ["RF Classifier", "Behavioral DOM"]
-    elif "dashboard" in query or "how" in query:
-        response = "The SOC Dashboard provides real-time telemetry from our global inference mesh. You can manually scan URLs, view live threat feeds, and explore the Tactical Intelligence Matrix (Threat Map)."
-        insights = ["SOC Telemetry", "Tactical Matrix"]
-    elif "dossier" in query or "deep" in query:
-        response = "The Forensic Dossier provides a high-fidelity intelligence report including ASN data, registrar age, and structural DNA analysis. You can trigger it by clicking 'Dossier' in the Manual Scanner."
-        insights = ["Forensic Report", "ASN Intel"]
-    elif "help" in query:
-        response = "I am Sherlock, your cyber-intelligence assistant. I can explain security concepts, guide you through the dashboard, or provide details on specific threat vectors Feluda has detected."
-        insights = ["AI Personal", "Guidance Mode"]
-    elif "malicious" in query or "dangerous" in query:
-        response = "High-risk vectors are instantly quarantined. If you encounter a 'Neural Quarantine' screen, our engine has detected signatures matching known malicious patterns."
-        insights = ["Quarantine Mode", "Pattern Match"]
+    # Expanded Logic for common SOC tasks and user queries
+    if any(k in query for k in ["phishing", "block", "scam", "suspicious"]):
+        response = "Phishing is a social engineering attack where actors impersonate trusted entities. Feluda uses calibrated Random Forest models and live behavioral analysis to block these threats with 99.2% accuracy. You can paste a suspected URL in the Manual Investigation field to verify its signature."
+        insights = ["RF Classifier", "Behavioral DOM", "Zero-Day Shield"]
+    elif any(k in query for k in ["threat", "view", "matrix", "map", "danger"]):
+        response = "The Tactical Intelligence Matrix (Threat Map) displays live attack vectors identified by our global inference mesh. Node_01_Alpha is currently monitoring multiple high-latency anomalies. You can explore the map to see real-time geographical risk distributions."
+        insights = ["Inference Mesh", "Tactical Matrix", "Live Geo-Intel"]
+    elif any(k in query for k in ["audit", "asset", "file", "upload", "check"]):
+        response = "The File Audit system generates a cryptographic 'Neural Fingerprint' (SHA-256) for uploaded assets. This fingerprint is instantly compared against our local threat database to detect malicious binaries or scripts without exposing your raw data."
+        insights = ["SHA-256 Hash", "Binary Analysis", "Privacy Guard"]
+    elif any(k in query for k in ["help", "guide", "what can you do", "sherlock"]):
+        response = "I am Sherlock, your autonomous security assistant. I am linked to the Feluda Neural Core. I can analyze URLs, explain security protocols, provide telemetry on current threats, or guide you through our forensic tools."
+        insights = ["AI Personal", "Core Guidance", "SecOps Assist"]
+    elif any(k in query for k in ["dossier", "deep", "forensic", "report"]):
+        response = "The Forensic Report provides granular intelligence including ASN data, registrar history, and visual similarity scores. While I've streamlined the UI, our underlying forensic engine still processes these deep metrics during every domain sweep."
+        insights = ["ASN Intel", "Visual Similarity", "Registrar Scan"]
+    elif any(k in query for k in ["malicious", "dangerous", "virus", "malware"]):
+        response = "High-risk vectors are instantly neutralized. If the Feluda engine detects a 90%+ confidence match for known malware signatures, it triggers a 'Neural Quarantine' to prevent script execution on your workstation."
+        insights = ["Quarantine Hub", "Signature Match", "Active Defense"]
     else:
-        # Advanced NLP analysis for unknown queries
+        # Improved NLP analysis for unknown queries
         nlp_analysis = nlp_engine.predict(req.query)
-        if nlp_analysis['risk_score'] > 30:
-            response = f"My neural engine detects a potential security-related context in your query (Risk: {nlp_analysis['risk_score']}%). {nlp_analysis.get('explanation', ['I recommend checking our forensic logs for related patterns.'])[0]}"
-            insights = ["NLP Match", "Heuristic Trace"]
+        if nlp_analysis.get('risk_score', 0) > 40:
+            exp = nlp_analysis.get('explanation', ["I recommend checking our forensic logs for related patterns."])[0]
+            response = f"My neural engine identifies potential risk signatures in your query (Inference Score: {nlp_analysis['risk_score']}%). {exp}"
+            insights = ["NLP Inference", "Heuristic Trace"]
         else:
-            response = "I've analyzed your query against my current intelligence node. For a targeted investigation, please provide a URL signature or file hash for structural DNA analysis."
-            insights = ["Neural Standby", "Broad Sweep"]
+            response = "I've analyzed your query against the Feluda Knowledge Base. While I don't have a specific tactical brief on this term, I am standing by to perform a targeted DNA analysis on any URL or file hash you provide."
+            insights = ["Neural Standby", "Broad Knowledge Base"]
 
     return {
         "response": response,

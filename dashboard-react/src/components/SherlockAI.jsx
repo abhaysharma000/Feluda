@@ -25,24 +25,37 @@ export const SherlockAI = () => {
     }, [messages, isOpen]);
 
     const handleSend = async (val) => {
-        const query = typeof val === 'string' ? val : inputValue;
-        if (!query.trim() || isTyping) return;
+        const query = (typeof val === 'string' ? val : inputValue).trim();
+        if (!query || isTyping) return;
 
-        const userMsg = { id: Date.now(), type: 'user', text: query, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+        const userMsg = { 
+            id: Date.now(), 
+            type: 'user', 
+            text: query, 
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        };
+        
         setMessages(prev => [...prev, userMsg]);
         setInputValue('');
         setIsTyping(true);
 
+        // Add a slight artificial delay for 'Thinking' realism
+        const startTime = Date.now();
+
         try {
-            // Use absolute path for API to ensure it works across deep routes
             const response = await fetch('/api/sherlock/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query })
             });
 
+            const data = await response.json();
+            
+            // Ensure minimum 'thinking' time for UX beats
+            const elapsed = Date.now() - startTime;
+            if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
+
             if (response.ok) {
-                const data = await response.json();
                 setMessages(prev => [...prev, { 
                     id: Date.now() + 1, 
                     type: 'bot', 
@@ -51,10 +64,20 @@ export const SherlockAI = () => {
                     insights: data.insights 
                 }]);
             } else {
-                setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Error: Neural connection interrupted. Please ensure the backend is active.", time: 'Emergency' }]);
+                setMessages(prev => [...prev, { 
+                    id: Date.now() + 1, 
+                    type: 'bot', 
+                    text: "Neural Override: The core logic node returned an invalid sequence. Resetting pipeline...", 
+                    time: 'Protocol Error' 
+                }]);
             }
         } catch (err) {
-            setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: "Connection error. Backbone node is temporarily unreachable.", time: 'System Error' }]);
+            setMessages(prev => [...prev, { 
+                id: Date.now() + 1, 
+                type: 'bot', 
+                text: "Backbone Node Offline. The neural uplink is currently being throttled or the backend server is restarting.", 
+                time: 'Node Offline' 
+            }]);
         } finally {
             setIsTyping(false);
         }
