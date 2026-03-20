@@ -75,10 +75,14 @@ export const Dashboard = () => {
         }
     }, [urlParam]);
 
-    const handleManualSearch = (e) => {
-        e.preventDefault();
-        if (inputValue.trim()) {
-            performAnalysis(inputValue.trim(), 'manual');
+    const handleManualSearch = (e, source = 'manual', showDossier = false) => {
+        if (e && e.preventDefault) e.preventDefault();
+        
+        const targetUrl = inputValue.trim();
+        if (targetUrl) {
+            performAnalysis(targetUrl, source, showDossier);
+        } else {
+            addToast("Target signature required", "warning");
         }
     };
 
