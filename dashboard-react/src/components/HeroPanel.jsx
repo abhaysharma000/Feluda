@@ -43,43 +43,43 @@ export const HeroPanel = () => {
     return (
         <section className="relative overflow-hidden">
             <div className={clsx(
-                "glass-panel border-white/[0.03] p-8 lg:p-10 transition-all duration-700 bg-black/40",
+                "glass-panel border-white/[0.03] p-6 md:p-8 lg:p-10 transition-all duration-700 bg-black/40",
                 currentStatus.bg
             )}>
                 {/* Tactical Sidebar Accent */}
-                <div className={clsx("absolute top-0 left-0 w-1.5 h-full opacity-60",
+                <div className={clsx("absolute top-0 left-0 w-1 md:w-1.5 h-full opacity-60",
                     activeColor === 'accent' ? "bg-soc-accent" : (activeColor === 'danger' ? "bg-soc-danger" : "bg-soc-success")
                 )} />
 
-                <div className="flex flex-col xl:flex-row items-stretch gap-10">
+                <div className="flex flex-col xl:flex-row items-stretch gap-8 lg:gap-10">
                     
                     {/* Left: Terminal Core */}
-                    <div className="flex-1 space-y-8">
+                    <div className="flex-1 space-y-6 md:space-y-8">
                         <header className="space-y-4">
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4">
                                 <div className={clsx("flex items-center gap-2 px-3 py-1 rounded border bg-black/40", currentStatus.border)}>
                                     <currentStatus.icon className={clsx("w-3.5 h-3.5", currentStatus.color)} />
                                     <span className={clsx("text-[9px] font-black uppercase tracking-[0.2em] tabular-nums", currentStatus.color)}>
                                         {currentStatus.text}
                                     </span>
                                 </div>
-                                <div className="h-px w-12 bg-white/5" />
-                                <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-600 uppercase tracking-widest">
+                                <div className="hidden sm:block h-px w-12 bg-white/5" />
+                                <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none">
                                     <Fingerprint className="w-3 h-3 text-soc-accent/50" />
                                     SOC_Operator: ABHAY_S
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-white uppercase leading-none italic">
+                            <div className="space-y-2">
+                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase leading-[0.9] md:leading-none italic">
                                     Feluda <span className="text-soc-accent">Command</span> Console
                                 </h1>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] px-1">Unified Threat Intelligence & Forensic Response Terminal</p>
+                                <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.4em] px-1 line-clamp-1">Unified Threat Intelligence & Forensic Response Terminal</p>
                             </div>
                         </header>
 
                         {/* Tactical Telemetry Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                             <TelemetryCard icon={Cpu} label="System Load" value={system.cpu} tint="accent" />
                             <TelemetryCard icon={Database} label="Mem Buffer" value={system.memory} tint="accent" />
                             <TelemetryCard icon={Clock} label="Engine Uptime" value={system.uptime} tint="success" />
@@ -88,8 +88,8 @@ export const HeroPanel = () => {
                     </div>
 
                     {/* Right: TLD Distribution & Primary Stats */}
-                    <div className="xl:w-[450px] flex flex-col gap-4">
-                        <div className="flex-1 grid grid-cols-2 gap-4">
+                    <div className="xl:w-[400px] 2xl:w-[450px] flex flex-col gap-4">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                             <StatBox 
                                 label="Total Ingestion" 
                                 value={stats.scanned_today} 
@@ -107,14 +107,14 @@ export const HeroPanel = () => {
                             />
                         </div>
 
-                        {/* TLD Ingestion Trends (Real Data from Backend) */}
+                        {/* TLD Ingestion Trends */}
                         <div className="p-5 rounded-2xl bg-white/[0.01] border border-white/[0.03] space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Top TLD Ingestion</span>
                                 <BarChart3 className="w-3 h-3 text-slate-700" />
                             </div>
                             <div className="space-y-3">
-                                {Object.entries(system.tld_breakdown || {}).map(([tld, count], i) => (
+                                {Object.entries(system.tld_breakdown || {}).slice(0, 3).map(([tld, count], i) => (
                                     <div key={tld} className="space-y-1.5">
                                         <div className="flex justify-between text-[9px] font-black uppercase">
                                             <span className="text-white opacity-40">.{tld}</span>
@@ -129,9 +129,6 @@ export const HeroPanel = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {Object.keys(system.tld_breakdown || {}).length === 0 && (
-                                    <div className="py-2 text-[8px] font-bold text-slate-700 uppercase tracking-widest text-center italic">Awaiting telemetry synchronization...</div>
-                                )}
                             </div>
                         </div>
                     </div>

@@ -119,16 +119,16 @@ export const FileScanner = () => {
     };
 
     return (
-        <div className="glass-panel p-8 min-h-[500px] flex flex-col relative overflow-hidden group border-soc-accent/5">
+        <div className="glass-panel p-6 md:p-8 min-h-[400px] md:min-h-[500px] flex flex-col relative overflow-hidden group border-soc-accent/5">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-20">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 md:mb-12 relative z-20">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-soc-accent/10 rounded-xl border border-soc-accent/20">
-                        <Shield className="w-6 h-6 text-soc-accent" />
+                        <Shield className="w-5 h-5 md:w-6 md:h-6 text-soc-accent" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-white tracking-[0.1em] uppercase leading-none">File Armor</h3>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-2">Neural Structural Validation</p>
+                        <h3 className="text-lg md:text-xl font-black text-white tracking-[0.1em] uppercase leading-none">File Armor</h3>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] mt-2">Neural Structural Validation</p>
                     </div>
                 </div>
             </div>
@@ -137,7 +137,7 @@ export const FileScanner = () => {
                 {!file ? (
                     <label 
                         className={clsx(
-                            "w-full h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300",
+                            "w-full h-32 md:h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300",
                             dragActive ? "border-soc-accent bg-soc-accent/5" : "border-white/10 hover:border-white/20 bg-white/[0.02]"
                         )}
                         onDragEnter={handleDrag}
@@ -146,9 +146,9 @@ export const FileScanner = () => {
                         onDrop={handleDrop}
                     >
                         <input type="file" className="hidden" onChange={handleFileChange} />
-                        <FileUp className={clsx("w-10 h-10 mb-4 transition-colors", dragActive ? "text-soc-accent" : "text-slate-500")} />
-                        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Drag & Drop Secure File</p>
-                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter mt-2">Max limit: 20MB per ingestion</p>
+                        <FileUp className={clsx("w-8 h-8 md:w-10 md:h-10 mb-2 md:mb-4 transition-colors", dragActive ? "text-soc-accent" : "text-slate-500")} />
+                        <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400">Drag & Drop Secure File</p>
+                        <p className="text-[8px] md:text-[9px] font-bold text-slate-600 uppercase tracking-tighter mt-1 md:mt-2">Max limit: 20MB per ingestion</p>
                     </label>
                 ) : (
                     <div className="w-full space-y-6">
