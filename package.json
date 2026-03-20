@@ -7,6 +7,6 @@
         "install-all": "pip install -r requirements.txt && cd dashboard-react && npm install"
     },
     "engines": {
-        "node": "18.x"
+        "node": "24.x"
     }
 }
