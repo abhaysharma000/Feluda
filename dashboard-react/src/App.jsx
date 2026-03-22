@@ -50,7 +50,9 @@ const App = () => {
                   </Routes>
                 </motion.div>
               </AnimatePresence>
-              <SherlockAI />
+              <ErrorBoundary>
+                <SherlockAI />
+              </ErrorBoundary>
             </div>
           </main>
         </div>

@@ -440,7 +440,7 @@ export const SherlockAI = () => {
                 followUps: data?.insights || ["How does Feluda work?", "What is phishing?"],
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
-        } catch {
+        } catch (err) {
             setMessages(prev => [...prev, {
                 id: Date.now(), type: 'bot', animate: false,
                 text: "⚠️ Connection to the backend is unavailable. I can still answer questions about how Feluda works using my local knowledge base!",
@@ -450,7 +450,8 @@ export const SherlockAI = () => {
         } finally {
             setIsTyping(false);
         }
-    }, [inputValue, isTyping, logs, stats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [inputValue, isTyping]);
 
     const resetChat = () => { setMessages([{ ...INITIAL_MESSAGE, id: Date.now(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]); };
 
