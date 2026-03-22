@@ -16,7 +16,7 @@ export const ModelHealthPanel = () => {
     React.useEffect(() => {
         const fetchHealth = async () => {
             try {
-                const res = await fetch('http://localhost:8001/api/health');
+                const res = await fetch('/api/health');
                 if (res.ok) {
                     const data = await res.json();
                     setHealth(h => ({

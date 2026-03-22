@@ -23,7 +23,7 @@ export const useScan = () => {
             // Standardize URL scheme for API
             const targetUrl = url.startsWith('http') ? url : `https://${url}`;
 
-            const response = await fetch('http://localhost:8001/api/scan/url', {
+            const response = await fetch('/api/scan/url', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: targetUrl })

@@ -51,6 +51,6 @@ echo ✅ SYSTEM LAUNCHED SUCCESSFULLY
 echo ======================================================
 echo.
 echo Backend:   http://localhost:8001
-echo Dashboard: http://localhost:5173
+echo Dashboard: http://localhost:5173/dashboard/
 echo.
 pause

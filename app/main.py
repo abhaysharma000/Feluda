@@ -81,7 +81,12 @@ async def serve_dashboard(path: str = ""):
     # 2. Return index.html for all other dashboard routes (SPA)
     index_path = os.path.join(_dashboard_dir, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        headers = {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+        return FileResponse(index_path, headers=headers)
     
     return RedirectResponse(url="/")
 

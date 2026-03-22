@@ -10,7 +10,7 @@ class SpamProtector:
     - Content Deduplication (Identical message bombing)
     - Burst Detection
     """
-    def __init__(self, rate_limit=10, time_window=60, duplicate_window=300):
+    def __init__(self, rate_limit=500, time_window=60, duplicate_window=300):
         self.rate_limit = rate_limit      # max requests
         self.time_window = time_window    # window in seconds
         self.duplicate_window = duplicate_window # how long to remember content hashes
