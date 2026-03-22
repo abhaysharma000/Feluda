@@ -1,11 +1,44 @@
 import React from 'react';
 import { LogsTable } from '../components/LogsTable';
-import { Shield, LayoutDashboard, Terminal, Activity, ChevronRight, Search, Download } from 'lucide-react';
+import { Shield, Terminal, Activity, Download } from 'lucide-react';
 import { useUI } from '../context/UIContext';
 
 export const InterceptorLogs = () => {
-    const { stats } = useUI();
-    
+    const { stats, logs } = useUI();
+
+    const handleDownloadForensics = () => {
+        const extensionLogs = logs.filter(log =>
+            log.source === 'extension' || log.source === 'extension_heuristic'
+        );
+
+        if (extensionLogs.length === 0) {
+            alert("No intercept data available to export yet.");
+            return;
+        }
+
+        // Build CSV content
+        const headers = ["Timestamp", "Domain", "Classification", "Risk Score (%)", "Source", "Forensic Reasoning"];
+        const rows = extensionLogs
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .map(log => {
+                const domain = log.domain || (log.input ? (log.input.includes('://') ? new URL(log.input).hostname : log.input) : "Unknown");
+                const classification = log.classification || log.result?.classification || "Unknown";
+                const risk = log.risk_score || log.result?.risk_score || 0;
+                const reasons = (log.explanation || log.result?.explanation || ["Generic pattern match"]).join("; ");
+                const ts = log.timestamp ? new Date(log.timestamp).toLocaleString() : "N/A";
+                return [ts, domain, classification, risk, log.source || "SYSTEM", `"${reasons}"`].join(",");
+            });
+
+        const csvContent = [headers.join(","), ...rows].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `feluda_forensics_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="space-y-8 pb-12">
             <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
@@ -24,8 +57,11 @@ export const InterceptorLogs = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <button className="soc-button soc-button-secondary py-3 px-6 rounded-xl border-white/5">
-                        <Download className="w-4 h-4" />
+                    <button
+                        onClick={handleDownloadForensics}
+                        className="soc-button soc-button-secondary py-3 px-6 rounded-xl border-white/5 hover:border-soc-accent/30 hover:bg-soc-accent/5 transition-all group"
+                    >
+                        <Download className="w-4 h-4 group-hover:text-soc-accent transition-colors" />
                         <span className="text-[10px] uppercase font-black tracking-widest">Download_Forensics</span>
                     </button>
                 </div>
